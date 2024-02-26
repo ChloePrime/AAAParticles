@@ -1,0 +1,57 @@
+package mod.chloeprime.aaaparticles.client;
+
+import dev.architectury.event.events.client.ClientRawInputEvent;
+import dev.architectury.platform.Platform;
+import dev.architectury.registry.ReloadListenerRegistry;
+import mod.chloeprime.aaaparticles.AAAParticles;
+import mod.chloeprime.aaaparticles.api.common.ParticleEmitterInfo;
+import mod.chloeprime.aaaparticles.client.installer.JarExtractor;
+import mod.chloeprime.aaaparticles.client.installer.NativePlatform;
+import mod.chloeprime.aaaparticles.client.loader.EffekAssetLoader;
+import net.minecraft.client.Minecraft;
+import net.minecraft.server.packs.PackType;
+import net.minecraft.world.level.Level;
+
+import java.io.IOException;
+
+public class AAAParticlesClient
+{
+	public static final boolean DEBUG_ENABLED = true;
+
+	public static void init() {
+		installNativeLibrary();
+		ReloadListenerRegistry.register(PackType.CLIENT_RESOURCES, new EffekAssetLoader(), AAAParticles.loc("effek"));
+
+		if (DEBUG_ENABLED && Platform.isDevelopmentEnvironment()) {
+			ClientRawInputEvent.KEY_PRESSED.register(Debug.INSTANCE);
+		}
+	}
+
+	public static void setup() {
+	}
+
+	private static void installNativeLibrary() {
+		var platform = NativePlatform.current();
+		var dll = platform.getNativeInstallPath("EffekseerNativeForJava");
+		try {
+			if (!dll.isFile()) {
+				AAAParticles.LOGGER.info("Installing Effekseer native library at " + dll.getCanonicalPath());
+				var resource = "assets/%s/EffekseerNativeForJava%s".formatted(AAAParticles.MOD_ID, platform.getLibraryFormat());
+				JarExtractor.extract(resource, dll);
+			} else {
+				AAAParticles.LOGGER.info("Loading Effekseer native library at " + dll.getCanonicalPath());
+			}
+			System.load(dll.getCanonicalPath());
+		} catch (IOException | UnsatisfiedLinkError e) {
+			throw new ExceptionInInitializerError(e);
+		}
+	}
+
+	public static void addParticle(Level level, ParticleEmitterInfo info) {
+		var player = Minecraft.getInstance().player;
+		if (player != null && player.level != level) {
+			return;
+		}
+		info.spawnInWorld(level, player);
+	}
+}
