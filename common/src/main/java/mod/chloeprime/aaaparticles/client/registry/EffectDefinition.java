@@ -5,6 +5,7 @@ import mod.chloeprime.aaaparticles.api.client.effekseer.EffekseerManager;
 import mod.chloeprime.aaaparticles.api.client.effekseer.ParticleEmitter;
 import net.minecraft.resources.ResourceLocation;
 
+import java.io.Closeable;
 import java.util.*;
 import java.util.random.RandomGenerator;
 import java.util.stream.Stream;
@@ -15,7 +16,7 @@ import java.util.stream.Stream;
  *
  * @author ChloePrime
  */
-public class EffectDefinition {
+public class EffectDefinition implements Closeable {
 
     public ParticleEmitter play() {
         var emitter = manager.createParticle(getEffect());
@@ -99,5 +100,11 @@ public class EffectDefinition {
             throw new IllegalStateException("Failed to initialize EffekseerManager");
         }
         manager.setupWorkerThreads(2);
+    }
+
+    @Override
+    public void close() {
+        manager.close();
+        effect.close();
     }
 }

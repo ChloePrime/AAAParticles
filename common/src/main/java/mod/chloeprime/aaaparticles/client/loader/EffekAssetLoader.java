@@ -133,7 +133,7 @@ public class EffekAssetLoader extends SimplePreparableReloadListener<EffekAssetL
     }
 
     private void unloadAll() {
-        loadedEffects.forEach((id, definition) -> definition.getEffect().close());
+        loadedEffects.forEach((id, definition) -> definition.close());
         loadedEffects.clear();
     }
 
@@ -155,6 +155,7 @@ public class EffekAssetLoader extends SimplePreparableReloadListener<EffekAssetL
     }
 
     @Override
+    @SuppressWarnings("resource")
     protected void apply(Preparations prep_, ResourceManager manager, ProfilerFiller profilerFiller) {
         EffekRenderer.init();
         var prep = new Preparations();
@@ -176,7 +177,7 @@ public class EffekAssetLoader extends SimplePreparableReloadListener<EffekAssetL
          * @param length arg2
          * @param index  arg2
          * @return success or fail
-         * @see #load(ResourceManager, String, int, IntFunction, TriConsumer)
+         * @see #load(ResourceManager, ResourceLocation, int, IntFunction, TriConsumer)
          */
         boolean accept(T bytes, int length, int index);
     }
