@@ -9,11 +9,9 @@ public class AAAParticles
 {
 	public static final String MOD_ID = "aaa_particles";
 	public static final Logger LOGGER = LogUtils.getLogger();
-	public static volatile boolean INIT;
 
 	public static void init() {
 		ModNetwork.init();
-		INIT = true;
 	}
 
     public static ResourceLocation loc(String path) {
