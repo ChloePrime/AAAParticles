@@ -19,7 +19,6 @@ public class AAAParticlesForge {
         DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
             AAAParticlesClient.init();
             MinecraftForge.EVENT_BUS.addListener(AAAParticlesForgeClient::onClientSetup);
-            MinecraftForge.EVENT_BUS.addListener(AAAParticlesForgeClient::onRenderStage);
         });
     }
 }

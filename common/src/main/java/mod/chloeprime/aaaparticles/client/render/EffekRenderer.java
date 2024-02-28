@@ -1,16 +1,14 @@
 package mod.chloeprime.aaaparticles.client.render;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.logging.LogUtils;
 import com.mojang.math.Matrix4f;
 import mod.chloeprime.aaaparticles.api.client.effekseer.DeviceType;
 import mod.chloeprime.aaaparticles.api.client.effekseer.Effekseer;
 import mod.chloeprime.aaaparticles.client.loader.EffekAssetLoader;
+import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderType;
 import org.lwjgl.BufferUtils;
-import org.lwjgl.opengl.GL11;
-import org.slf4j.Logger;
 
 import java.nio.FloatBuffer;
 import java.util.Optional;
@@ -26,7 +24,6 @@ public class EffekRenderer {
 
     private static final FloatBuffer CAMERA_TRANSFORM_BUFFER = BufferUtils.createFloatBuffer(16);
     private static final FloatBuffer PROJECTION_BUFFER = BufferUtils.createFloatBuffer(16);
-    private static final Logger LOGGER = LogUtils.getLogger();
     private static final AtomicBoolean INIT = new AtomicBoolean();
 
     public static void init() {
@@ -43,8 +40,8 @@ public class EffekRenderer {
         }
     }
 
-    public static void onRenderWorldLast(float partialTick, PoseStack pose, Matrix4f projection) {
-        draw(partialTick, pose, projection);
+    public static void onRenderWorldLast(float partialTick, PoseStack pose, Matrix4f projection, Camera camera) {
+        draw(partialTick, pose, projection, camera);
 
         CAMERA_TRANSFORM_BUFFER.clear();
         PROJECTION_BUFFER.clear();
@@ -54,10 +51,9 @@ public class EffekRenderer {
     private static final float[] CAMERA_TRANSFORM_DATA = new float[16];
     private static final float[] PROJECTION_MATRIX_DATA = new float[16];
 
-    private static void draw(float partialTick, PoseStack pose, Matrix4f projection) {
+    private static void draw(float partialTick, PoseStack pose, Matrix4f projection, Camera camera) {
         int w = MINECRAFT.getWindow().getWidth();
         int h = MINECRAFT.getWindow().getHeight();
-        var camera = MINECRAFT.gameRenderer.getMainCamera().getPosition();
 
         projection.store(PROJECTION_BUFFER);
         transposeMatrix(PROJECTION_BUFFER);
@@ -65,7 +61,7 @@ public class EffekRenderer {
 
         pose.pushPose();
         {
-            pose.translate(-camera.x(), -camera.y(), -camera.z());
+            pose.translate(-camera.getPosition().x(), -camera.getPosition().y(), -camera.getPosition().z());
 
             pose.last().pose().store(CAMERA_TRANSFORM_BUFFER);
             transposeMatrix(CAMERA_TRANSFORM_BUFFER);
@@ -81,11 +77,6 @@ public class EffekRenderer {
         RenderType.PARTICLES_TARGET.setupRenderState();
         EffekAssetLoader.get().forEach((id, inst) -> inst.draw(w, h, CAMERA_TRANSFORM_DATA, PROJECTION_MATRIX_DATA, deltaFrames, partialTick));
         RenderType.PARTICLES_TARGET.clearRenderState();
-    }
-
-    public static void fixCloudDepth() {
-        Optional.ofNullable(MINECRAFT.levelRenderer.getCloudsTarget())
-                .ifPresent(rt -> MINECRAFT.getMainRenderTarget().copyDepthFrom(rt));
     }
 
     private static void transposeMatrix(FloatBuffer m) {
@@ -127,33 +118,6 @@ public class EffekRenderer {
         m.put(0xD , m13);
         m.put(0xE , m23);
         m.put(0xF , m33);
-    }
-
-    private static final FloatBuffer DEBUG_MATRIX = BufferUtils.createFloatBuffer(16);
-
-    private static void printMatrix(int glSource, FloatBuffer buf, String name) {
-        if (!bPrintMatrix) {
-            return;
-        }
-        GL11.glGetFloatv(glSource, buf);
-        transposeMatrix(buf);
-
-        StringBuilder sb = new StringBuilder(name).append("=\n");
-
-        float[] floats = new float[16];
-        buf.get(floats);
-
-        for (int i = 0; i < 4; i++) {
-            sb.append("|");
-            for (int j = 0; j < 4; j++) {
-                sb.append(floats[i * 4 + j]).append(", ");
-            }
-            sb.setLength(sb.length() - 2);
-            sb.append("|\n");
-        }
-
-        LOGGER.debug(sb.toString());
-        buf.clear();
     }
 
     private static float getDeltaTime() {

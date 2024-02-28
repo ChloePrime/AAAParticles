@@ -11,8 +11,8 @@ public class AAAParticlesFabricClient implements ClientModInitializer {
         AAAParticlesClient.init();
         AAAParticlesClient.setup();
         EffekRenderer.init();
-        WorldRenderEvents.LAST.register(
-                ctx -> EffekRenderer.onRenderWorldLast(ctx.tickDelta(), ctx.matrixStack(), ctx.projectionMatrix())
+        WorldRenderEvents.END.register(
+                ctx -> EffekRenderer.onRenderWorldLast(ctx.tickDelta(), ctx.matrixStack(), ctx.projectionMatrix(), ctx.camera())
         );
     }
 }
