@@ -3,14 +3,13 @@ package mod.chloeprime.aaaparticles.api.client.effekseer;
 import Effekseer.swig.EffekseerManagerCore;
 import com.mojang.math.Matrix4f;
 
-import java.io.Closeable;
 import java.nio.FloatBuffer;
 
 /**
  * @author ChloePrime
  */
 @SuppressWarnings("unused")
-public class EffekseerManager implements Closeable {
+public class EffekseerManager extends SafeFinalized<EffekseerManagerCore> {
     public EffekseerManager() {
         this(new EffekseerManagerCore());
     }
@@ -126,6 +125,7 @@ public class EffekseerManager implements Closeable {
     }
 
     protected EffekseerManager(EffekseerManagerCore impl) {
+        super(impl, EffekseerManagerCore::delete);
         this.impl = impl;
     }
 

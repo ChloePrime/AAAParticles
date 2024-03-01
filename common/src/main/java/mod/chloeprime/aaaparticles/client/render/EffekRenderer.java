@@ -20,8 +20,6 @@ import static mod.chloeprime.aaaparticles.client.render.EffekRenderer.MinecraftH
  * @author ChloePrime
  */
 public class EffekRenderer {
-    public static boolean bPrintMatrix;
-
     private static final FloatBuffer CAMERA_TRANSFORM_BUFFER = BufferUtils.createFloatBuffer(16);
     private static final FloatBuffer PROJECTION_BUFFER = BufferUtils.createFloatBuffer(16);
     private static final AtomicBoolean INIT = new AtomicBoolean();
@@ -45,7 +43,6 @@ public class EffekRenderer {
 
         CAMERA_TRANSFORM_BUFFER.clear();
         PROJECTION_BUFFER.clear();
-        bPrintMatrix = false;
     }
 
     private static final float[] CAMERA_TRANSFORM_DATA = new float[16];

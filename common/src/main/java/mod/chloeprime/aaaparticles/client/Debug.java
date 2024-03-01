@@ -4,12 +4,14 @@ import com.mojang.blaze3d.platform.InputConstants;
 import dev.architectury.event.EventResult;
 import dev.architectury.event.events.client.ClientRawInputEvent;
 import mod.chloeprime.aaaparticles.AAAParticles;
+import mod.chloeprime.aaaparticles.api.client.effekseer.EffekseerEffect;
 import mod.chloeprime.aaaparticles.api.common.AAALevel;
 import mod.chloeprime.aaaparticles.api.common.ParticleEmitterInfo;
-import mod.chloeprime.aaaparticles.client.render.EffekRenderer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
 import org.apache.logging.log4j.LogManager;
+
+import java.lang.ref.WeakReference;
 
 /**
  * @author ChloePrime
@@ -35,7 +37,10 @@ public enum Debug implements ClientRawInputEvent.KeyPressed {
             return;
         }
         if (keyCode == InputConstants.KEY_M) {
-            EffekRenderer.bPrintMatrix = true;
+            var effect = new WeakReference<>(new EffekseerEffect());
+            while (effect.get() != null) {
+                System.gc();
+            }
             return;
         }
         if (keyCode != DEBUG_KEY) {

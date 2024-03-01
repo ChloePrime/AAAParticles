@@ -2,13 +2,14 @@ package mod.chloeprime.aaaparticles.api.client.effekseer;
 
 import Effekseer.swig.EffekseerBackendCore;
 
-import java.io.Closeable;
-
 /**
  * @author ChloePrime
  */
 @SuppressWarnings("unused")
-public class Effekseer implements Closeable {
+public class Effekseer extends SafeFinalized<EffekseerBackendCore> {
+    public Effekseer() {
+        this(new EffekseerBackendCore());
+    }
 
     public static boolean init() {
         return EffekseerBackendCore.InitializeWithOpenGL();
@@ -31,5 +32,10 @@ public class Effekseer implements Closeable {
         return impl;
     }
 
-    private final EffekseerBackendCore impl = new EffekseerBackendCore();
+    protected Effekseer(EffekseerBackendCore impl) {
+        super(impl, EffekseerBackendCore::delete);
+        this.impl = impl;
+    }
+
+    private final EffekseerBackendCore impl;
 }

@@ -16,7 +16,7 @@ import java.io.IOException;
 
 public class AAAParticlesClient
 {
-	public static final boolean DEBUG_ENABLED = true;
+	public static final boolean DEBUG_ENABLED = false;
 
 	public static void init() {
 		installNativeLibrary();

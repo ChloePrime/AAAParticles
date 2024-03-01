@@ -2,7 +2,6 @@ package mod.chloeprime.aaaparticles.api.client.effekseer;
 
 import Effekseer.swig.EffekseerEffectCore;
 
-import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -10,13 +9,13 @@ import java.io.InputStream;
  * @author ChloePrime
  */
 @SuppressWarnings("unused")
-public class EffekseerEffect implements Closeable {
+public class EffekseerEffect extends SafeFinalized<EffekseerEffectCore> {
     protected final EffekseerEffectCore impl;
 
     private boolean isLoaded = false;
 
     public EffekseerEffect() {
-        impl = new EffekseerEffectCore();
+        this(new EffekseerEffectCore());
     }
 
     @Override
@@ -140,5 +139,10 @@ public class EffekseerEffect implements Closeable {
 
     public final EffekseerEffectCore getImpl() {
         return impl;
+    }
+
+    protected EffekseerEffect(EffekseerEffectCore impl) {
+        super(impl, EffekseerEffectCore::delete);
+        this.impl = impl;
     }
 }
