@@ -26,10 +26,13 @@ abstract class SafeFinalized<T> implements Closeable {
     @Override
     @SuppressWarnings("deprecation")
     protected void finalize() throws Throwable {
-        super.finalize();
-        var kept = this.kept.get();
-        if (kept != null) {
-            Minecraft.getInstance().tell(this::close);
+        try {
+            var kept = this.kept.get();
+            if (kept != null) {
+                Minecraft.getInstance().tell(this::close);
+            }
+        } finally {
+            super.finalize();
         }
     }
 
