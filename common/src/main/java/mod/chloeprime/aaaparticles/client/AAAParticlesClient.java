@@ -49,7 +49,7 @@ public class AAAParticlesClient
 
 	public static void addParticle(Level level, ParticleEmitterInfo info) {
 		var player = Minecraft.getInstance().player;
-		if (player != null && player.level != level) {
+		if (player != null && player.level() != level) {
 			return;
 		}
 		info.spawnInWorld(level, player);

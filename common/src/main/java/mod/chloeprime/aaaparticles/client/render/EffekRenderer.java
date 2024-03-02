@@ -1,13 +1,13 @@
 package mod.chloeprime.aaaparticles.client.render;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Matrix4f;
 import mod.chloeprime.aaaparticles.api.client.effekseer.DeviceType;
 import mod.chloeprime.aaaparticles.api.client.effekseer.Effekseer;
 import mod.chloeprime.aaaparticles.client.loader.EffekAssetLoader;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderType;
+import org.joml.Matrix4f;
 import org.lwjgl.BufferUtils;
 
 import java.nio.FloatBuffer;
@@ -52,7 +52,7 @@ public class EffekRenderer {
         int w = MINECRAFT.getWindow().getWidth();
         int h = MINECRAFT.getWindow().getHeight();
 
-        projection.store(PROJECTION_BUFFER);
+        projection.get(PROJECTION_BUFFER);
         transposeMatrix(PROJECTION_BUFFER);
         PROJECTION_BUFFER.get(PROJECTION_MATRIX_DATA);
 
@@ -60,7 +60,7 @@ public class EffekRenderer {
         {
             pose.translate(-camera.getPosition().x(), -camera.getPosition().y(), -camera.getPosition().z());
 
-            pose.last().pose().store(CAMERA_TRANSFORM_BUFFER);
+            pose.last().pose().get(CAMERA_TRANSFORM_BUFFER);
             transposeMatrix(CAMERA_TRANSFORM_BUFFER);
             CAMERA_TRANSFORM_BUFFER.get(CAMERA_TRANSFORM_DATA);
         }

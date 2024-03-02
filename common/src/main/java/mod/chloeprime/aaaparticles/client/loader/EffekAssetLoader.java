@@ -20,6 +20,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.IntFunction;
@@ -48,38 +49,37 @@ public class EffekAssetLoader extends SimplePreparableReloadListener<EffekAssetL
         loadedEffects.forEach(action);
     }
 
-    /**
-     * @param name the minecraft asset path of .efkefc files.
-     * @return the loaded effect.
-     */
-    private EffekseerEffect loadEffect(ResourceManager manager, ResourceLocation name) {
-        String modid = name.getNamespace();
-        String path = "effeks/" + name.getPath() + ".efkefc";
-        ResourceLocation assetLocation = new ResourceLocation(modid, path);
-
-        try (Resource efkefc = manager.getResource(assetLocation)) {
+    private Optional<EffekseerEffect> loadEffect(ResourceManager manager, ResourceLocation name, Resource efkefc) {
+        try (var input = efkefc.open()) {
             EffekseerEffect effect = new EffekseerEffect();
-            boolean success = effect.load(efkefc.getInputStream(), 1);
+            boolean success = effect.load(input, 1);
             if (!success) {
-                throw new EffekLoadException("Failed to load " + assetLocation);
+                LOGGER.error("Failed to load " + name);
+                return Optional.empty();
             }
 
-            for (TextureType texType : TextureType.values()) {
-                int count = effect.textureCount(texType);
-                load(
-                        manager,
-                        name, count,
-                        i -> effect.getTexturePath(i, texType),
-                        (b, len, i) -> effect.loadTexture(b, len, i, texType)
-                );
+            try {
+                for (TextureType texType : TextureType.values()) {
+                    int count = effect.textureCount(texType);
+                    load(
+                            manager,
+                            name, count,
+                            i -> effect.getTexturePath(i, texType),
+                            (b, len, i) -> effect.loadTexture(b, len, i, texType)
+                    );
+                }
+                load(manager, name, effect.modelCount(), effect::getModelPath, effect::loadModel);
+                load(manager, name, effect.curveCount(), effect::getCurvePath, effect::loadCurve);
+                load(manager, name, effect.materialCount(), effect::getMaterialPath, effect::loadMaterial);
+                return Optional.of(effect);
+            } catch (FileNotFoundException ex) {
+                LOGGER.error("Failed to load " + name, ex);
+                effect.close();
+                return Optional.empty();
             }
-            load(manager, name, effect.modelCount(), effect::getModelPath, effect::loadModel);
-            load(manager, name, effect.curveCount(), effect::getCurvePath, effect::loadCurve);
-            load(manager, name, effect.materialCount(), effect::getMaterialPath, effect::loadMaterial);
-            return effect;
         } catch (IOException ex) {
             handleCheckedException(ex);
-            return null;
+            return Optional.empty();
         }
     }
 
@@ -104,8 +104,10 @@ public class EffekAssetLoader extends SimplePreparableReloadListener<EffekAssetL
             var main = new LimitlessResourceLocation(modid, mcAssetPath);
             var fallback = new LimitlessResourceLocation(modid, fallbackMcAssetPath);
             // Load from disk.
-            try (var resource = getResourceOrUseFallbackPath(manager, main, fallback)) {
-                byte[] bytes = IOUtils.toByteArray(resource.getInputStream());
+            var resource = getResourceOrUseFallbackPath(manager, main, fallback)
+                    .orElseThrow(() -> new FileNotFoundException("Failed to load %s or %s".formatted(main, fallback)));
+            try (var input = resource.open()) {
+                byte[] bytes = IOUtils.toByteArray(input);
                 boolean success = loadMethod.accept(bytes, bytes.length, i);
                 if (!success) {
                     String info = String.format("Failed to load effek data %s", effekAssetPath);
@@ -116,16 +118,12 @@ public class EffekAssetLoader extends SimplePreparableReloadListener<EffekAssetL
         }
     }
 
-    private static Resource getResourceOrUseFallbackPath(
+    private static Optional<Resource> getResourceOrUseFallbackPath(
             ResourceManager manager,
             ResourceLocation path,
             ResourceLocation fallback
-    ) throws IOException {
-        try {
-            return manager.getResource(path);
-        } catch (FileNotFoundException ignored) {
-            return manager.getResource(fallback);
-        }
+    ) {
+        return manager.getResource(path).or(() -> manager.getResource(fallback));
     }
 
     protected static class Preparations {
@@ -159,10 +157,10 @@ public class EffekAssetLoader extends SimplePreparableReloadListener<EffekAssetL
     protected void apply(Preparations prep_, ResourceManager manager, ProfilerFiller profilerFiller) {
         EffekRenderer.init();
         var prep = new Preparations();
-        for (var effek : manager.listResources("effeks", s -> s.endsWith(".efkefc"))) {
-            var name = createEffekName(effek);
-            prep.loadedEffects.put(name, new EffectDefinition().setEffect(loadEffect(manager, name)));
-        }
+        manager.listResources("effeks", rl -> rl.getPath().endsWith(".efkefc")).forEach((location, resource) -> {
+            var name = createEffekName(location);
+            loadEffect(manager, name, resource).ifPresent(effect -> prep.loadedEffects.put(name, new EffectDefinition().setEffect(effect)));
+        });
         unloadAll();
         loadedEffects.putAll(prep.loadedEffects);
         INSTANCE = this;

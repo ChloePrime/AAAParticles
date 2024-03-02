@@ -43,6 +43,6 @@ public class S2CAddParticle extends ParticleEmitterInfo {
     public void handle(Supplier<PacketContext> ctx) {
         var context = ctx.get();
         var player = context.getPlayer();
-        context.queue(() -> spawnInWorld(player.getLevel(), player));
+        context.queue(() -> spawnInWorld(player.level(), player));
     }
 }

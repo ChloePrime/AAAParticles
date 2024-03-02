@@ -8,17 +8,22 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.forgespi.Environment;
 
 @Mod(AAAParticles.MOD_ID)
 public class AAAParticlesForge {
     public AAAParticlesForge() {
         var modbus = FMLJavaModLoadingContext.get().getModEventBus();
+        var forgebus = MinecraftForge.EVENT_BUS;
         EventBuses.registerModEventBus(AAAParticles.MOD_ID, modbus);
         AAAParticles.init();
 
-        DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
+        if (Environment.get().getDist().isClient()) {
             AAAParticlesClient.init();
-            MinecraftForge.EVENT_BUS.addListener(AAAParticlesForgeClient::onClientSetup);
-        });
+            modbus.addListener(AAAParticlesForgeClient::onClientSetup);
+            if (AAAParticlesForgeClient.USE_RENDER_EVENT) {
+                forgebus.addListener(AAAParticlesForgeClient::onRenderStage);
+            }
+        }
     }
 }
