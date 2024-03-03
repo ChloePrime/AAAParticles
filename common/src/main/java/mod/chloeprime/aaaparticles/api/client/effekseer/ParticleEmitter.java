@@ -11,16 +11,23 @@ import java.util.Optional;
  */
 @SuppressWarnings("unused")
 public class ParticleEmitter {
+    public enum Type {
+        WORLD,
+        FIRST_PERSON,
+    }
+
     public final int handle;
+    public final Type type;
     public boolean isVisible = true;
     public boolean isPaused = false;
 
     private final EffekseerManager manager;
     private @Nullable PreDrawCallback callback;
 
-    protected ParticleEmitter(int handle, EffekseerManager manager) {
+    protected ParticleEmitter(int handle, EffekseerManager manager, Type type) {
         this.handle = handle;
         this.manager = manager;
+        this.type = type;
         setVisibility(true);
         resume();
     }
@@ -119,7 +126,7 @@ public class ParticleEmitter {
     }
 
     public interface PreDrawCallback {
-        public void accept(ParticleEmitter emitter, float partialTicks);
+        void accept(ParticleEmitter emitter, float partialTicks);
 
         default PreDrawCallback andThen(PreDrawCallback after) {
             Objects.requireNonNull(after);
