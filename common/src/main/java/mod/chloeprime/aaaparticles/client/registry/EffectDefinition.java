@@ -118,7 +118,7 @@ public class EffectDefinition implements Closeable {
     private final Map<ResourceLocation, ParticleEmitter> namedFpvEmitters = new LinkedHashMap<>();
     private static final RandomGenerator RNG = new Random();
     private static final int GC_DELAY = 20;
-    private final int magicLoadBalancer = (RNG.nextInt() >> 2) % GC_DELAY;
+    private final int magicLoadBalancer = Math.abs(RNG.nextInt() >>> 2) % GC_DELAY;
     private int gcTicks;
 
     public EffectDefinition() {
