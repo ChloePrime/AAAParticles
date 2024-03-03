@@ -19,7 +19,11 @@ public enum NativePlatform {
     }
 
     public File getNativeInstallPath(String dllName) {
-        return new File(INSTALL_FOLDER.get(), prefix + dllName + libFormat);
+        return new File(INSTALL_FOLDER.get(), formatFileName(dllName));
+    }
+
+    public String formatFileName(String dllName) {
+        return prefix + dllName + libFormat;
     }
 
     public String getLibraryFormat() {
