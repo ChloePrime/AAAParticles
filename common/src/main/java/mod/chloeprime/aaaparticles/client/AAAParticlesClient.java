@@ -32,11 +32,12 @@ public class AAAParticlesClient
 
 	private static void installNativeLibrary() {
 		var platform = NativePlatform.current();
-		var dll = platform.getNativeInstallPath("EffekseerNativeForJava");
+		var DLL_NAME = "EffekseerNativeForJava";
+		var dll = platform.getNativeInstallPath(DLL_NAME);
 		try {
 			if (!dll.isFile()) {
 				AAAParticles.LOGGER.info("Installing Effekseer native library at " + dll.getCanonicalPath());
-				var resource = "assets/%s/EffekseerNativeForJava%s".formatted(AAAParticles.MOD_ID, platform.getLibraryFormat());
+				var resource = "assets/%s/%s".formatted(AAAParticles.MOD_ID, platform.formatFileName(DLL_NAME));
 				JarExtractor.extract(resource, dll);
 			} else {
 				AAAParticles.LOGGER.info("Loading Effekseer native library at " + dll.getCanonicalPath());
