@@ -1,6 +1,5 @@
 package mod.chloeprime.aaaparticles.client;
 
-import dev.architectury.event.events.client.ClientRawInputEvent;
 import dev.architectury.platform.Platform;
 import dev.architectury.registry.ReloadListenerRegistry;
 import mod.chloeprime.aaaparticles.AAAParticles;
@@ -16,14 +15,14 @@ import java.io.IOException;
 
 public class AAAParticlesClient
 {
-	public static final boolean DEBUG_ENABLED = false;
+	public static final boolean DEBUG_ENABLED = true;
 
 	public static void init() {
 		installNativeLibrary();
 		ReloadListenerRegistry.register(PackType.CLIENT_RESOURCES, new EffekAssetLoader(), AAAParticles.loc("effek"));
 
 		if (DEBUG_ENABLED && Platform.isDevelopmentEnvironment()) {
-			ClientRawInputEvent.KEY_PRESSED.register(Debug.INSTANCE);
+			Debug.INSTANCE.registerDebugHooks();
 		}
 	}
 

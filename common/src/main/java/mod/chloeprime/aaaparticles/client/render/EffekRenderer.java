@@ -4,6 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Matrix4f;
 import mod.chloeprime.aaaparticles.api.client.effekseer.DeviceType;
 import mod.chloeprime.aaaparticles.api.client.effekseer.Effekseer;
+import mod.chloeprime.aaaparticles.api.client.effekseer.ParticleEmitter;
 import mod.chloeprime.aaaparticles.client.loader.EffekAssetLoader;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
@@ -39,16 +40,17 @@ public class EffekRenderer {
     }
 
     public static void onRenderWorldLast(float partialTick, PoseStack pose, Matrix4f projection, Camera camera) {
-        draw(partialTick, pose, projection, camera);
+        draw(ParticleEmitter.Type.WORLD, partialTick, pose, projection, camera);
+    }
 
-        CAMERA_TRANSFORM_BUFFER.clear();
-        PROJECTION_BUFFER.clear();
+    public static void onRenderHand(float partialTick, PoseStack pose, Matrix4f projection, Camera camera) {
+        draw(ParticleEmitter.Type.FIRST_PERSON, partialTick, pose, projection, camera);
     }
 
     private static final float[] CAMERA_TRANSFORM_DATA = new float[16];
     private static final float[] PROJECTION_MATRIX_DATA = new float[16];
 
-    private static void draw(float partialTick, PoseStack pose, Matrix4f projection, Camera camera) {
+    private static void draw(ParticleEmitter.Type type, float partialTick, PoseStack pose, Matrix4f projection, Camera camera) {
         int w = MINECRAFT.getWindow().getWidth();
         int h = MINECRAFT.getWindow().getHeight();
 
@@ -58,7 +60,9 @@ public class EffekRenderer {
 
         pose.pushPose();
         {
-            pose.translate(-camera.getPosition().x(), -camera.getPosition().y(), -camera.getPosition().z());
+            if (type == ParticleEmitter.Type.WORLD) {
+                pose.translate(-camera.getPosition().x(), -camera.getPosition().y(), -camera.getPosition().z());
+            }
 
             pose.last().pose().store(CAMERA_TRANSFORM_BUFFER);
             transposeMatrix(CAMERA_TRANSFORM_BUFFER);
@@ -69,11 +73,14 @@ public class EffekRenderer {
         Optional.ofNullable(MINECRAFT.levelRenderer.getParticlesTarget())
                 .ifPresent(rt -> rt.copyDepthFrom(MINECRAFT.getMainRenderTarget()));
 
-        float deltaFrames = 60 * getDeltaTime();
+        float deltaFrames = 60 * getDeltaTime(type);
 
         RenderType.PARTICLES_TARGET.setupRenderState();
-        EffekAssetLoader.get().forEach((id, inst) -> inst.draw(w, h, CAMERA_TRANSFORM_DATA, PROJECTION_MATRIX_DATA, deltaFrames, partialTick));
+        EffekAssetLoader.get().forEach((id, inst) -> inst.draw(type, w, h, CAMERA_TRANSFORM_DATA, PROJECTION_MATRIX_DATA, deltaFrames, partialTick));
         RenderType.PARTICLES_TARGET.clearRenderState();
+
+        CAMERA_TRANSFORM_BUFFER.clear();
+        PROJECTION_BUFFER.clear();
     }
 
     private static void transposeMatrix(FloatBuffer m) {
@@ -117,20 +124,19 @@ public class EffekRenderer {
         m.put(0xF , m33);
     }
 
-    private static float getDeltaTime() {
-        long last = lastDrawTime;
+    private static final long[] lastDrawTimeByNanos = new long[256];
+
+    private static float getDeltaTime(ParticleEmitter.Type type) {
+        long last = lastDrawTimeByNanos[type.ordinal()];
         if (last == 0) {
-            lastDrawTime = System.nanoTime();
+            lastDrawTimeByNanos[type.ordinal()] = System.nanoTime();
             return 1f / 60;
         }
 
         long now = System.nanoTime();
-        lastDrawTime = now;
+        lastDrawTimeByNanos[type.ordinal()] = now;
         return (float) ((now - last) * 1e-9);
     }
-
-
-    private static long lastDrawTime = 0;
 
     public static final class MinecraftHolder {
         public static final Minecraft MINECRAFT = Minecraft.getInstance();

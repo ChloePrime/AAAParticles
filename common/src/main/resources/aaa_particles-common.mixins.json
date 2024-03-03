@@ -9,6 +9,7 @@
   ],
   "client": [
     "client.GameRendererAccessor",
+    "client.MixinItemInHandRenderer",
     "client.MixinLightningBoltRenderer"
   ],
   "injectors": {

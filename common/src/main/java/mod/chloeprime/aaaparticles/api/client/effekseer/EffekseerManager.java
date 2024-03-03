@@ -40,8 +40,12 @@ public class EffekseerManager extends SafeFinalized<EffekseerManagerCore> {
     }
 
     public ParticleEmitter createParticle(EffekseerEffect effect) {
+        return createParticle(effect, ParticleEmitter.Type.WORLD);
+    }
+
+    public ParticleEmitter createParticle(EffekseerEffect effect, ParticleEmitter.Type type) {
         int handle = impl.Play(effect.getImpl());
-        return new ParticleEmitter(handle, this);
+        return new ParticleEmitter(handle, this, type);
     }
 
     public void stopAllEffects() {
