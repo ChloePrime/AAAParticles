@@ -9,6 +9,8 @@ import mod.chloeprime.aaaparticles.client.loader.EffekAssetLoader;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.world.InteractionHand;
+import org.joml.Matrix4f;
 import org.lwjgl.BufferUtils;
 
 import java.nio.FloatBuffer;
@@ -43,8 +45,12 @@ public class EffekRenderer {
         draw(ParticleEmitter.Type.WORLD, partialTick, pose, projection, camera);
     }
 
-    public static void onRenderHand(float partialTick, PoseStack pose, Matrix4f projection, Camera camera) {
-        draw(ParticleEmitter.Type.FIRST_PERSON, partialTick, pose, projection, camera);
+    public static void onRenderHand(float partialTick, InteractionHand hand, PoseStack pose, Matrix4f projection, Camera camera) {
+        var type = switch (hand) {
+            case MAIN_HAND -> ParticleEmitter.Type.FIRST_PERSON_MAINHAND;
+            case OFF_HAND -> ParticleEmitter.Type.FIRST_PERSON_OFFHAND;
+        };
+        draw(type, partialTick, pose, projection, camera);
     }
 
     private static final float[] CAMERA_TRANSFORM_DATA = new float[16];

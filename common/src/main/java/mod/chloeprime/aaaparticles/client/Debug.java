@@ -4,6 +4,7 @@ import com.mojang.blaze3d.platform.InputConstants;
 import dev.architectury.event.EventResult;
 import dev.architectury.event.events.client.ClientRawInputEvent;
 import dev.architectury.event.events.common.InteractionEvent;
+import dev.architectury.platform.Platform;
 import mod.chloeprime.aaaparticles.AAAParticles;
 import mod.chloeprime.aaaparticles.api.client.effekseer.EffekseerEffect;
 import mod.chloeprime.aaaparticles.api.client.effekseer.ParticleEmitter;
@@ -24,10 +25,14 @@ import java.util.Objects;
  */
 public enum Debug {
     INSTANCE;
+    public static final boolean DEBUG_ENABLED = Platform.isDevelopmentEnvironment() || Boolean.getBoolean("mod.chloeprime.aaaparticles.debug");
     private static final int DEBUG_KEY = InputConstants.KEY_F;
     private static final ResourceLocation DEBUG_PARTICLE = new ResourceLocation(AAAParticles.MOD_ID, "fire");
 
     public void registerDebugHooks() {
+        if (!DEBUG_ENABLED) {
+            return;
+        }
         ClientRawInputEvent.KEY_PRESSED.register(this::keyPressed);
         InteractionEvent.CLIENT_LEFT_CLICK_AIR.register(this::leftClick);
     }
@@ -70,7 +75,8 @@ public enum Debug {
     }
 
     public void leftClick(Player player, InteractionHand hand) {
-        var emitter = Objects.requireNonNull(EffectRegistry.get(DEBUG_PARTICLE)).play(ParticleEmitter.Type.FIRST_PERSON);
+        var type = Math.random() <= 0.5 ? ParticleEmitter.Type.FIRST_PERSON_MAINHAND : ParticleEmitter.Type.FIRST_PERSON_OFFHAND;
+        var emitter = Objects.requireNonNull(EffectRegistry.get(DEBUG_PARTICLE)).play(type);
         emitter.setPosition(0, 0.5F, 0);
         emitter.setScale(0.1F, 0.1F, 0.1F);
     }

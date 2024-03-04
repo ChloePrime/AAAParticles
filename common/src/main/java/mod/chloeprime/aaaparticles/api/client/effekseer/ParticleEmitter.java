@@ -13,7 +13,8 @@ import java.util.Optional;
 public class ParticleEmitter {
     public enum Type {
         WORLD,
-        FIRST_PERSON,
+        FIRST_PERSON_MAINHAND,
+        FIRST_PERSON_OFFHAND,
     }
 
     public final int handle;

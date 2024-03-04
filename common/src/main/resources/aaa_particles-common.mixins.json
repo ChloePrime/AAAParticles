@@ -9,8 +9,11 @@
   ],
   "client": [
     "client.GameRendererAccessor",
+    "client.MixinGameRenderer",
     "client.MixinItemInHandRenderer",
-    "client.MixinLightningBoltRenderer"
+    "client.MixinLevelRenderer",
+    "client.MixinLightningBoltRenderer",
+    "client.MixinMinecraft"
   ],
   "injectors": {
     "defaultRequire": 1
