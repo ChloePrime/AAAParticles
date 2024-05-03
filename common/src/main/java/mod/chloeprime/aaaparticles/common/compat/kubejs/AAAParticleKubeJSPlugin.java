@@ -9,14 +9,14 @@ import mod.chloeprime.aaaparticles.api.common.ParticleEmitterInfo;
 
 public class AAAParticleKubeJSPlugin extends KubeJSPlugin {
     @Override
-    public void addClasses(ScriptType type, ClassFilter filter) {
-        super.addClasses(type, filter);
+    public void registerClasses(ScriptType type, ClassFilter filter) {
+        super.registerClasses(type, filter);
         filter.allow("mod.chloeprime.aaaparticles.api");
     }
 
     @Override
-    public void addBindings(BindingsEvent event) {
-        super.addBindings(event);
+    public void registerBindings(BindingsEvent event) {
+        super.registerBindings(event);
         event.add("AAAParticles", AAALevel.class);
         event.add(ParticleEmitterInfo.class.getSimpleName(), ParticleEmitterInfo.class);
     }
