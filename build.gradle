@@ -15,6 +15,13 @@ subprojects {
     }
 
     repositories {
+        maven {
+            // saps.dev Maven (KubeJS and Rhino)
+            url = "https://maven.saps.dev/minecraft"
+            content {
+                includeGroup "dev.latvian.mods"
+            }
+        }
         exclusiveContent {
             forRepository {
                 maven {

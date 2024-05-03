@@ -20,6 +20,7 @@ dependencies {
     modApi "net.fabricmc.fabric-api:fabric-api:${rootProject.fabric_api_version}"
     // Remove the next line if you don't want to depend on the API
     modApi "dev.architectury:architectury-fabric:${rootProject.architectury_version}"
+    modImplementation "dev.latvian.mods:kubejs-fabric:$kubejs_version"
     compileOnly "maven.modrinth:iris:1.6.17+1.20.1"
 
     common(project(path: ":common", configuration: "namedElements")) { transitive false }

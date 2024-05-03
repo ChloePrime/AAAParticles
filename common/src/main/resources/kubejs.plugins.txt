@@ -1,0 +1,1 @@
+mod.chloeprime.aaaparticles.common.compat.kubejs.AAAParticleKubeJSPlugin
