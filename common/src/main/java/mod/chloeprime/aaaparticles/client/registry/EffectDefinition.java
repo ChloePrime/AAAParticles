@@ -119,7 +119,11 @@ public class EffectDefinition implements Closeable {
         manager.setViewport(w, h);
         manager.setCameraMatrix(camera);
         manager.setProjectionMatrix(projection);
+
+        manager.startUpdate();
         manager.update(deltaFrames);
+        manager.endUpdate();
+
         emitters(type).forEach(emitter -> emitter.runPreDrawCallbacks(partialTicks));
         manager.draw();
 

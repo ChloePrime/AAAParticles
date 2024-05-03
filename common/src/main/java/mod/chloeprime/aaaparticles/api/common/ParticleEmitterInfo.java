@@ -286,7 +286,7 @@ public class ParticleEmitterInfo implements Cloneable {
                 x = (float) this.x;
                 y = (float) this.y;
                 z = (float) this.z;
-            } else if (!hasBoundEntity() && player != null) {
+            } else if (!hasBoundEntity && player != null) {
                 x = (float) player.getX();
                 y = (float) player.getY();
                 z = (float) player.getZ();

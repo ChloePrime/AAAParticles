@@ -14,11 +14,13 @@ import mod.chloeprime.aaaparticles.client.registry.EffectRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import org.apache.logging.log4j.LogManager;
 
 import java.lang.ref.WeakReference;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * @author ChloePrime
@@ -66,12 +68,20 @@ public enum Debug {
             return;
         }
 
-        AAALevel.addParticle(mc.level, new ParticleEmitterInfo(DEBUG_PARTICLE)
-                .bindOnEntity(mc.player)
-                .useEntityHeadSpace()
-                .position(0, 4, 0)
-                .entitySpaceRelativePosition(0.5, 0, -0.5)
-                .rotation((float) (Math.PI / 2), 0, 0));
+        Optional.ofNullable(mc.crosshairPickEntity).map(Entity::getId)
+                .ifPresent(eid -> {
+                    var dim = Objects.requireNonNull(mc.level).dimension();
+                    var srv = Objects.requireNonNull(mc.getSingleplayerServer());
+                    srv.execute(() -> {
+                        var srvLevel = Objects.requireNonNull(srv.getLevel(dim));
+                        AAALevel.addParticle(srvLevel, new ParticleEmitterInfo(DEBUG_PARTICLE)
+                                        .bindOnEntity(Objects.requireNonNull(srvLevel.getEntity(eid)))
+//                        .position(0, 1.8, 0)
+//                        .entitySpaceRelativePosition(0.5, 0, -0.5)
+//                        .rotation((float) (Math.PI / 2), 0, 0)
+                        );
+                    });
+                });
     }
 
     public void leftClick(Player player, InteractionHand hand) {
