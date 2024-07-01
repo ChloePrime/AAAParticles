@@ -3,9 +3,9 @@
   "id": "aaa_particles",
   "version": "${version}",
 
-  "name": "AAAParticles",
+  "name": "EffekseerLib",
   "description": "",
-  "authors": [],
+  "authors": ["ChloePrime"],
   "contact": {},
 
   "license": "MIT",
