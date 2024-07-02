@@ -1,5 +1,7 @@
 package mod.chloeprime.aaaparticles.client;
 
+import java.io.IOException;
+
 import dev.architectury.registry.ReloadListenerRegistry;
 import mod.chloeprime.aaaparticles.AAAParticles;
 import mod.chloeprime.aaaparticles.api.common.ParticleEmitterInfo;
@@ -9,8 +11,6 @@ import mod.chloeprime.aaaparticles.client.loader.EffekAssetLoader;
 import net.minecraft.client.Minecraft;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.world.level.Level;
-
-import java.io.IOException;
 
 public class AAAParticlesClient
 {
@@ -44,7 +44,7 @@ public class AAAParticlesClient
 
 	public static void addParticle(Level level, ParticleEmitterInfo info) {
 		var player = Minecraft.getInstance().player;
-		if (player != null && player.level() != level) {
+		if (player != null && player.level != level) {
 			return;
 		}
 		info.spawnInWorld(level, player);

@@ -1,23 +1,22 @@
 package mod.chloeprime.aaaparticles.mixin.client;
 
-import com.mojang.blaze3d.vertex.PoseStack;
-import mod.chloeprime.aaaparticles.client.internal.RenderContext;
-import mod.chloeprime.aaaparticles.client.internal.RenderStateCapture;
-import mod.chloeprime.aaaparticles.client.render.EffekRenderer;
-import net.minecraft.client.Camera;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.GameRenderer;
-import net.minecraft.client.renderer.LevelRenderer;
-import net.minecraft.client.renderer.LightTexture;
-import org.joml.Matrix4f;
-import org.spongepowered.asm.mixin.Final;
+import static mod.chloeprime.aaaparticles.client.render.RenderUtil.copyCurrentDepthTo;
+
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import static mod.chloeprime.aaaparticles.client.render.RenderUtil.copyCurrentDepthTo;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.math.Matrix4f;
+
+import mod.chloeprime.aaaparticles.client.internal.RenderContext;
+import mod.chloeprime.aaaparticles.client.internal.RenderStateCapture;
+import mod.chloeprime.aaaparticles.client.render.EffekRenderer;
+import net.minecraft.client.Camera;
+import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.renderer.LevelRenderer;
+import net.minecraft.client.renderer.LightTexture;
 
 @Mixin(LevelRenderer.class)
 public class MixinLevelRenderer {
@@ -26,9 +25,9 @@ public class MixinLevelRenderer {
         var capture = RenderStateCapture.LEVEL;
         var currentPose = poseStack.last();
         var capturedPose = capture.pose.last();
-        capturedPose.pose().set(currentPose.pose());
-        capturedPose.normal().set(currentPose.normal());
-        capture.projection.set(projection);
+        capturedPose.pose().load(currentPose.pose());
+        capturedPose.normal().load(currentPose.normal());
+        capture.projection.load(projection);
         capture.camera = camera;
         capture.hasCapture = true;
 

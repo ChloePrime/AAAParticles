@@ -10,6 +10,6 @@ public class ModClientHooks {
 
     public static void playLightningEffek(LightningBolt bolt) {
         var info = LIGHTNING_EFFEK_TEMPLATE.clone().position(bolt.position());
-        AAALevel.addParticle(bolt.level(), true, info);
+        AAALevel.addParticle(bolt.level, true, info);
     }
 }
