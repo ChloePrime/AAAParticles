@@ -1,7 +1,7 @@
 package mod.chloeprime.aaaparticles.client;
 
-import dev.architectury.registry.ReloadListenerRegistry;
 import mod.chloeprime.aaaparticles.AAAParticles;
+import mod.chloeprime.aaaparticles.Platform;
 import mod.chloeprime.aaaparticles.api.common.ParticleEmitterInfo;
 import mod.chloeprime.aaaparticles.client.installer.JarExtractor;
 import mod.chloeprime.aaaparticles.client.installer.NativePlatform;
@@ -17,8 +17,7 @@ public class AAAParticlesClient
 
 	public static void init() {
 		installNativeLibrary();
-		ReloadListenerRegistry.register(PackType.CLIENT_RESOURCES, new EffekAssetLoader(), AAAParticles.loc("effek"));
-		Debug.INSTANCE.registerDebugHooks();
+		Platform.register(PackType.CLIENT_RESOURCES, new EffekAssetLoader(), AAAParticles.loc("effek"));
 	}
 
 	public static void setup() {

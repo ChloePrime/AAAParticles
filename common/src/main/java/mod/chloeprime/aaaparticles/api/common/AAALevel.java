@@ -1,7 +1,7 @@
 package mod.chloeprime.aaaparticles.api.common;
 
+import mod.chloeprime.aaaparticles.Platform;
 import mod.chloeprime.aaaparticles.client.AAAParticlesClient;
-import mod.chloeprime.aaaparticles.common.network.ModNetwork;
 import mod.chloeprime.aaaparticles.common.network.S2CAddParticle;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -38,6 +38,7 @@ public class AAALevel {
                 return;
             }
         }
-        ModNetwork.CHANNEL.sendToPlayer(player, packet);
+
+        Platform.sendEffectPacket(player, packet);
     }
 }

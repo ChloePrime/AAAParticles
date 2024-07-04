@@ -3,6 +3,7 @@ package mod.chloeprime.aaaparticles.client.registry;
 import mod.chloeprime.aaaparticles.api.client.effekseer.EffekseerEffect;
 import mod.chloeprime.aaaparticles.api.client.effekseer.EffekseerManager;
 import mod.chloeprime.aaaparticles.api.client.effekseer.ParticleEmitter;
+import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
 
 import java.io.Closeable;
@@ -120,9 +121,12 @@ public class EffectDefinition implements Closeable {
         manager.setCameraMatrix(camera);
         manager.setProjectionMatrix(projection);
 
-        manager.startUpdate();
-        manager.update(deltaFrames);
-        manager.endUpdate();
+        if (!Minecraft.getInstance().isPaused())
+        {
+            manager.startUpdate();
+            manager.update(deltaFrames);
+            manager.endUpdate();
+        }
 
         emitters(type).forEach(emitter -> emitter.runPreDrawCallbacks(partialTicks));
         manager.draw();

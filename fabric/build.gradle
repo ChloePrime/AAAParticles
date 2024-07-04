@@ -7,6 +7,10 @@ architectury {
     fabric()
 }
 
+loom {
+    accessWidenerPath = file("src/main/resources/aaaparticles.accesswidener")
+}
+
 configurations {
     common
     shadowCommon // Don't use shadow from the shadow plugin because we don't want IDEA to index this.
@@ -18,9 +22,7 @@ configurations {
 dependencies {
     modImplementation "net.fabricmc:fabric-loader:${rootProject.fabric_loader_version}"
     modApi "net.fabricmc.fabric-api:fabric-api:${rootProject.fabric_api_version}"
-    // Remove the next line if you don't want to depend on the API
-    modApi "dev.architectury:architectury-fabric:${rootProject.architectury_version}"
-    modImplementation "dev.latvian.mods:kubejs-fabric:$kubejs_version"
+
     compileOnly "maven.modrinth:iris:1.6.17+1.20.1"
 
     common(project(path: ":common", configuration: "namedElements")) { transitive false }

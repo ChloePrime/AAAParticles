@@ -1,6 +1,5 @@
 package mod.chloeprime.aaaparticles.common.network;
 
-import dev.architectury.networking.NetworkManager.PacketContext;
 import mod.chloeprime.aaaparticles.api.common.ParticleEmitterInfo;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
@@ -38,11 +37,5 @@ public class S2CAddParticle extends ParticleEmitterInfo {
     @Override
     public void encode(FriendlyByteBuf buf) {
         super.encode(buf);
-    }
-
-    public void handle(Supplier<PacketContext> ctx) {
-        var context = ctx.get();
-        var player = context.getPlayer();
-        context.queue(() -> spawnInWorld(player.level(), player));
     }
 }
