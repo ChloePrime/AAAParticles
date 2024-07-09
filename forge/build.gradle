@@ -17,7 +17,7 @@ configurations {
 dependencies {
     forge "net.minecraftforge:forge:${rootProject.forge_version}"
     // Remove the next line if you don't want to depend on the API
-    modApi "dev.architectury:architectury-forge:${rootProject.architectury_version}"
+    include modApi("dev.architectury:architectury-forge:${rootProject.architectury_version}")
     modImplementation "dev.latvian.mods:kubejs-forge:$kubejs_version"
     compileOnly "maven.modrinth:oculus:1.20.1-1.6.15a"
 
