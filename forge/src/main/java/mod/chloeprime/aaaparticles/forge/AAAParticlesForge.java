@@ -8,13 +8,14 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.forgespi.Environment;
 
 @Mod(AAAParticles.MOD_ID)
-public class AAAParticlesForge {
+public class AAAParticlesForge extends AAAParticles  {
     public AAAParticlesForge() {
         var modbus = FMLJavaModLoadingContext.get().getModEventBus();
-        EventBuses.registerModEventBus(AAAParticles.MOD_ID, modbus);
+        EventBuses.registerModEventBus(MOD_ID, modbus);
         AAAParticles.init();
 
         if (Environment.get().getDist().isClient()) {
+            AAAParticlesForgeClient.onClientInit();
             AAAParticlesClient.init();
             modbus.addListener(AAAParticlesForgeClient::onClientSetup);
         }
