@@ -1,14 +1,14 @@
 package mod.chloeprime.aaaparticles.api.client.effekseer;
 
-import Effekseer.swig.EffekseerManagerCore;
-import org.joml.Matrix4f;
-
 import java.nio.FloatBuffer;
+
+import com.mojang.math.Matrix4f;
+
+import Effekseer.swig.EffekseerManagerCore;
 
 /**
  * @author ChloePrime
  */
-@SuppressWarnings("unused")
 public class EffekseerManager extends SafeFinalized<EffekseerManagerCore> {
     public EffekseerManager() {
         this(new EffekseerManagerCore());
@@ -87,7 +87,7 @@ public class EffekseerManager extends SafeFinalized<EffekseerManagerCore> {
 
     public void setCameraMatrix(Matrix4f m) {
         var buffer = FloatBuffer.wrap(MATRIX_BUFFER.get());
-        m.get(buffer);
+        m.store(buffer);
         setCameraMatrix(buffer);
     }
 
@@ -102,7 +102,7 @@ public class EffekseerManager extends SafeFinalized<EffekseerManagerCore> {
 
     public void setProjectionMatrix(Matrix4f m) {
         var buffer = FloatBuffer.wrap(MATRIX_BUFFER.get());
-        m.get(buffer);
+        m.store(buffer);
         setProjectionMatrix(buffer);
     }
 

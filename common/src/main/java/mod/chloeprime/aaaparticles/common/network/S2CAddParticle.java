@@ -1,11 +1,11 @@
 package mod.chloeprime.aaaparticles.common.network;
 
+import java.util.function.Supplier;
+
 import dev.architectury.networking.NetworkManager.PacketContext;
 import mod.chloeprime.aaaparticles.api.common.ParticleEmitterInfo;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
-
-import java.util.function.Supplier;
 
 public class S2CAddParticle extends ParticleEmitterInfo {
 
@@ -43,6 +43,6 @@ public class S2CAddParticle extends ParticleEmitterInfo {
     public void handle(Supplier<PacketContext> ctx) {
         var context = ctx.get();
         var player = context.getPlayer();
-        context.queue(() -> spawnInWorld(player.level(), player));
+        context.queue(() -> spawnInWorld(player.level, player));
     }
 }

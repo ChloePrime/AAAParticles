@@ -30,7 +30,7 @@ public class AAALevel {
     }
 
     private static void sendToPlayer(ServerPlayer player, Level level, S2CAddParticle packet, double sqrDistance) {
-        if (player.level() != level) {
+        if (player.level != level) {
             return;
         }
         if (packet.isPositionSet()) {
