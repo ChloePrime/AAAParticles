@@ -1,10 +1,7 @@
 package mod.chloeprime.aaaparticles.client;
 
 import com.mojang.blaze3d.platform.InputConstants;
-import dev.architectury.event.EventResult;
-import dev.architectury.event.events.client.ClientRawInputEvent;
-import dev.architectury.event.events.common.InteractionEvent;
-import dev.architectury.platform.Platform;
+import com.zigythebird.multiloaderutils.utils.Platform;
 import mod.chloeprime.aaaparticles.AAAParticles;
 import mod.chloeprime.aaaparticles.api.client.effekseer.EffekseerEffect;
 import mod.chloeprime.aaaparticles.api.client.effekseer.ParticleEmitter;
@@ -13,9 +10,7 @@ import mod.chloeprime.aaaparticles.api.common.ParticleEmitterInfo;
 import mod.chloeprime.aaaparticles.client.registry.EffectRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.player.Player;
 import org.apache.logging.log4j.LogManager;
 
 import java.lang.ref.WeakReference;
@@ -35,13 +30,6 @@ public enum Debug {
         if (!DEBUG_ENABLED) {
             return;
         }
-        ClientRawInputEvent.KEY_PRESSED.register(this::keyPressed);
-        InteractionEvent.CLIENT_LEFT_CLICK_AIR.register(this::leftClick);
-    }
-
-    public EventResult keyPressed(Minecraft client, int keyCode, int scanCode, int action, int modifiers) {
-        keyPressed0(client, keyCode, scanCode, action, modifiers);
-        return EventResult.pass();
     }
 
     public static void keyPressed0(Minecraft client, int keyCode, int scanCode, int action, int modifiers) {
@@ -84,7 +72,7 @@ public enum Debug {
                 });
     }
 
-    public void leftClick(Player player, InteractionHand hand) {
+    public static void leftClick() {
         var type = Math.random() <= 0.5 ? ParticleEmitter.Type.FIRST_PERSON_MAINHAND : ParticleEmitter.Type.FIRST_PERSON_OFFHAND;
         var emitter = Objects.requireNonNull(EffectRegistry.get(DEBUG_PARTICLE)).play(type);
         emitter.setPosition(0, 0.5F, 0);

@@ -1,7 +1,9 @@
 package mod.chloeprime.aaaparticles.client.loader;
 
+import mod.chloeprime.aaaparticles.AAAParticles;
 import mod.chloeprime.aaaparticles.api.client.effekseer.EffekseerEffect;
 import mod.chloeprime.aaaparticles.api.client.effekseer.TextureType;
+import mod.chloeprime.aaaparticles.client.Debug;
 import mod.chloeprime.aaaparticles.client.registry.EffectDefinition;
 import mod.chloeprime.aaaparticles.client.render.EffekRenderer;
 import mod.chloeprime.aaaparticles.common.util.LimitlessResourceLocation;
@@ -50,6 +52,9 @@ public class EffekAssetLoader extends SimplePreparableReloadListener<EffekAssetL
     }
 
     private Optional<EffekseerEffect> loadEffect(ResourceManager manager, ResourceLocation name, Resource efkefc) {
+        if (name.getNamespace().equals(AAAParticles.MOD_ID) && !Debug.DEBUG_ENABLED) {
+            return Optional.empty();
+        }
         try (var input = efkefc.open()) {
             EffekseerEffect effect = new EffekseerEffect();
             boolean success = effect.load(input, 1);

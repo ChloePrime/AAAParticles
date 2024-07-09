@@ -1,11 +1,11 @@
 package mod.chloeprime.aaaparticles.client.internal;
 
-import static dev.architectury.platform.Platform.isFabric;
-import static dev.architectury.platform.Platform.isModLoaded;
+import com.zigythebird.multiloaderutils.misc.ModLoader;
+import com.zigythebird.multiloaderutils.utils.Platform;
 
 public class RenderContext {
-    public static final boolean IRIS_MODE = isModLoaded("iris") || isModLoaded("oculus");
-    public static final boolean ON_FABRIC = isFabric();
+    public static final boolean IRIS_MODE = Platform.isModLoaded("iris") || Platform.isModLoaded("oculus");
+    public static final boolean ON_FABRIC = Platform.getLoader() == ModLoader.Fabric;
 
     public static boolean renderLevelDeferred() {
         return !IRIS_MODE || ON_FABRIC;

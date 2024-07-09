@@ -2,6 +2,7 @@
   "required": true,
   "minVersion": "0.8",
   "package": "mod.chloeprime.aaaparticles.mixin",
+  "plugin": "mod.chloeprime.aaaparticles.ModMixinPlugin",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
     "MixinLightningBolt",
@@ -9,6 +10,7 @@
   ],
   "client": [
     "client.GameRendererAccessor",
+    "client.KeyboardHandlerMixin",
     "client.MixinGameRenderer",
     "client.MixinItemInHandRenderer",
     "client.MixinLevelRenderer",

@@ -1,11 +1,15 @@
 package mod.chloeprime.aaaparticles.api.common;
 
+import com.zigythebird.multiloaderutils.utils.NetworkManager;
+import io.netty.buffer.Unpooled;
 import mod.chloeprime.aaaparticles.client.AAAParticlesClient;
-import mod.chloeprime.aaaparticles.common.network.ModNetwork;
 import mod.chloeprime.aaaparticles.common.network.S2CAddParticle;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.Level;
+
+import static mod.chloeprime.aaaparticles.client.AAAParticlesClient.PACKET_ID;
 
 public class AAALevel {
     public static void addParticle(Level level, ParticleEmitterInfo info) {
@@ -38,6 +42,8 @@ public class AAALevel {
                 return;
             }
         }
-        ModNetwork.CHANNEL.sendToPlayer(player, packet);
+        FriendlyByteBuf buf = new FriendlyByteBuf(Unpooled.buffer());
+        packet.encode(buf);
+        NetworkManager.sendToPlayer(player, PACKET_ID, buf);
     }
 }
