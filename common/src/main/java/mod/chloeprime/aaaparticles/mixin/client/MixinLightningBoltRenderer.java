@@ -1,6 +1,8 @@
 package mod.chloeprime.aaaparticles.mixin.client;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+
+import mod.chloeprime.aaaparticles.client.ModClientConfig;
 import mod.chloeprime.aaaparticles.client.ModClientHooks;
 import mod.chloeprime.aaaparticles.common.internal.EffekLightningBolt;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -18,6 +20,9 @@ public class MixinLightningBoltRenderer {
             at = @At("HEAD"), cancellable = true
     )
     private void disableVanillaLightningModelAndPlayEffek(LightningBolt bolt, float f, float g, PoseStack poseStack, MultiBufferSource multiBufferSource, int i, CallbackInfo ci) {
+        if (!ModClientConfig.isLightningEnabled()) {
+            return;
+        }
         if (((EffekLightningBolt) bolt).aaaParticles$getEffekTicket()) {
             ModClientHooks.playLightningEffek(bolt);
         }
