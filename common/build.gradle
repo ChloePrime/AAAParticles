@@ -6,9 +6,11 @@ dependencies {
     // We depend on fabric loader here to use the fabric @Environment annotations and get the mixin dependencies
     // Do NOT use other classes from fabric loader
     modImplementation "net.fabricmc:fabric-loader:${rootProject.fabric_loader_version}"
-    compileOnly "maven.modrinth:iris:1.6.17+1.20.1"
+    compileOnly "maven.modrinth:iris:1.6.11+1.19.2"
     // Remove the next line if you don't want to depend on the API
     modApi "dev.architectury:architectury:${rootProject.architectury_version}"
+    // Forge Config API
+    modApi "net.minecraftforge:forgeconfigapiport-fabric:${rootProject.forge_config_api_version}"
     modImplementation "dev.latvian.mods:kubejs:$kubejs_version"
 }
 

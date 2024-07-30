@@ -22,6 +22,10 @@ subprojects {
                 includeGroup "dev.latvian.mods"
             }
         }
+        maven {
+            name = "Fuzs Mod Resources (Forge Config API Port)"
+            url = "https://raw.githubusercontent.com/Fuzss/modresources/main/maven/"
+        }
         exclusiveContent {
             forRepository {
                 maven {
