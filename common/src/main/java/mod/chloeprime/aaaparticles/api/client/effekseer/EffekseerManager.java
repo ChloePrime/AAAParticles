@@ -1,6 +1,5 @@
 package mod.chloeprime.aaaparticles.api.client.effekseer;
 
-import Effekseer.swig.EffekseerEffectCore;
 import Effekseer.swig.EffekseerManagerCore;
 import mod.chloeprime.aaaparticles.common.util.Helpers;
 import org.joml.Matrix4f;

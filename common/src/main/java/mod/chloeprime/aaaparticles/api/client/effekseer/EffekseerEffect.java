@@ -1,6 +1,5 @@
 package mod.chloeprime.aaaparticles.api.client.effekseer;
 
-import Effekseer.swig.EffekseerBackendCore;
 import Effekseer.swig.EffekseerEffectCore;
 import mod.chloeprime.aaaparticles.common.util.Helpers;
 

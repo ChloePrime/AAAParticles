@@ -1,6 +1,5 @@
 package mod.chloeprime.aaaparticles.client.registry;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import mod.chloeprime.aaaparticles.api.client.effekseer.EffekseerEffect;
 import mod.chloeprime.aaaparticles.api.client.effekseer.EffekseerManager;
 import mod.chloeprime.aaaparticles.api.client.effekseer.ParticleEmitter;
