@@ -26,6 +26,9 @@ public class AAAParticlesClient
 
 	private static void installNativeLibrary() {
 		var platform = NativePlatform.current();
+		if (platform.isUnsupported()) {
+			return;
+		}
 		var DLL_NAME = "EffekseerNativeForJava";
 		var dll = platform.getNativeInstallPath(DLL_NAME);
 		try {

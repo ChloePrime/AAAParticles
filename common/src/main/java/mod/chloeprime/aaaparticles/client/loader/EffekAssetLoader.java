@@ -2,6 +2,7 @@ package mod.chloeprime.aaaparticles.client.loader;
 
 import mod.chloeprime.aaaparticles.api.client.effekseer.EffekseerEffect;
 import mod.chloeprime.aaaparticles.api.client.effekseer.TextureType;
+import mod.chloeprime.aaaparticles.client.installer.NativePlatform;
 import mod.chloeprime.aaaparticles.client.registry.EffectDefinition;
 import mod.chloeprime.aaaparticles.client.render.EffekRenderer;
 import mod.chloeprime.aaaparticles.common.util.LimitlessResourceLocation;
@@ -156,13 +157,15 @@ public class EffekAssetLoader extends SimplePreparableReloadListener<EffekAssetL
     @SuppressWarnings("resource")
     protected void apply(Preparations prep_, ResourceManager manager, ProfilerFiller profilerFiller) {
         EffekRenderer.init();
-        var prep = new Preparations();
-        manager.listResources("effeks", rl -> rl.getPath().endsWith(".efkefc")).forEach((location, resource) -> {
-            var name = createEffekName(location);
-            loadEffect(manager, name, resource).ifPresent(effect -> prep.loadedEffects.put(name, new EffectDefinition().setEffect(effect)));
-        });
-        unloadAll();
-        loadedEffects.putAll(prep.loadedEffects);
+        if (!NativePlatform.isRunningOnUnsupportedPlatform()) {
+            var prep = new Preparations();
+            manager.listResources("effeks", rl -> rl.getPath().endsWith(".efkefc")).forEach((location, resource) -> {
+                var name = createEffekName(location);
+                loadEffect(manager, name, resource).ifPresent(effect -> prep.loadedEffects.put(name, new EffectDefinition().setEffect(effect)));
+            });
+            unloadAll();
+            loadedEffects.putAll(prep.loadedEffects);
+        }
         INSTANCE = this;
     }
 

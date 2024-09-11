@@ -10,6 +10,7 @@ import mod.chloeprime.aaaparticles.api.client.effekseer.EffekseerEffect;
 import mod.chloeprime.aaaparticles.api.client.effekseer.ParticleEmitter;
 import mod.chloeprime.aaaparticles.api.common.AAALevel;
 import mod.chloeprime.aaaparticles.api.common.ParticleEmitterInfo;
+import mod.chloeprime.aaaparticles.client.installer.NativePlatform;
 import mod.chloeprime.aaaparticles.client.registry.EffectRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
@@ -45,7 +46,7 @@ public enum Debug {
     }
 
     public static void keyPressed0(Minecraft client, int keyCode, int scanCode, int action, int modifiers) {
-        if (action != InputConstants.PRESS) {
+        if (action != InputConstants.PRESS || NativePlatform.isRunningOnUnsupportedPlatform()) {
             return;
         }
         var mc = Minecraft.getInstance();
@@ -85,6 +86,9 @@ public enum Debug {
     }
 
     public void leftClick(Player player, InteractionHand hand) {
+        if (NativePlatform.isRunningOnUnsupportedPlatform()) {
+            return;
+        }
         var type = Math.random() <= 0.5 ? ParticleEmitter.Type.FIRST_PERSON_MAINHAND : ParticleEmitter.Type.FIRST_PERSON_OFFHAND;
         var emitter = Objects.requireNonNull(EffectRegistry.get(DEBUG_PARTICLE)).play(type);
         emitter.setPosition(0, 0.5F, 0);

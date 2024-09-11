@@ -1,6 +1,7 @@
 package mod.chloeprime.aaaparticles.api.client.effekseer;
 
 import Effekseer.swig.EffekseerBackendCore;
+import mod.chloeprime.aaaparticles.common.util.Helpers;
 
 /**
  * @author ChloePrime
@@ -8,7 +9,7 @@ import Effekseer.swig.EffekseerBackendCore;
 @SuppressWarnings("unused")
 public class Effekseer extends SafeFinalized<EffekseerBackendCore> {
     public Effekseer() {
-        this(new EffekseerBackendCore());
+        this(Helpers.checkPlatform(EffekseerBackendCore::new));
     }
 
     public static boolean init() {

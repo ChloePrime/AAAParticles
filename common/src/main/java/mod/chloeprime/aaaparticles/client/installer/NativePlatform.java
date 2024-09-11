@@ -12,10 +12,18 @@ import java.util.stream.Stream;
 public enum NativePlatform {
     WINDOWS(".dll"),
     LINUX(".so", "lib"),
-    MACOS(".dylib", "lib");
+    MACOS(".dylib", "lib", true);
+
+    public static boolean isRunningOnUnsupportedPlatform() {
+        return current().unsupported;
+    }
 
     public static NativePlatform current() {
         return CURRENT.get();
+    }
+
+    public boolean isUnsupported() {
+        return unsupported;
     }
 
     public File getNativeInstallPath(String dllName) {
@@ -34,13 +42,21 @@ public enum NativePlatform {
     private final String prefix;
     private final String libFormat;
 
+    private final boolean unsupported;
+
     NativePlatform(String libFormat) {
         this(libFormat, "");
     }
 
+
     NativePlatform(String libFormat, String prefix) {
+        this(libFormat, prefix, false);
+    }
+
+    NativePlatform(String libFormat, String prefix, boolean unsupported) {
         this.libFormat = libFormat;
         this.prefix = prefix;
+        this.unsupported = unsupported;
     }
 
     public static NativePlatform findCurrent() {

@@ -1,6 +1,8 @@
 package mod.chloeprime.aaaparticles.api.client.effekseer;
 
+import Effekseer.swig.EffekseerEffectCore;
 import Effekseer.swig.EffekseerManagerCore;
+import mod.chloeprime.aaaparticles.common.util.Helpers;
 import org.joml.Matrix4f;
 
 import java.nio.FloatBuffer;
@@ -11,7 +13,7 @@ import java.nio.FloatBuffer;
 @SuppressWarnings("unused")
 public class EffekseerManager extends SafeFinalized<EffekseerManagerCore> {
     public EffekseerManager() {
-        this(new EffekseerManagerCore());
+        this(Helpers.checkPlatform(EffekseerManagerCore::new));
     }
 
     public boolean init(int maxSprites, boolean srgb) {

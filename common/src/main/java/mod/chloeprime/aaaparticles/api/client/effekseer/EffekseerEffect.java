@@ -1,6 +1,8 @@
 package mod.chloeprime.aaaparticles.api.client.effekseer;
 
+import Effekseer.swig.EffekseerBackendCore;
 import Effekseer.swig.EffekseerEffectCore;
+import mod.chloeprime.aaaparticles.common.util.Helpers;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -15,7 +17,7 @@ public class EffekseerEffect extends SafeFinalized<EffekseerEffectCore> {
     private boolean isLoaded = false;
 
     public EffekseerEffect() {
-        this(new EffekseerEffectCore());
+        this(Helpers.checkPlatform(EffekseerEffectCore::new));
     }
 
     @Override

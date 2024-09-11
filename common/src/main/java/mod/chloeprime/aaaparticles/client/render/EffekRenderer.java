@@ -1,9 +1,11 @@
 package mod.chloeprime.aaaparticles.client.render;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import mod.chloeprime.aaaparticles.AAAParticles;
 import mod.chloeprime.aaaparticles.api.client.effekseer.DeviceType;
 import mod.chloeprime.aaaparticles.api.client.effekseer.Effekseer;
 import mod.chloeprime.aaaparticles.api.client.effekseer.ParticleEmitter;
+import mod.chloeprime.aaaparticles.client.installer.NativePlatform;
 import mod.chloeprime.aaaparticles.client.loader.EffekAssetLoader;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
@@ -30,6 +32,10 @@ public class EffekRenderer {
         if (INIT.compareAndExchange(false, true)) {
             return;
         }
+        if (NativePlatform.isRunningOnUnsupportedPlatform()) {
+            AAAParticles.LOGGER.warn("AAAParticles is running un unsupported platform {}, this mod will be no-op!", NativePlatform.current());
+            return;
+        }
         if (Effekseer.getDeviceType() != DeviceType.OPENGL) {
             if (!Effekseer.init()) {
                 throw new ExceptionInInitializerError("Failed to initialize Effekseer");
@@ -41,10 +47,16 @@ public class EffekRenderer {
     }
 
     public static void onRenderWorldLast(float partialTick, PoseStack pose, Matrix4f projection, Camera camera) {
+        if (NativePlatform.isRunningOnUnsupportedPlatform()) {
+            return;
+        }
         draw(ParticleEmitter.Type.WORLD, partialTick, pose, projection, camera);
     }
 
     public static void onRenderHand(float partialTick, InteractionHand hand, PoseStack pose, Matrix4f projection, Camera camera) {
+        if (NativePlatform.isRunningOnUnsupportedPlatform()) {
+            return;
+        }
         var type = switch (hand) {
             case MAIN_HAND -> ParticleEmitter.Type.FIRST_PERSON_MAINHAND;
             case OFF_HAND -> ParticleEmitter.Type.FIRST_PERSON_OFFHAND;

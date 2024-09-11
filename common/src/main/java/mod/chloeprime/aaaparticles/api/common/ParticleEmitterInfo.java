@@ -1,5 +1,6 @@
 package mod.chloeprime.aaaparticles.api.common;
 
+import mod.chloeprime.aaaparticles.client.installer.NativePlatform;
 import mod.chloeprime.aaaparticles.client.registry.EffectRegistry;
 import mod.chloeprime.aaaparticles.common.network.S2CAddParticle;
 import mod.chloeprime.aaaparticles.common.util.Basis;
@@ -275,6 +276,9 @@ public class ParticleEmitterInfo implements Cloneable {
     }
 
     public void spawnInWorld(Level level, Player player) {
+        if (NativePlatform.isRunningOnUnsupportedPlatform()) {
+            return;
+        }
         Optional.ofNullable(EffectRegistry.get(effek)).ifPresent(effek -> {
             var emitter = hasEmitter() ? effek.play(this.emitter) : effek.play();
             var hasBoundEntity = hasBoundEntity();
