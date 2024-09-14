@@ -1,6 +1,7 @@
 package mod.chloeprime.aaaparticles.client.installer;
 
 import com.google.common.base.Suppliers;
+import dev.latvian.mods.kubejs.platform.MiscPlatformHelper;
 import net.minecraft.Util;
 
 import java.io.File;
@@ -15,7 +16,7 @@ public enum NativePlatform {
     MACOS(".dylib", "lib", true);
 
     public static boolean isRunningOnUnsupportedPlatform() {
-        return current().unsupported;
+        return current().unsupported || MiscPlatformHelper.get().isDataGen();
     }
 
     public static NativePlatform current() {
