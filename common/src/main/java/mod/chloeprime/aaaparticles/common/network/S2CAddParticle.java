@@ -4,15 +4,24 @@ import dev.architectury.networking.NetworkManager.PacketContext;
 import mod.chloeprime.aaaparticles.api.common.ParticleEmitterInfo;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.ApiStatus;
 
 import java.util.function.Supplier;
 
 public class S2CAddParticle extends ParticleEmitterInfo {
-
+    /**
+     * @see #create(Level, ResourceLocation)
+     */
+    @ApiStatus.Internal
     public S2CAddParticle(ResourceLocation effek) {
         super(effek);
     }
 
+    /**
+     * @see #create(Level, ResourceLocation, ResourceLocation)
+     */
+    @ApiStatus.Internal
     public S2CAddParticle(ResourceLocation effek, ResourceLocation emitter) {
         super(effek, emitter);
     }

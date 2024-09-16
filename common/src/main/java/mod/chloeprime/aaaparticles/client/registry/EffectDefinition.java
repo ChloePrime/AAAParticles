@@ -49,6 +49,10 @@ public class EffectDefinition implements Closeable {
         return emitter;
     }
 
+    public Optional<ParticleEmitter> getNamedEmitter(ParticleEmitter.Type type, ResourceLocation emitterName) {
+        return Optional.ofNullable(namedEmitters.get(type).get(emitterName));
+    }
+
     public EffekseerManager getManager(ParticleEmitter.Type type) {
         return Objects.requireNonNull(managers.get(type));
     }

@@ -1,5 +1,7 @@
 package mod.chloeprime.aaaparticles.api.common;
 
+import it.unimi.dsi.fastutil.ints.IntArrayList;
+import it.unimi.dsi.fastutil.ints.IntList;
 import mod.chloeprime.aaaparticles.client.installer.NativePlatform;
 import mod.chloeprime.aaaparticles.client.registry.EffectRegistry;
 import mod.chloeprime.aaaparticles.common.network.S2CAddParticle;
@@ -15,14 +17,29 @@ import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.ApiStatus;
 
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 public class ParticleEmitterInfo implements Cloneable {
     /**
-     * Create a packet when on logic server
+     * Create a packet when on logic server,
+     * with an anonymous emitter that can't be referenced later.
      */
     public static ParticleEmitterInfo create(Level level, ResourceLocation location) {
-        return level.isClientSide() ? new ParticleEmitterInfo(location) : new S2CAddParticle(location);
+        return level.isClientSide()
+                ? new ParticleEmitterInfo(location)
+                : new S2CAddParticle(location);
+    }
+
+    /**
+     * Create a packet when on logic server,
+     * with a named emitter that can be referenced later.
+     */
+    public static ParticleEmitterInfo create(Level level, ResourceLocation location, ResourceLocation emitterName) {
+        return level.isClientSide()
+                ? new ParticleEmitterInfo(location, emitterName)
+                : new S2CAddParticle(location, emitterName);
     }
 
     public final ResourceLocation effek;
@@ -33,12 +50,22 @@ public class ParticleEmitterInfo implements Cloneable {
     protected float scaleX = 1, scaleY = 1, scaleZ = 1;
     protected double esX, esY, esZ;
     protected int boundEntity;
+    protected final List<DynamicParameter> parameters = new ArrayList<>();
+    protected final IntList triggers = new IntArrayList();
     private static final Vec3 VEC3_ONES = new Vec3(1, 1, 1);
 
+    /**
+     * @see #create(Level, ResourceLocation)
+     */
+    @ApiStatus.Internal
     public ParticleEmitterInfo(ResourceLocation effek) {
         this(effek, null);
     }
 
+    /**
+     * @see #create(Level, ResourceLocation, ResourceLocation)
+     */
+    @ApiStatus.Internal
     public ParticleEmitterInfo(ResourceLocation effek, ResourceLocation emitter) {
         this.effek = effek;
         this.emitter = emitter;
@@ -70,6 +97,14 @@ public class ParticleEmitterInfo implements Cloneable {
 
     public final boolean isScaleSet() {
         return (flags & 8) != 0;
+    }
+
+    public final boolean hasParameters() {
+        return (flags & 128) != 0;
+    }
+
+    public final boolean hasTriggers() {
+        return (flags & 256) != 0;
     }
 
     public final boolean hasBoundEntity() {
@@ -153,6 +188,18 @@ public class ParticleEmitterInfo implements Cloneable {
         return this;
     }
 
+    public ParticleEmitterInfo parameter(int index, float value) {
+        parameters.add(new DynamicParameter(index, value));
+        flags |= 128;
+        return this;
+    }
+
+    public ParticleEmitterInfo trigger(int index) {
+        triggers.add(index);
+        flags |= 256;
+        return this;
+    }
+
     public ParticleEmitterInfo bindOnEntity(Entity entity) {
         this.boundEntity = entity.getId();
         flags |= 16;
@@ -232,6 +279,16 @@ public class ParticleEmitterInfo implements Cloneable {
             buf.writeFloat(scaleY);
             buf.writeFloat(scaleZ);
         }
+        if (hasParameters()) {
+            buf.writeVarInt(parameters.size());
+            parameters.forEach(param -> {
+                buf.writeVarInt(param.index());
+                buf.writeFloat(param.value());
+            });
+        }
+        if (hasTriggers()) {
+            buf.writeVarIntArray(triggers.toIntArray());
+        }
         if (hasBoundEntity()) {
             buf.writeVarInt(boundEntity);
         }
@@ -265,6 +322,17 @@ public class ParticleEmitterInfo implements Cloneable {
             scaleY = buf.readFloat();
             scaleZ = buf.readFloat();
         }
+        if (hasParameters()) {
+            var paramCount = buf.readVarInt();
+            for (int i = 0; i < paramCount; i++) {
+                var index = buf.readVarInt();
+                var value = buf.readFloat();
+                parameters.add(new DynamicParameter(index, value));
+            }
+        }
+        if (hasTriggers()) {
+            triggers.addElements(0, buf.readVarIntArray());
+        }
         if (hasBoundEntity()) {
             boundEntity = buf.readVarInt();
         }
@@ -275,6 +343,7 @@ public class ParticleEmitterInfo implements Cloneable {
         }
     }
 
+    @ApiStatus.Internal
     public void spawnInWorld(Level level, Player player) {
         if (NativePlatform.isRunningOnUnsupportedPlatform()) {
             return;
@@ -285,6 +354,8 @@ public class ParticleEmitterInfo implements Cloneable {
             var isPositionSet = isPositionSet();
             var isRotationSet = isRotationSet();
             var isScaleSet = isScaleSet();
+            var hasParams = hasParameters();
+            var hasTriggs = hasTriggers();
             float x, y, z;
             if (isPositionSet) {
                 x = (float) this.x;
@@ -304,6 +375,15 @@ public class ParticleEmitterInfo implements Cloneable {
             }
             if (isScaleSet) {
                 emitter.setScale(scaleX, scaleY, scaleZ);
+            }
+
+            if (hasParams) {
+                for (var parameter : parameters) {
+                    emitter.setDynamicInput(parameter.index(), parameter.value());
+                }
+            }
+            if (hasTriggs) {
+                triggers.forEach(emitter::sendTrigger);
             }
 
             if (hasBoundEntity) {
@@ -360,6 +440,10 @@ public class ParticleEmitterInfo implements Cloneable {
         target.scaleX = this.scaleX;
         target.scaleY = this.scaleY;
         target.scaleZ = this.scaleZ;
+        target.parameters.clear();
+        target.parameters.addAll(this.parameters);
+        target.triggers.clear();
+        target.triggers.addAll(this.triggers);
         target.boundEntity = this.boundEntity;
     }
 }

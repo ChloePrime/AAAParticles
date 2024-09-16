@@ -2,15 +2,21 @@ package mod.chloeprime.aaaparticles.client;
 
 import dev.architectury.registry.ReloadListenerRegistry;
 import mod.chloeprime.aaaparticles.AAAParticles;
+import mod.chloeprime.aaaparticles.api.client.effekseer.ParticleEmitter;
+import mod.chloeprime.aaaparticles.api.common.DynamicParameter;
 import mod.chloeprime.aaaparticles.api.common.ParticleEmitterInfo;
 import mod.chloeprime.aaaparticles.client.installer.JarExtractor;
 import mod.chloeprime.aaaparticles.client.installer.NativePlatform;
 import mod.chloeprime.aaaparticles.client.loader.EffekAssetLoader;
+import mod.chloeprime.aaaparticles.client.registry.EffectRegistry;
 import net.minecraft.client.Minecraft;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.world.level.Level;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Optional;
 
 public class AAAParticlesClient
 {
@@ -51,5 +57,21 @@ public class AAAParticlesClient
 			return;
 		}
 		info.spawnInWorld(level, player);
+	}
+
+	public static void setParam(ParticleEmitter.Type type, ResourceLocation effek, ResourceLocation emitterName, DynamicParameter[] params) {
+		Optional.ofNullable(EffectRegistry.get(effek))
+				.flatMap(mng -> mng.getNamedEmitter(type, emitterName))
+				.ifPresent(emitter -> {
+					for (var param : params) {
+						emitter.setDynamicInput(param.index(), param.value());
+					}
+				});
+	}
+
+	public static void sendTrigger(ParticleEmitter.Type type, ResourceLocation effek, ResourceLocation emitterName, int[] triggers) {
+		Optional.ofNullable(EffectRegistry.get(effek))
+				.flatMap(mng -> mng.getNamedEmitter(type, emitterName))
+				.ifPresent(emitter -> Arrays.stream(triggers).forEach(emitter::sendTrigger));
 	}
 }

@@ -126,6 +126,10 @@ public class ParticleEmitter {
         return manager.getImpl().GetDynamicInput(this.handle, index);
     }
 
+    public void sendTrigger(int index) {
+        manager.getImpl().SendTrigger(this.handle, index);
+    }
+
     public interface PreDrawCallback {
         void accept(ParticleEmitter emitter, float partialTicks);
 
