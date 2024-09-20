@@ -44,7 +44,7 @@ public enum NativePlatform {
     public String getLibraryFormat() {
         return libFormat;
     }
-    
+
     private static final Supplier<NativePlatform> CURRENT = Suppliers.memoize(NativePlatform::findCurrent);
     private static final Supplier<File> INSTALL_FOLDER = Suppliers.memoize(NativePlatform::findNativeFolder);
     private final String prefix;
