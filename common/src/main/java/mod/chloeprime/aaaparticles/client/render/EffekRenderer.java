@@ -93,7 +93,13 @@ public class EffekRenderer {
         float deltaFrames = 60 * getDeltaTime(type);
 
         RenderType.PARTICLES_TARGET.setupRenderState();
-        EffekAssetLoader.get().forEach((id, inst) -> inst.draw(type, w, h, CAMERA_TRANSFORM_DATA, PROJECTION_MATRIX_DATA, deltaFrames, partialTick));
+        EffekAssetLoader.get().forEach((id, inst) -> inst.draw(
+                type,
+                camera.getLookVector(), camera.getPosition().toVector3f(),
+                w, h,
+                CAMERA_TRANSFORM_DATA, PROJECTION_MATRIX_DATA,
+                deltaFrames, partialTick
+        ));
         RenderType.PARTICLES_TARGET.clearRenderState();
 
         CAMERA_TRANSFORM_BUFFER.clear();

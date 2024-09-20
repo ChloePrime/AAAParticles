@@ -101,6 +101,10 @@ public class EffekseerManager extends SafeFinalized<EffekseerManagerCore> {
         );
     }
 
+    public void setCameraParameter(float frontX, float frontY, float frontZ, float posX, float posY, float posZ) {
+        impl.SetCameraParameter(frontX, frontY, frontZ, posX, posY, posZ);
+    }
+
     public void setProjectionMatrix(Matrix4f m) {
         var buffer = FloatBuffer.wrap(MATRIX_BUFFER.get());
         m.get(buffer);

@@ -4,6 +4,7 @@ import mod.chloeprime.aaaparticles.api.client.effekseer.EffekseerEffect;
 import mod.chloeprime.aaaparticles.api.client.effekseer.EffekseerManager;
 import mod.chloeprime.aaaparticles.api.client.effekseer.ParticleEmitter;
 import net.minecraft.resources.ResourceLocation;
+import org.joml.Vector3f;
 
 import java.io.Closeable;
 import java.util.*;
@@ -118,11 +119,15 @@ public class EffectDefinition implements Closeable {
     private final int magicLoadBalancer = Math.abs(RNG.nextInt() >>> 2) % GC_DELAY;
     private int gcTicks;
 
-    public void draw(ParticleEmitter.Type type, int w, int h, float[] camera, float[] projection, float deltaFrames, float partialTicks) {
+    public void draw(ParticleEmitter.Type type, Vector3f front, Vector3f pos, int w, int h, float[] camera, float[] projection, float deltaFrames, float partialTicks) {
         var manager = Objects.requireNonNull(managers.get(type));
         manager.setViewport(w, h);
         manager.setCameraMatrix(camera);
         manager.setProjectionMatrix(projection);
+        manager.setCameraParameter(
+                front.x, front.y, front.z,
+                pos.x, pos.y, pos.z
+        );
 
         manager.startUpdate();
         manager.update(deltaFrames);
