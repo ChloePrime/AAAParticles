@@ -13,7 +13,7 @@ import java.util.stream.Stream;
 public enum NativePlatform {
     WINDOWS(".dll"),
     LINUX(".so", "lib"),
-    MACOS(".dylib", "lib", true);
+    MACOS(".dylib", "lib");
 
     @SuppressWarnings("ConstantValue")
     public static boolean isRunningOnUnsupportedPlatform() {
