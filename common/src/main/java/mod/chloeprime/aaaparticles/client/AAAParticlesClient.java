@@ -38,12 +38,17 @@ public class AAAParticlesClient
 		var DLL_NAME = "EffekseerNativeForJava";
 		var dll = platform.getNativeInstallPath(DLL_NAME);
 		try {
+			var resource = "assets/%s/%s".formatted(AAAParticles.MOD_ID, platform.formatFileName(DLL_NAME));
 			if (!dll.isFile()) {
-				AAAParticles.LOGGER.info("Installing Effekseer native library at " + dll.getCanonicalPath());
-				var resource = "assets/%s/%s".formatted(AAAParticles.MOD_ID, platform.formatFileName(DLL_NAME));
+                AAAParticles.LOGGER.info("Installing Effekseer native library at {}", dll.getCanonicalPath());
 				JarExtractor.extract(resource, dll);
 			} else {
-				AAAParticles.LOGGER.info("Loading Effekseer native library at " + dll.getCanonicalPath());
+				var updated = JarExtractor.update(resource, dll);
+				if (updated) {
+                    AAAParticles.LOGGER.info("Updating Effekseer native library at {}", dll.getCanonicalPath());
+				} else {
+                    AAAParticles.LOGGER.info("Loading Effekseer native library at {}", dll.getCanonicalPath());
+				}
 			}
 			System.load(dll.getCanonicalPath());
 		} catch (IOException | UnsatisfiedLinkError e) {
