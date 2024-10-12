@@ -20,8 +20,6 @@ dependencies {
     modApi "net.fabricmc.fabric-api:fabric-api:${rootProject.fabric_api_version}"
     // Remove the next line if you don't want to depend on the API
     include modApi("dev.architectury:architectury-fabric:${rootProject.architectury_version}")
-    // Forge Config API
-    include modApi("fuzs.forgeconfigapiport:forgeconfigapiport-fabric:${rootProject.forge_config_api_version}")
     compileOnly 'com.electronwill.night-config:toml:3.6.4'
 
     modImplementation "dev.latvian.mods:kubejs-fabric:$kubejs_version"

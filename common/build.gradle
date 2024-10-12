@@ -9,8 +9,6 @@ dependencies {
     compileOnly "maven.modrinth:iris:1.6.17+1.20.1"
     // Remove the next line if you don't want to depend on the API
     modApi "dev.architectury:architectury:${rootProject.architectury_version}"
-    // Forge Config API
-    modApi "fuzs.forgeconfigapiport:forgeconfigapiport-common:${rootProject.forge_config_api_version}"
     modImplementation "dev.latvian.mods:kubejs:$kubejs_version"
 }
 
