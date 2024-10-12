@@ -91,6 +91,7 @@ public class EffekRenderer {
                 .ifPresent(rt -> rt.copyDepthFrom(MINECRAFT.getMainRenderTarget()));
 
         float deltaFrames = 60 * getDeltaTime(type);
+        float realDelta = MINECRAFT.isPaused() ? 0 : deltaFrames;
 
         RenderType.PARTICLES_TARGET.setupRenderState();
         EffekAssetLoader.get().forEach((id, inst) -> inst.draw(
@@ -98,7 +99,7 @@ public class EffekRenderer {
                 camera.getLookVector(), camera.getPosition().toVector3f(),
                 w, h,
                 CAMERA_TRANSFORM_DATA, PROJECTION_MATRIX_DATA,
-                deltaFrames, partialTick
+                realDelta, partialTick
         ));
         RenderType.PARTICLES_TARGET.clearRenderState();
 
