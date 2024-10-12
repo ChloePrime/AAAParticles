@@ -4,15 +4,12 @@
   "package": "mod.chloeprime.aaaparticles.mixin",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
-    "MixinLightningBolt",
     "MixinResourceLocation"
   ],
   "client": [
-    "client.GameRendererAccessor",
     "client.MixinGameRenderer",
     "client.MixinItemInHandRenderer",
     "client.MixinLevelRenderer",
-    "client.MixinLightningBoltRenderer",
     "client.MixinMinecraft"
   ],
   "injectors": {
