@@ -11,6 +11,7 @@
   "client": [
     "client.ClientShutdownHookMixin",
     "client.MixinGameRenderer",
+    "client.MixinGlDebug",
     "client.MixinItemInHandRenderer",
     "client.MixinLevelRenderer",
     "client.MixinMinecraft"
