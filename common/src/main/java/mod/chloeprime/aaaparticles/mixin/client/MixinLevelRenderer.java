@@ -5,14 +5,11 @@ import mod.chloeprime.aaaparticles.client.internal.RenderContext;
 import mod.chloeprime.aaaparticles.client.internal.RenderStateCapture;
 import mod.chloeprime.aaaparticles.client.render.EffekRenderer;
 import net.minecraft.client.Camera;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.LightTexture;
 import org.joml.Matrix4f;
-import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -35,7 +32,7 @@ public class MixinLevelRenderer {
         if (RenderContext.renderLevelDeferred()) {
             copyCurrentDepthTo(RenderStateCapture.CAPTURED_WORLD_DEPTH_BUFFER);
         } else {
-            EffekRenderer.onRenderWorldLast(partial, capture.pose, capture.projection, capture.camera);
+            EffekRenderer.renderWorldEffeks(partial, capture.pose, capture.projection, capture.camera);
         }
     }
 }

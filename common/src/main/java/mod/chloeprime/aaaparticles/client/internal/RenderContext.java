@@ -4,23 +4,28 @@ import static dev.architectury.platform.Platform.isFabric;
 import static dev.architectury.platform.Platform.isModLoaded;
 
 public class RenderContext {
-    public static final boolean IRIS_MODE = isModLoaded("iris") || isModLoaded("oculus");
+    public static final boolean HAS_IRIS = isModLoaded("iris") || isModLoaded("oculus");
+    public static final boolean HAS_SODIUM = isModLoaded("sodium");
     public static final boolean ON_FABRIC = isFabric();
 
     public static boolean renderLevelDeferred() {
-        return !IRIS_MODE || ON_FABRIC;
+        return !HAS_IRIS || ON_FABRIC;
+    }
+
+    public static boolean renderLevelAfterHand() {
+        return ON_FABRIC && HAS_SODIUM && !renderHandDeferred();
     }
 
     public static boolean renderHandDeferred() {
-        return !IRIS_MODE || (ON_FABRIC || isIrisShaderEnabled());
+        return isIrisShaderEnabled();
     }
 
     public static boolean captureHandDepth() {
-        return !IRIS_MODE || !isIrisShaderEnabled();
+        return !HAS_IRIS || !isIrisShaderEnabled();
     }
 
     public static boolean isIrisShaderEnabled() {
-        return IRIS_MODE && IrisProxy.isIrisShaderEnabled();
+        return HAS_IRIS && IrisProxy.isIrisShaderEnabled();
     }
 
     private RenderContext() {}

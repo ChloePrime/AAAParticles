@@ -6,9 +6,13 @@ import mod.chloeprime.aaaparticles.api.client.effekseer.DeviceType;
 import mod.chloeprime.aaaparticles.api.client.effekseer.Effekseer;
 import mod.chloeprime.aaaparticles.api.client.effekseer.ParticleEmitter;
 import mod.chloeprime.aaaparticles.client.installer.NativePlatform;
+import mod.chloeprime.aaaparticles.client.internal.EffekFpvRenderer;
+import mod.chloeprime.aaaparticles.client.internal.RenderContext;
+import mod.chloeprime.aaaparticles.client.internal.RenderStateCapture;
 import mod.chloeprime.aaaparticles.client.loader.EffekAssetLoader;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.ItemInHandRenderer;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.world.InteractionHand;
 import org.joml.Matrix4f;
@@ -19,6 +23,8 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static mod.chloeprime.aaaparticles.client.render.EffekRenderer.MinecraftHolder.MINECRAFT;
+import static mod.chloeprime.aaaparticles.client.render.RenderUtil.pasteToCurrentDepthFrom;
+import static org.lwjgl.opengl.GL11.*;
 
 /**
  * @author ChloePrime
@@ -46,7 +52,25 @@ public class EffekRenderer {
         }
     }
 
-    public static void onRenderWorldLast(float partialTick, PoseStack pose, Matrix4f projection, Camera camera) {
+    public static void renderWorldEffeks(float partial, boolean renderHand, ItemInHandRenderer itemInHandRenderer) {
+        glDepthMask(true);
+        glDepthFunc(GL_LEQUAL);
+
+        if (RenderContext.renderLevelDeferred() && RenderStateCapture.LEVEL.hasCapture) {
+            RenderStateCapture.LEVEL.hasCapture = false;
+
+            pasteToCurrentDepthFrom(RenderStateCapture.CAPTURED_WORLD_DEPTH_BUFFER);
+            EffekRenderer.renderWorldEffeks(partial, RenderStateCapture.LEVEL.pose, RenderStateCapture.LEVEL.projection, RenderStateCapture.LEVEL.camera);
+        }
+        if (RenderContext.renderHandDeferred() && renderHand) {
+            if (RenderContext.captureHandDepth()) {
+                pasteToCurrentDepthFrom(RenderStateCapture.CAPTURED_HAND_DEPTH_BUFFER);
+            }
+            ((EffekFpvRenderer) itemInHandRenderer).aaaParticles$renderFpvEffek(partial, MINECRAFT.player);
+        }
+    }
+
+    public static void renderWorldEffeks(float partialTick, PoseStack pose, Matrix4f projection, Camera camera) {
         if (NativePlatform.isRunningOnUnsupportedPlatform()) {
             return;
         }
