@@ -401,7 +401,7 @@ public class ParticleEmitterInfo implements Cloneable {
                             if (headSpace) {
                                 rotY = (float) Math.toRadians(et.getViewYRot(partial));
                                 rotX = (float) Math.toRadians(et.getViewXRot(partial));
-                                basis = Basis.fromEuler(new Vec3(rotX, Mth.PI - rotY, rotZ));
+                                basis = Basis.fromEuler(new Vec3(-rotX, Mth.PI - rotY, rotZ));
                             } else {
                                 rotY = (float) Math.toRadians(Mth.lerp(partial, et.yRotO, et.getYRot()));
                                 rotX = 0;
@@ -418,9 +418,9 @@ public class ParticleEmitterInfo implements Cloneable {
                             relZ = z;
                         }
                         em.setPosition(
-                                ((float) Mth.lerp(partial, et.xOld, et.getX()) + relX),
-                                ((float) Mth.lerp(partial, et.yOld, et.getY()) + relY + (headSpace ? et.getEyeHeight() : 0)),
-                                ((float) Mth.lerp(partial, et.zOld, et.getZ()) + relZ)
+                                (float) Mth.lerp(partial, et.xOld, et.getX()) + relX,
+                                (float) Mth.lerp(partial, et.yOld, et.getY()) + relY + (headSpace ? et.getEyeHeight() : 0),
+                                (float) Mth.lerp(partial, et.zOld, et.getZ()) + relZ
                         );
                     }, em::stop);
                 });
