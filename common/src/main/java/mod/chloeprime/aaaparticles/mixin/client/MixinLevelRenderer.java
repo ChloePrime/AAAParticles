@@ -20,9 +20,6 @@ import static mod.chloeprime.aaaparticles.client.render.RenderUtil.copyCurrentDe
 public class MixinLevelRenderer {
     @Inject(method = "renderLevel", at = @At("RETURN"))
     private void onRenderLevelLast(DeltaTracker deltaTracker, boolean renderBlockOutline, Camera camera, GameRenderer gameRenderer, LightTexture lightTexture, Matrix4f frustumMatrix, Matrix4f projectionMatrix, CallbackInfo ci) {
-        var partial = deltaTracker.getGameTimeDeltaPartialTick(false);
-
-
         var capture = RenderStateCapture.LEVEL;
         capture.pose.setIdentity();
         capture.pose.mulPose(frustumMatrix);
@@ -33,7 +30,8 @@ public class MixinLevelRenderer {
         if (RenderContext.renderLevelDeferred()) {
             copyCurrentDepthTo(RenderStateCapture.CAPTURED_WORLD_DEPTH_BUFFER);
         } else {
-            EffekRenderer.onRenderWorldLast(partial, capture.pose, capture.projection, capture.camera);
+            var partial = deltaTracker.getGameTimeDeltaPartialTick(false);
+            EffekRenderer.renderWorldEffeks(partial, capture.pose, capture.projection, capture.camera);
         }
     }
 }

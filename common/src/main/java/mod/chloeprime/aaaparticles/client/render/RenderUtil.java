@@ -34,7 +34,7 @@ public class RenderUtil {
         var drawBackup = GL11.glGetInteger(GL_DRAW_FRAMEBUFFER_BINDING);
         GL30.glBindFramebuffer(GL_READ_FRAMEBUFFER, src);
         GL30.glBindFramebuffer(GL_DRAW_FRAMEBUFFER, target.frameBufferId);
-        GL30.glBlitFramebuffer(0, 0, srcWidth, srcHeight, 0, 0, target.width, target.height, 256, 9728);
+        GL30.glBlitFramebuffer(0, 0, srcWidth, srcHeight, 0, 0, target.width, target.height, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
         GL30.glBindFramebuffer(GL_READ_FRAMEBUFFER, readBackup);
         GL30.glBindFramebuffer(GL_DRAW_FRAMEBUFFER, drawBackup);
     }
@@ -44,7 +44,7 @@ public class RenderUtil {
         var drawBackup = GL11.glGetInteger(GL_DRAW_FRAMEBUFFER_BINDING);
         GL30.glBindFramebuffer(GL_READ_FRAMEBUFFER, src.frameBufferId);
         GL30.glBindFramebuffer(GL_DRAW_FRAMEBUFFER, target);
-        GL30.glBlitFramebuffer(0, 0, src.width, src.height, 0, 0, targetWidth, targetHeight, 256, 9728);
+        GL30.glBlitFramebuffer(0, 0, src.width, src.height, 0, 0, targetWidth, targetHeight, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
         GL30.glBindFramebuffer(GL_READ_FRAMEBUFFER, readBackup);
         GL30.glBindFramebuffer(GL_DRAW_FRAMEBUFFER, drawBackup);
     }
