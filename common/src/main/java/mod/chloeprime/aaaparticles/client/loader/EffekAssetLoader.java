@@ -19,6 +19,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -94,7 +95,7 @@ public class EffekAssetLoader extends SimplePreparableReloadListener<EffekAssetL
         for (int i = 0; i < count; i++) {
             // example: "Texture/a.png" in 'sample.efkefc' from mod 'examplemod'
             String effekAssetPath = pathGetter.apply(i);
-            String mcAssetPath = ("effeks/" + effekAssetPath)
+            String mcAssetPath = (Path.of("effeks", name.getPath()).getParent() + "/" + effekAssetPath)
                     .replace('\\', '/')
                     .replace("//", "/");
             String fallbackMcAssetPath = ("effeks/" + name.getPath() + "/" + effekAssetPath)
