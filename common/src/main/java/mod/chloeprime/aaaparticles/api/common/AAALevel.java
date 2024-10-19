@@ -1,8 +1,8 @@
 package mod.chloeprime.aaaparticles.api.common;
 
+import dev.architectury.networking.NetworkManager;
 import mod.chloeprime.aaaparticles.api.client.effekseer.ParticleEmitter;
 import mod.chloeprime.aaaparticles.client.AAAParticlesClient;
-import mod.chloeprime.aaaparticles.common.network.ModNetwork;
 import mod.chloeprime.aaaparticles.common.network.S2CAddParticle;
 import mod.chloeprime.aaaparticles.common.network.S2CSendEmitterTrigger;
 import mod.chloeprime.aaaparticles.common.network.S2CUpdateEmitterParam;
@@ -40,7 +40,7 @@ public class AAALevel {
         if (player.level().isClientSide) {
             AAAParticlesClient.setParam(type, effek, emitterName, parameters);
         } else {
-            ModNetwork.CHANNEL.sendToPlayer((ServerPlayer) player, new S2CUpdateEmitterParam(type, effek, emitterName, parameters));
+            NetworkManager.sendToPlayer((ServerPlayer) player, new S2CUpdateEmitterParam(type, effek, emitterName, parameters));
         }
     }
 
@@ -49,7 +49,7 @@ public class AAALevel {
         if (player.level().isClientSide) {
             AAAParticlesClient.sendTrigger(type, effek, emitterName, triggers);
         } else {
-            ModNetwork.CHANNEL.sendToPlayer((ServerPlayer) player, new S2CSendEmitterTrigger(type, effek, emitterName, triggers));
+            NetworkManager.sendToPlayer((ServerPlayer) player, new S2CSendEmitterTrigger(type, effek, emitterName, triggers));
         }
     }
 
@@ -62,6 +62,6 @@ public class AAALevel {
                 return;
             }
         }
-        ModNetwork.CHANNEL.sendToPlayer(player, packet);
+        NetworkManager.sendToPlayer(player, packet);
     }
 }

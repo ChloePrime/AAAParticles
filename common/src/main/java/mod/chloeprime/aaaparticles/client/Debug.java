@@ -30,7 +30,7 @@ public enum Debug {
     INSTANCE;
     public static final boolean DEBUG_ENABLED = Platform.isDevelopmentEnvironment() || Boolean.getBoolean("mod.chloeprime.aaaparticles.debug");
     private static final int DEBUG_KEY = InputConstants.KEY_F;
-    private static final ResourceLocation DEBUG_PARTICLE = new ResourceLocation(AAAParticles.MOD_ID, "debug");
+    private static final ResourceLocation DEBUG_PARTICLE = AAAParticles.loc("debug");
 
     public void registerDebugHooks() {
         if (!DEBUG_ENABLED) {

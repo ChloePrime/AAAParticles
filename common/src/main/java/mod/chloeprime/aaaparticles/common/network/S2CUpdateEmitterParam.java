@@ -11,7 +11,7 @@ import org.jetbrains.annotations.ApiStatus;
 import java.util.function.Supplier;
 
 @ApiStatus.Experimental
-public class S2CUpdateEmitterParam {
+public class S2CUpdateEmitterParam implements PacketBase {
     private final ParticleEmitter.Type type;
     private final ResourceLocation effek;
     private final ResourceLocation emitterName;

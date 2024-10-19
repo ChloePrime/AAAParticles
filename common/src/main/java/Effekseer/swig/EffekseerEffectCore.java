@@ -33,7 +33,7 @@ public class EffekseerEffectCore {
     return ptr;
   }
 
-  @SuppressWarnings("deprecation")
+  @SuppressWarnings("removal")
   protected void finalize() {
     delete();
   }

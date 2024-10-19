@@ -24,7 +24,7 @@ abstract class SafeFinalized<T> implements Closeable {
     }
 
     @Override
-    @SuppressWarnings("deprecation")
+    @SuppressWarnings("removal")
     protected void finalize() throws Throwable {
         try {
             var kept = this.kept.get();

@@ -9,7 +9,7 @@ import org.jetbrains.annotations.ApiStatus;
 
 import java.util.function.Supplier;
 
-public class S2CAddParticle extends ParticleEmitterInfo {
+public class S2CAddParticle extends ParticleEmitterInfo implements PacketBase {
     /**
      * @see #create(Level, ResourceLocation)
      */

@@ -1,20 +1,17 @@
 package mod.chloeprime.aaaparticles.forge;
 
-import dev.architectury.platform.forge.EventBuses;
 import mod.chloeprime.aaaparticles.AAAParticles;
 import mod.chloeprime.aaaparticles.client.AAAParticlesClient;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.forgespi.Environment;
+import net.neoforged.fml.ModLoadingContext;
+import net.neoforged.fml.common.Mod;
 
 @Mod(AAAParticles.MOD_ID)
 public class AAAParticlesForge extends AAAParticles  {
     public AAAParticlesForge() {
-        var modbus = FMLJavaModLoadingContext.get().getModEventBus();
-        EventBuses.registerModEventBus(MOD_ID, modbus);
+        var modbus = ModLoadingContext.get().getActiveContainer().getEventBus();
         AAAParticles.init();
 
-        if (Environment.get().getDist().isClient()) {
+        if (net.neoforged.neoforgespi.Environment.get().getDist().isClient()) {
             AAAParticlesForgeClient.onClientInit();
             AAAParticlesClient.init();
             modbus.addListener(AAAParticlesForgeClient::onClientSetup);

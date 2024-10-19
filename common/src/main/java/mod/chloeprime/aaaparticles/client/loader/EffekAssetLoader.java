@@ -3,9 +3,9 @@ package mod.chloeprime.aaaparticles.client.loader;
 import mod.chloeprime.aaaparticles.api.client.effekseer.EffekseerEffect;
 import mod.chloeprime.aaaparticles.api.client.effekseer.TextureType;
 import mod.chloeprime.aaaparticles.client.installer.NativePlatform;
+import mod.chloeprime.aaaparticles.client.internal.LimitlessResourceLocationFactory;
 import mod.chloeprime.aaaparticles.client.registry.EffectDefinition;
 import mod.chloeprime.aaaparticles.client.render.EffekRenderer;
-import mod.chloeprime.aaaparticles.common.util.LimitlessResourceLocation;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -19,11 +19,9 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 import java.util.function.IntFunction;
 
 /**
@@ -84,6 +82,9 @@ public class EffekAssetLoader extends SimplePreparableReloadListener<EffekAssetL
         }
     }
 
+    private static final BiFunction<String, String, ResourceLocation> UNVALIDATED_RES_LOC_FACTORY =
+            ((LimitlessResourceLocationFactory) (Object) ResourceLocation.withDefaultNamespace("mole"))::aaa$createUninitialized;
+
     private void load(
             ResourceManager manager,
             ResourceLocation name, int count,
@@ -102,8 +103,8 @@ public class EffekAssetLoader extends SimplePreparableReloadListener<EffekAssetL
                     .replace("//", "/");
             // example: "examplemod:effeks/Texture/a.png"
 
-            var main = new LimitlessResourceLocation(modid, mcAssetPath);
-            var fallback = new LimitlessResourceLocation(modid, fallbackMcAssetPath);
+            var main = UNVALIDATED_RES_LOC_FACTORY.apply(modid, mcAssetPath);
+            var fallback = UNVALIDATED_RES_LOC_FACTORY.apply(modid, fallbackMcAssetPath);
             // Load from disk.
             var resource = getResourceOrUseFallbackPath(manager, main, fallback)
                     .orElseThrow(() -> new FileNotFoundException("Failed to load %s or %s".formatted(main, fallback)));
@@ -150,7 +151,7 @@ public class EffekAssetLoader extends SimplePreparableReloadListener<EffekAssetL
         if (filePath.endsWith(".efkefc") || filePath.endsWith(".efkpkg")) {
             filePath = filePath.substring(0, filePath.length() - ".efkefc".length());
         }
-        return new ResourceLocation(location.getNamespace(), filePath);
+        return UNVALIDATED_RES_LOC_FACTORY.apply(location.getNamespace(), filePath);
     }
 
     @Override

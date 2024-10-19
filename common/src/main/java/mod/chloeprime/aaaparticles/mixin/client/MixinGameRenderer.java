@@ -1,10 +1,10 @@
 package mod.chloeprime.aaaparticles.mixin.client;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import mod.chloeprime.aaaparticles.client.internal.EffekFpvRenderer;
 import mod.chloeprime.aaaparticles.client.internal.RenderContext;
 import mod.chloeprime.aaaparticles.client.internal.RenderStateCapture;
 import mod.chloeprime.aaaparticles.client.render.EffekRenderer;
+import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.ItemInHandRenderer;
@@ -25,9 +25,11 @@ public class MixinGameRenderer {
     @Shadow private boolean renderHand;
 
     @Inject(method = "renderLevel", at = @At("TAIL"))
-    private void renderLevelTail(float partial, long l, PoseStack poseStack, CallbackInfo ci) {
+    private void renderLevelTail(DeltaTracker deltaTracker, CallbackInfo ci) {
         glDepthMask(true);
         glDepthFunc(GL_LEQUAL);
+
+        var partial = deltaTracker.getGameTimeDeltaPartialTick(false);
 
         if (RenderContext.renderLevelDeferred() && RenderStateCapture.LEVEL.hasCapture) {
             RenderStateCapture.LEVEL.hasCapture = false;
