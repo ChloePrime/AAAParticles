@@ -12,8 +12,12 @@ import java.util.stream.Stream;
 
 public enum NativePlatform {
     WINDOWS(".dll"),
-    LINUX(".so", "lib"),
-    MACOS(".dylib", "lib");
+    WINDOWS_ON_ARM(".dll", "", true),
+    LINUX_X64(".so", "lib"),
+    LINUX_NOT_X64(".so", "lib", true),
+    MACOS_X64(".dylib", "lib", true),
+    MACOS_ARM(".dylib", "lib"),
+    UNKNOWN(".so", "lib", true);
 
     @SuppressWarnings("ConstantValue")
     public static boolean isRunningOnUnsupportedPlatform() {
@@ -67,13 +71,22 @@ public enum NativePlatform {
         this.unsupported = unsupported;
     }
 
+    @SuppressWarnings("SwitchStatementWithTooFewBranches")
     public static NativePlatform findCurrent() {
         return switch (Util.getPlatform()) {
-            case LINUX -> LINUX;
-            case SOLARIS -> throw new UnsupportedOperationException("Solaris");
-            case WINDOWS -> WINDOWS;
-            case OSX -> MACOS;
-            case UNKNOWN -> throw new UnsupportedOperationException("Unknown Platform");
+            case WINDOWS -> switch (System.getProperty("os.arch")) {
+                case "aarch64" -> WINDOWS_ON_ARM;
+                default -> WINDOWS;
+            };
+            case LINUX -> switch (System.getProperty("os.arch")) {
+                case "x86", "amd64" -> LINUX_X64;
+                default -> LINUX_NOT_X64;
+            };
+            case OSX -> switch (System.getProperty("os.arch")) {
+                case "aarch64", "unknown" -> MACOS_ARM;
+                default -> MACOS_X64;
+            };
+            default -> UNKNOWN;
         };
     }
 
