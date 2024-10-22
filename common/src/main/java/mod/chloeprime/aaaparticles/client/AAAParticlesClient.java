@@ -23,7 +23,9 @@ public class AAAParticlesClient
 
 	public static void init() {
 		installNativeLibrary();
-		ReloadListenerRegistry.register(PackType.CLIENT_RESOURCES, new EffekAssetLoader(), AAAParticles.loc("effek"));
+		if (!NativePlatform.isDataGen()) {
+			ReloadListenerRegistry.register(PackType.CLIENT_RESOURCES, new EffekAssetLoader(), AAAParticles.loc("effek"));
+		}
 		Debug.INSTANCE.registerDebugHooks();
 	}
 
