@@ -15,7 +15,7 @@ public enum NativePlatform {
     WINDOWS_ON_ARM(".dll", "", true),
     LINUX_X64(".so", "lib"),
     LINUX_NOT_X64(".so", "lib", true),
-    MACOS_X64(".dylib", "lib", true),
+    MACOS_X64(".dylib", "lib"),
     MACOS_ARM(".dylib", "lib"),
     UNKNOWN(".so", "lib", true);
 
