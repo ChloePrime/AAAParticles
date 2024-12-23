@@ -14,7 +14,6 @@ import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
 import net.minecraft.util.profiling.ProfilerFiller;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.lwjgl.opengl.GL11;
 import org.slf4j.Logger;
 
 import java.io.FileNotFoundException;
@@ -23,8 +22,6 @@ import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.IntFunction;
-
-import static org.lwjgl.opengl.GL11.*;
 
 /**
  * Loading effects from minecraft's resource system.
