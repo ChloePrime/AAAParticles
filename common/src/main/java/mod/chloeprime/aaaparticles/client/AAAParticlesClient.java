@@ -1,5 +1,7 @@
 package mod.chloeprime.aaaparticles.client;
 
+import dev.architectury.event.events.client.ClientLifecycleEvent;
+import dev.architectury.event.events.client.ClientPlayerEvent;
 import dev.architectury.registry.ReloadListenerRegistry;
 import mod.chloeprime.aaaparticles.AAAParticles;
 import mod.chloeprime.aaaparticles.api.client.effekseer.ParticleEmitter;
@@ -25,6 +27,8 @@ public class AAAParticlesClient
 		if (!NativePlatform.isDataGen()) {
 			ReloadListenerRegistry.register(PackType.CLIENT_RESOURCES, new EffekAssetLoader(), AAAParticles.loc("effek"));
 		}
+		ClientLifecycleEvent.CLIENT_LEVEL_LOAD.register(level -> EffectRegistry.clearAllPlaying());
+		ClientPlayerEvent.CLIENT_PLAYER_QUIT.register(player -> EffectRegistry.clearAllPlaying());
 		Debug.INSTANCE.registerDebugHooks();
 	}
 
