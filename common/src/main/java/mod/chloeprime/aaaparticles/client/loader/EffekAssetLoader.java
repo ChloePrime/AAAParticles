@@ -1,5 +1,6 @@
 package mod.chloeprime.aaaparticles.client.loader;
 
+import com.mojang.logging.LogUtils;
 import mod.chloeprime.aaaparticles.api.client.effekseer.EffekseerEffect;
 import mod.chloeprime.aaaparticles.api.client.effekseer.TextureType;
 import mod.chloeprime.aaaparticles.client.installer.NativePlatform;
@@ -11,11 +12,10 @@ import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
 import net.minecraft.util.profiling.ProfilerFiller;
-import org.apache.commons.io.IOUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.lwjgl.opengl.GL11;
+import org.slf4j.Logger;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -23,6 +23,8 @@ import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.IntFunction;
+
+import static org.lwjgl.opengl.GL11.*;
 
 /**
  * Loading effects from minecraft's resource system.
@@ -53,7 +55,7 @@ public class EffekAssetLoader extends SimplePreparableReloadListener<EffekAssetL
             EffekseerEffect effect = new EffekseerEffect();
             boolean success = effect.load(input, 1);
             if (!success) {
-                LOGGER.error("Failed to load " + name);
+                LOGGER.error("Failed to load {}", name);
                 return Optional.empty();
             }
 
@@ -72,7 +74,7 @@ public class EffekAssetLoader extends SimplePreparableReloadListener<EffekAssetL
                 load(manager, name, effect.materialCount(), effect::getMaterialPath, effect::loadMaterial);
                 return Optional.of(effect);
             } catch (FileNotFoundException ex) {
-                LOGGER.error("Failed to load " + name, ex);
+                LOGGER.error("Failed to load {}", name, ex);
                 effect.close();
                 return Optional.empty();
             }
@@ -95,7 +97,7 @@ public class EffekAssetLoader extends SimplePreparableReloadListener<EffekAssetL
         for (int i = 0; i < count; i++) {
             // example: "Texture/a.png" in 'sample.efkefc' from mod 'examplemod'
             String effekAssetPath = pathGetter.apply(i);
-            String mcAssetPath = ("effeks/" + effekAssetPath)
+            String mcAssetPath = (Path.of("effeks", name.getPath()).getParent() + "/" + effekAssetPath)
                     .replace('\\', '/')
                     .replace("//", "/");
             String fallbackMcAssetPath = ("effeks/" + name.getPath() + "/" + effekAssetPath)
@@ -109,11 +111,11 @@ public class EffekAssetLoader extends SimplePreparableReloadListener<EffekAssetL
             var resource = getResourceOrUseFallbackPath(manager, main, fallback)
                     .orElseThrow(() -> new FileNotFoundException("Failed to load %s or %s".formatted(main, fallback)));
             try (var input = resource.open()) {
-                byte[] bytes = IOUtils.toByteArray(input);
-                boolean success = loadMethod.accept(bytes, bytes.length, i);
+                var data = input.readAllBytes();
+                boolean success = loadMethod.accept(data, data.length, i);
                 if (!success) {
                     String info = String.format("Failed to load effek data %s", effekAssetPath);
-                    LOGGER.debug(String.format("\n%s\nmc asset path is \"%s\"", info, mcAssetPath));
+                    LOGGER.debug("\n{}\nmc asset path is \"{}\"", info, mcAssetPath);
                     throw new EffekLoadException(info);
                 }
             }
@@ -133,7 +135,7 @@ public class EffekAssetLoader extends SimplePreparableReloadListener<EffekAssetL
     }
 
     private void unloadAll() {
-        loadedEffects.forEach((id, definition) -> definition.close());
+        loadedEffects.values().forEach(EffectDefinition::close);
         loadedEffects.clear();
     }
 
@@ -159,13 +161,16 @@ public class EffekAssetLoader extends SimplePreparableReloadListener<EffekAssetL
     protected void apply(Preparations prep_, ResourceManager manager, ProfilerFiller profilerFiller) {
         EffekRenderer.init();
         if (!NativePlatform.isRunningOnUnsupportedPlatform()) {
-            var prep = new Preparations();
-            manager.listResources("effeks", rl -> rl.getPath().endsWith(".efkefc")).forEach((location, resource) -> {
-                var name = createEffekName(location);
-                loadEffect(manager, name, resource).ifPresent(effect -> prep.loadedEffects.put(name, new EffectDefinition().setEffect(effect)));
-            });
             unloadAll();
-            loadedEffects.putAll(prep.loadedEffects);
+            RenderUtil.refreshBackgroundFrameBuffer();
+            RenderUtil.runPixelStoreCodeHealthily(() -> {
+                var prep = new Preparations();
+                manager.listResources("effeks", rl -> rl.getPath().endsWith(".efkefc")).forEach((location, resource) -> {
+                    var name = createEffekName(location);
+                    loadEffect(manager, name, resource).ifPresent(effect -> prep.loadedEffects.put(name, new EffectDefinition().setEffect(effect)));
+                });
+                loadedEffects.putAll(prep.loadedEffects);
+            });
         }
         INSTANCE = this;
     }
@@ -187,7 +192,8 @@ public class EffekAssetLoader extends SimplePreparableReloadListener<EffekAssetL
     private static void handleCheckedException(Exception e) {
         throw new RuntimeException(e);
     }
-    private static final Logger LOGGER = LogManager.getLogger(EffekAssetLoader.class.getSimpleName());
+
+    private static final Logger LOGGER = LogUtils.getLogger();
 
     private final Map<ResourceLocation, EffectDefinition> loadedEffects = new LinkedHashMap<>();
 }

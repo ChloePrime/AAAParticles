@@ -115,19 +115,22 @@ public class EffekRenderer {
         pose.popPose();
 
         Optional.ofNullable(MINECRAFT.levelRenderer.getParticlesTarget())
-                .ifPresent(rt -> rt.copyDepthFrom(MINECRAFT.getMainRenderTarget()));
+                .ifPresent(rt -> RenderUtil.copyDepthSafely(MINECRAFT.getMainRenderTarget(), rt));
 
         float deltaFrames = 60 * getDeltaTime(type);
         float realDelta = MINECRAFT.isPaused() ? 0 : deltaFrames;
 
         RenderType.PARTICLES_TARGET.setupRenderState();
+
+        var background = RenderUtil.prepareBackgroundBuffer().orElse(null);
         EffekAssetLoader.get().forEach((id, inst) -> inst.draw(
                 type,
                 camera.getLookVector(), camera.getPosition().toVector3f(),
                 w, h,
                 CAMERA_TRANSFORM_DATA, PROJECTION_MATRIX_DATA,
-                realDelta, partialTick
+                realDelta, partialTick, background
         ));
+
         RenderType.PARTICLES_TARGET.clearRenderState();
 
         CAMERA_TRANSFORM_BUFFER.clear();

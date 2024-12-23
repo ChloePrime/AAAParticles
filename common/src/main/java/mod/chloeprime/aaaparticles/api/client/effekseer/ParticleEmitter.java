@@ -1,7 +1,10 @@
 package mod.chloeprime.aaaparticles.api.client.effekseer;
 
+import mod.chloeprime.aaaparticles.client.internal.DummyParticleEmitter;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.EnumMap;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -19,11 +22,24 @@ public class ParticleEmitter {
 
     public final int handle;
     public final Type type;
-    public boolean isVisible = true;
-    public boolean isPaused = false;
 
     private final EffekseerManager manager;
     private @Nullable PreDrawCallback callback;
+    // Kept public for compatibility reason
+    @ApiStatus.Internal public boolean isVisible = true;
+    @ApiStatus.Internal public boolean isPaused = false;
+    private boolean isValid = true;
+
+    public static ParticleEmitter dummy(ParticleEmitter.Type type) {
+        if (DUMMIES.isEmpty()) {
+            for (Type _ty : Type.values()) {
+                DUMMIES.put(_ty, new DummyParticleEmitter(_ty));
+            }
+        }
+        return DUMMIES.get(type);
+    }
+
+    private static final EnumMap<ParticleEmitter.Type, ParticleEmitter> DUMMIES = new EnumMap<>(ParticleEmitter.Type.class);
 
     protected ParticleEmitter(int handle, EffekseerManager manager, Type type) {
         this.handle = handle;
@@ -34,12 +50,16 @@ public class ParticleEmitter {
     }
 
     public void pause() {
-        manager.getImpl().SetPaused(this.handle, true);
+        if (isValid) {
+            manager.getImpl().SetPaused(this.handle, true);
+        }
         isPaused = true;
     }
 
     public void resume() {
-        manager.getImpl().SetPaused(this.handle, false);
+        if (isValid) {
+            manager.getImpl().SetPaused(this.handle, false);
+        }
         isPaused = false;
     }
 
@@ -52,82 +72,111 @@ public class ParticleEmitter {
     }
 
     public void setVisibility(boolean visible) {
-        manager.getImpl().SetShown(this.handle, visible);
+        if (isValid) {
+            manager.getImpl().SetShown(this.handle, visible);
+        }
         isVisible = visible;
     }
 
     public void stop() {
-        manager.getImpl().Stop(this.handle);
+        if (isValid) {
+            isValid = false;
+            manager.getImpl().Stop(this.handle);
+        }
     }
 
     public void setProgress(float frame) {
-        manager.getImpl().UpdateHandleToMoveToFrame(this.handle, frame);
+        if (isValid) {
+            manager.getImpl().UpdateHandleToMoveToFrame(this.handle, frame);
+        }
     }
 
     public void setPosition(float x, float y, float z) {
-        manager.getImpl().SetEffectPosition(this.handle, x, y, z);
+        if (isValid) {
+            manager.getImpl().SetEffectPosition(this.handle, x, y, z);
+        }
     }
 
     public void setRotation(float x, float y, float z) {
-        manager.getImpl().SetEffectRotation(this.handle, x, y, z);
+        if (isValid) {
+            manager.getImpl().SetEffectRotation(this.handle, x, y, z);
+        }
     }
 
     public void setScale(float x, float y, float z) {
-        manager.getImpl().SetEffectScale(this.handle, x, y, z);
+        if (isValid) {
+            manager.getImpl().SetEffectScale(this.handle, x, y, z);
+        }
     }
 
     public void setTransformMatrix(float[] matrix) {
-        manager.getImpl().SetEffectTransformMatrix(
-                this.handle,
-                matrix[0], matrix[1], matrix[2], matrix[3],
-                matrix[4], matrix[5], matrix[6], matrix[7],
-                matrix[8], matrix[9], matrix[10], matrix[11]
-        );
+        if (isValid) {
+            manager.getImpl().SetEffectTransformMatrix(
+                    this.handle,
+                    matrix[0], matrix[1], matrix[2], matrix[3],
+                    matrix[4], matrix[5], matrix[6], matrix[7],
+                    matrix[8], matrix[9], matrix[10], matrix[11]
+            );
+        }
     }
 
     public void setTransformMatrix(float[][] matrix) {
-        int i = 0;
-        manager.getImpl().SetEffectTransformMatrix(
-                this.handle,
-                matrix[i][0], matrix[i][1], matrix[i][2], matrix[i++][3],
-                matrix[i][0], matrix[i][1], matrix[i][2], matrix[i++][3],
-                matrix[i][0], matrix[i][1], matrix[i][2], matrix[i][3]
-        );
+        if (isValid) {
+            int i = 0;
+            manager.getImpl().SetEffectTransformMatrix(
+                    this.handle,
+                    matrix[i][0], matrix[i][1], matrix[i][2], matrix[i++][3],
+                    matrix[i][0], matrix[i][1], matrix[i][2], matrix[i++][3],
+                    matrix[i][0], matrix[i][1], matrix[i][2], matrix[i][3]
+            );
+        }
     }
 
     public void setBaseTransformMatrix(float[] matrix) {
-        manager.getImpl().SetEffectTransformBaseMatrix(
-                this.handle,
-                matrix[0], matrix[1], matrix[2], matrix[3],
-                matrix[4], matrix[5], matrix[6], matrix[7],
-                matrix[8], matrix[9], matrix[10], matrix[11]
-        );
+        if (isValid) {
+            manager.getImpl().SetEffectTransformBaseMatrix(
+                    this.handle,
+                    matrix[0], matrix[1], matrix[2], matrix[3],
+                    matrix[4], matrix[5], matrix[6], matrix[7],
+                    matrix[8], matrix[9], matrix[10], matrix[11]
+            );
+        }
     }
 
     public void setBaseTransformMatrix(float[][] matrix) {
-        int i = 0;
-        manager.getImpl().SetEffectTransformBaseMatrix(
-                this.handle,
-                matrix[i][0], matrix[i][1], matrix[i][2], matrix[i++][3],
-                matrix[i][0], matrix[i][1], matrix[i][2], matrix[i++][3],
-                matrix[i][0], matrix[i][1], matrix[i][2], matrix[i][3]
-        );
+        if (isValid) {
+            int i = 0;
+            manager.getImpl().SetEffectTransformBaseMatrix(
+                    this.handle,
+                    matrix[i][0], matrix[i][1], matrix[i][2], matrix[i++][3],
+                    matrix[i][0], matrix[i][1], matrix[i][2], matrix[i++][3],
+                    matrix[i][0], matrix[i][1], matrix[i][2], matrix[i][3]
+            );
+        }
     }
 
     public boolean exists() {
-        return manager.getImpl().Exists(this.handle);
+        return isValid && manager.getImpl().Exists(this.handle);
     }
 
     public void setDynamicInput(int index, float value) {
-        manager.getImpl().SetDynamicInput(this.handle, index, value);
+        if (isValid) {
+            manager.getImpl().SetDynamicInput(this.handle, index, value);
+        }
     }
 
     public float getDynamicInput(int index) {
-        return manager.getImpl().GetDynamicInput(this.handle, index);
+        if (isValid) {
+            return manager.getImpl().GetDynamicInput(this.handle, index);
+        } else {
+            return 0;
+        }
     }
 
     public void sendTrigger(int index) {
-        manager.getImpl().SendTrigger(this.handle, index);
+        if (isValid) {
+            manager.getImpl().SendTrigger(this.handle, index);
+        }
     }
 
     public interface PreDrawCallback {

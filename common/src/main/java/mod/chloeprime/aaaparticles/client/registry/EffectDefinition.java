@@ -1,9 +1,13 @@
 package mod.chloeprime.aaaparticles.client.registry;
 
+import com.mojang.blaze3d.pipeline.RenderTarget;
 import mod.chloeprime.aaaparticles.api.client.effekseer.EffekseerEffect;
 import mod.chloeprime.aaaparticles.api.client.effekseer.EffekseerManager;
 import mod.chloeprime.aaaparticles.api.client.effekseer.ParticleEmitter;
+import mod.chloeprime.aaaparticles.client.render.RenderUtil;
 import net.minecraft.resources.ResourceLocation;
+import org.apache.commons.lang3.mutable.MutableInt;
+import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 
 import java.io.Closeable;
@@ -34,6 +38,9 @@ public class EffectDefinition implements Closeable {
     }
 
     public ParticleEmitter play(ParticleEmitter.Type type) {
+        if (RenderUtil.isReloadingResourcePacks()) {
+            return ParticleEmitter.dummy(type);
+        }
         var emitter = getManager(type).createParticle(getEffect(), type);
         var collection = Objects.requireNonNull(oneShotEmitters.get(type));
         collection.add(emitter);
@@ -41,6 +48,9 @@ public class EffectDefinition implements Closeable {
     }
 
     public ParticleEmitter play(ParticleEmitter.Type type, ResourceLocation emitterName) {
+        if (RenderUtil.isReloadingResourcePacks()) {
+            return ParticleEmitter.dummy(type);
+        }
         var emitter = getManager(type).createParticle(getEffect(), type);
         var collection = Objects.requireNonNull(namedEmitters.get(type));
         var old = collection.put(emitterName, emitter);
@@ -92,7 +102,7 @@ public class EffectDefinition implements Closeable {
     public EffectDefinition setEffect(EffekseerEffect effect) {
         Objects.requireNonNull(effect);
         if (this.effect == effect) {
-            return null;
+            return this;
         }
         // If this is not the first time of load.
         if (this.effect != null) {
@@ -118,8 +128,16 @@ public class EffectDefinition implements Closeable {
     private static final int GC_DELAY = 20;
     private final int magicLoadBalancer = Math.abs(RNG.nextInt() >>> 2) % GC_DELAY;
     private int gcTicks;
+    private final EnumMap<ParticleEmitter.Type, MutableInt> backgroundColorIds = new EnumMap<>(ParticleEmitter.Type.class);
+    private final EnumMap<ParticleEmitter.Type, MutableInt> backgroundDepthIds = new EnumMap<>(ParticleEmitter.Type.class);
 
-    public void draw(ParticleEmitter.Type type, Vector3f front, Vector3f pos, int w, int h, float[] camera, float[] projection, float deltaFrames, float partialTicks) {
+    public void draw(
+            ParticleEmitter.Type type,
+            Vector3f front, Vector3f pos,
+            int w, int h, float[] camera, float[] projection,
+            float deltaFrames, float partialTicks,
+            @Nullable RenderTarget background
+    ) {
         var manager = Objects.requireNonNull(managers.get(type));
         manager.setViewport(w, h);
         manager.setCameraMatrix(camera);
@@ -128,6 +146,21 @@ public class EffectDefinition implements Closeable {
                 front.x, front.y, front.z,
                 pos.x, pos.y, pos.z
         );
+
+        var backgroundColorId = backgroundColorIds.get(type);
+        var backgroundDepthId = backgroundDepthIds.get(type);
+
+        if (background == null) {
+            unsetBackgrounds(manager, backgroundColorId, backgroundDepthId);
+        } else if (background.getColorTextureId() != backgroundColorId.intValue() || background.getDepthTextureId() != backgroundDepthId.intValue()) {
+            unsetBackgrounds(manager, backgroundColorId, backgroundDepthId);
+            // Update recorded values
+            backgroundColorId.setValue(background.getColorTextureId());
+            backgroundDepthId.setValue(background.getDepthTextureId());
+            // Update actual values of background/depth
+            manager.getImpl().SetBackground(backgroundColorId.intValue(), false);
+            manager.getImpl().SetDepth(backgroundDepthId.intValue(), false);
+        }
 
         manager.startUpdate();
         manager.update(deltaFrames);
@@ -144,8 +177,25 @@ public class EffectDefinition implements Closeable {
         }
     }
 
+    private void unsetBackgrounds(EffekseerManager manager, MutableInt backgroundColorId, MutableInt backgroundDepthId) {
+        if (backgroundColorId.intValue() != -1) {
+            backgroundColorId.setValue(-1);
+            manager.getImpl().UnsetBackground();
+        }
+        if (backgroundDepthId.intValue() != -1) {
+            backgroundDepthId.setValue(-1);
+            manager.getImpl().UnsetDepth();
+        }
+    }
+
+    private void unsetBackgrounds(ParticleEmitter.Type type) {
+        unsetBackgrounds(managers.get(type), backgroundColorIds.get(type), backgroundDepthIds.get(type));
+    }
+
     private void initManager() {
         for (ParticleEmitter.Type type : ParticleEmitter.Type.values()) {
+            backgroundColorIds.put(type, new MutableInt(-1));
+            backgroundDepthIds.put(type, new MutableInt(-1));
             var old = this.managers.put(type, new EffekseerManager());
             Optional.ofNullable(old).ifPresent(EffekseerManager::close);
         }
@@ -168,6 +218,7 @@ public class EffectDefinition implements Closeable {
 
     @Override
     public void close() {
+        Arrays.stream(ParticleEmitter.Type.values()).forEach(this::unsetBackgrounds);
         managers.values().forEach(EffekseerManager::close);
         effect.close();
     }

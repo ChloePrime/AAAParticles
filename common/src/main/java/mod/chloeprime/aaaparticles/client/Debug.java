@@ -13,6 +13,7 @@ import mod.chloeprime.aaaparticles.api.common.ParticleEmitterInfo;
 import mod.chloeprime.aaaparticles.client.installer.NativePlatform;
 import mod.chloeprime.aaaparticles.client.registry.EffectRegistry;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
@@ -30,7 +31,8 @@ public enum Debug {
     INSTANCE;
     public static final boolean DEBUG_ENABLED = Platform.isDevelopmentEnvironment() || Boolean.getBoolean("mod.chloeprime.aaaparticles.debug");
     private static final int DEBUG_KEY = InputConstants.KEY_F;
-    private static final ResourceLocation DEBUG_PARTICLE = AAAParticles.loc("debug");
+    private static final ResourceLocation DEBUG_PARTICLE = new ResourceLocation(AAAParticles.MOD_ID, "debug");
+    private static final ResourceLocation DISTORTION_PARTICLE = new ResourceLocation(AAAParticles.MOD_ID, "simple_distortion");
 
     public void registerDebugHooks() {
         if (!DEBUG_ENABLED) {
@@ -69,13 +71,15 @@ public enum Debug {
             return;
         }
 
+        var efk = Screen.hasControlDown() ? DISTORTION_PARTICLE : DEBUG_PARTICLE;
+
         Optional.ofNullable(mc.crosshairPickEntity).map(Entity::getId)
                 .ifPresent(eid -> {
                     var dim = Objects.requireNonNull(mc.level).dimension();
                     var srv = Objects.requireNonNull(mc.getSingleplayerServer());
                     srv.execute(() -> {
                         var srvLevel = Objects.requireNonNull(srv.getLevel(dim));
-                        AAALevel.addParticle(srvLevel, new ParticleEmitterInfo(DEBUG_PARTICLE)
+                        AAALevel.addParticle(srvLevel, new ParticleEmitterInfo(efk)
                                         .bindOnEntity(Objects.requireNonNull(srvLevel.getEntity(eid)))
 //                        .position(0, 1.8, 0)
 //                        .entitySpaceRelativePosition(0.5, 0, -0.5)
@@ -90,7 +94,7 @@ public enum Debug {
             return;
         }
         var type = Math.random() <= 0.5 ? ParticleEmitter.Type.FIRST_PERSON_MAINHAND : ParticleEmitter.Type.FIRST_PERSON_OFFHAND;
-        var emitter = Objects.requireNonNull(EffectRegistry.get(DEBUG_PARTICLE)).play(type);
+        var emitter = Objects.requireNonNull(EffectRegistry.get(DISTORTION_PARTICLE)).play(type);
         emitter.setPosition(0, 0.5F, 0);
         emitter.setScale(0.1F, 0.1F, 0.1F);
     }
