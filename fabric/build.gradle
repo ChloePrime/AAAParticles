@@ -23,7 +23,7 @@ dependencies {
     compileOnly 'com.electronwill.night-config:toml:3.6.4'
 
     // Oculus
-    compileOnly "maven.modrinth:iris:1.8.0-beta.4+1.21-fabric"
+    modCompileOnly "maven.modrinth:iris:1.8.1+1.21.1-fabric"
 
     common(project(path: ":common", configuration: "namedElements")) { transitive false }
     shadowCommon(project(path: ":common", configuration: "transformProductionFabric")) { transitive false }

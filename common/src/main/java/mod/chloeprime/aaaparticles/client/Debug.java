@@ -31,8 +31,8 @@ public enum Debug {
     INSTANCE;
     public static final boolean DEBUG_ENABLED = Platform.isDevelopmentEnvironment() || Boolean.getBoolean("mod.chloeprime.aaaparticles.debug");
     private static final int DEBUG_KEY = InputConstants.KEY_F;
-    private static final ResourceLocation DEBUG_PARTICLE = new ResourceLocation(AAAParticles.MOD_ID, "debug");
-    private static final ResourceLocation DISTORTION_PARTICLE = new ResourceLocation(AAAParticles.MOD_ID, "simple_distortion");
+    private static final ResourceLocation DEBUG_PARTICLE = ResourceLocation.fromNamespaceAndPath(AAAParticles.MOD_ID, "debug");
+    private static final ResourceLocation DISTORTION_PARTICLE = ResourceLocation.fromNamespaceAndPath(AAAParticles.MOD_ID, "simple_distortion");
 
     public void registerDebugHooks() {
         if (!DEBUG_ENABLED) {
@@ -94,8 +94,10 @@ public enum Debug {
             return;
         }
         var type = Math.random() <= 0.5 ? ParticleEmitter.Type.FIRST_PERSON_MAINHAND : ParticleEmitter.Type.FIRST_PERSON_OFFHAND;
-        var emitter = Objects.requireNonNull(EffectRegistry.get(DISTORTION_PARTICLE)).play(type);
-        emitter.setPosition(0, 0.5F, 0);
-        emitter.setScale(0.1F, 0.1F, 0.1F);
+        Optional.ofNullable(EffectRegistry.get(DISTORTION_PARTICLE)).ifPresent(effek -> {
+            var emitter = effek.play(type);
+            emitter.setPosition(0, 0.5F, 0);
+            emitter.setScale(0.1F, 0.1F, 0.1F);
+        });
     }
 }

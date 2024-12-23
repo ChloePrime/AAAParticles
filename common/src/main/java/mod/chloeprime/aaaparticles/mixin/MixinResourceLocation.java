@@ -2,14 +2,8 @@ package mod.chloeprime.aaaparticles.mixin;
 
 import mod.chloeprime.aaaparticles.client.internal.LimitlessResourceLocationFactory;
 import net.minecraft.resources.ResourceLocation;
-import org.spongepowered.asm.mixin.Final;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Mutable;
-import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.gen.Invoker;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(value = ResourceLocation.class, priority = Integer.MAX_VALUE)
 public class MixinResourceLocation implements LimitlessResourceLocationFactory {
@@ -31,13 +25,44 @@ public class MixinResourceLocation implements LimitlessResourceLocationFactory {
         return result;
     }
 
-    @Inject(method = "validPathChar", at = @At("HEAD"), cancellable = true)
-    private static void modernfixCompat(char c, CallbackInfoReturnable<Boolean> cir) {
-        cir.setReturnValue(true);
+    /**
+     * @author ChloePrime
+     * @reason Make Effekseer effects easier to import
+     */
+    @Overwrite
+    public static boolean isValidPath(String path) {
+        return aaa_particles$fixDfuCrash(path);
     }
 
-    @Inject(method = "isValidPath", at = @At("HEAD"), cancellable = true)
-    private static void fixDfuCrash(String string, CallbackInfoReturnable<Boolean> cir) {
-        cir.setReturnValue(!"DUMMY".equals(string));
+    /**
+     * @author ChloePrime
+     * @reason Make Effekseer effects easier to import
+     */
+    @Overwrite
+    public static boolean isValidNamespace(String namespace) {
+        return true;
+    }
+
+    /**
+     * @author ChloePrime
+     * @reason ModernFix compat
+     */
+    @Overwrite
+    public static boolean validNamespaceChar(char c) {
+        return true;
+    }
+
+    /**
+     * @author ChloePrime
+     * @reason ModernFix compat
+     */
+    @Overwrite
+    public static boolean validPathChar(char c) {
+        return true;
+    }
+
+    @Unique
+    private static boolean aaa_particles$fixDfuCrash(String string) {
+        return !"DUMMY".equals(string);
     }
 }

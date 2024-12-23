@@ -42,15 +42,15 @@ public abstract class MixinMinecraft implements ReloadTrackable, Executor {
     private final @Unique AtomicInteger aaa_particles$myReloadTracker = new AtomicInteger();
 
     @Inject(
-            method = "reloadResourcePacks(Z)Ljava/util/concurrent/CompletableFuture;",
+            method = "reloadResourcePacks(ZLnet/minecraft/client/Minecraft$GameLoadCookie;)Ljava/util/concurrent/CompletableFuture;",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/server/packs/repository/PackRepository;reload()V"))
-    private void beginReload(boolean error, CallbackInfoReturnable<CompletableFuture<Void>> cir) {
+    private void beginReload(CallbackInfoReturnable<CompletableFuture<Void>> cir) {
         aaa_particles$myReloadTracker.getAndIncrement();
         EffectRegistry.clearAllPlaying();
     }
 
     @ModifyReturnValue(
-            method = "reloadResourcePacks(Z)Ljava/util/concurrent/CompletableFuture;",
+            method = "reloadResourcePacks(ZLnet/minecraft/client/Minecraft$GameLoadCookie;)Ljava/util/concurrent/CompletableFuture;",
             at = @At("RETURN"),
             slice = @Slice(
                     from = @At(value = "INVOKE", target = "Lnet/minecraft/server/packs/repository/PackRepository;reload()V")

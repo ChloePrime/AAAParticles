@@ -7,6 +7,7 @@ import mod.chloeprime.aaaparticles.client.installer.NativePlatform;
 import mod.chloeprime.aaaparticles.client.internal.LimitlessResourceLocationFactory;
 import mod.chloeprime.aaaparticles.client.registry.EffectDefinition;
 import mod.chloeprime.aaaparticles.client.render.EffekRenderer;
+import mod.chloeprime.aaaparticles.client.render.RenderUtil;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -18,6 +19,7 @@ import org.slf4j.Logger;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
