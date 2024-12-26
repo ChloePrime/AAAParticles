@@ -4,6 +4,7 @@
   "package": "mod.chloeprime.aaaparticles.mixin",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
+    "MixinFileUtil",
     "MixinResourceLocation"
   ],
   "client": [
