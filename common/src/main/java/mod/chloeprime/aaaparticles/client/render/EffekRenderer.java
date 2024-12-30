@@ -119,14 +119,16 @@ public class EffekRenderer {
 
         RenderType.PARTICLES_TARGET.setupRenderState();
 
-        var background = RenderUtil.prepareBackgroundBuffer().orElse(null);
-        EffekAssetLoader.get().forEach((id, inst) -> inst.draw(
-                type,
-                camera.getLookVector(), camera.getPosition().toVector3f(),
-                w, h,
-                CAMERA_TRANSFORM_DATA, PROJECTION_MATRIX_DATA,
-                realDelta, partialTick, background
-        ));
+        RenderUtil.runPixelStoreCodeSafely(() -> {
+            var background = RenderUtil.prepareBackgroundBuffer().orElse(null);
+            EffekAssetLoader.get().forEach((id, inst) -> inst.draw(
+                    type,
+                    camera.getLookVector(), camera.getPosition().toVector3f(),
+                    w, h,
+                    CAMERA_TRANSFORM_DATA, PROJECTION_MATRIX_DATA,
+                    realDelta, partialTick, background
+            ));
+        });
 
         RenderType.PARTICLES_TARGET.clearRenderState();
 

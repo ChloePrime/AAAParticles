@@ -97,10 +97,6 @@ public class RenderUtil {
     }
 
     public static void runPixelStoreCodeHealthily(Runnable code) {
-        if (Platform.isFabric()) {
-            code.run();
-            return;
-        }
         runPixelStoreCodeSafely(() -> {
             glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
             glPixelStorei(GL_UNPACK_SKIP_ROWS, 0);
