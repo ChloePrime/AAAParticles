@@ -16,10 +16,11 @@ subprojects {
 
     repositories {
         maven {
-            // saps.dev Maven (KubeJS and Rhino)
-            url = "https://maven.saps.dev/minecraft"
+            // KubeJS Maven
+            url "https://maven.latvian.dev/releases"
             content {
                 includeGroup "dev.latvian.mods"
+                includeGroup "dev.latvian.apps"
             }
         }
         maven {
@@ -72,5 +73,9 @@ allprojects {
 
     java {
         withSourcesJar()
+    }
+
+    tasks.withType(GenerateModuleMetadata) {
+        enabled = false // Can't figure out how to disable the dependencies block here, and it's wrong by default (it pulls deobf deps).
     }
 }

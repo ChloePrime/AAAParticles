@@ -16,12 +16,24 @@ publishing {
     publications {
         mavenCommon(MavenPublication) {
             artifactId = rootProject.archives_base_name
+            pom.withXml {
+                def node = asNode()
+                if(node.dependencies.size() > 0)
+                    node.remove(node.dependencies) // Remove deps, as they are all mappings-dependent and/or forge
+            }
             from components.java
         }
     }
 
     // See https://docs.gradle.org/current/userguide/publishing_maven.html for information on how to set up publishing.
     repositories {
-        // Add repositories to publish to here.
+        maven {
+            name = "Chloe_Maven"
+            url = "https://maven.chloeprime.cn:4080/releases/"
+            credentials {
+                username "$CHLOE_MAVEN_USERNAME"
+                password "$CHLOE_MAVEN_PASSWORD"
+            }
+        }
     }
 }
