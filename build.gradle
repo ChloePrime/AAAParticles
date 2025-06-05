@@ -1,6 +1,6 @@
 plugins {
     id "architectury-plugin" version "3.4-SNAPSHOT"
-    id "dev.architectury.loom" version "1.7-SNAPSHOT" apply false
+    id "dev.architectury.loom" version "1.9-SNAPSHOT" apply false
 }
 
 architectury {
@@ -72,5 +72,9 @@ allprojects {
 
     java {
         withSourcesJar()
+    }
+
+    tasks.withType(GenerateModuleMetadata) {
+        enabled = false // Can't figure out how to disable the dependencies block here, and it's wrong by default (it pulls deobf deps).
     }
 }
