@@ -2,6 +2,7 @@ package mod.chloeprime.aaaparticles.api.common;
 
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
+import mod.chloeprime.aaaparticles.api.client.effekseer.ParticleEmitter;
 import mod.chloeprime.aaaparticles.client.installer.NativePlatform;
 import mod.chloeprime.aaaparticles.client.registry.EffectRegistry;
 import mod.chloeprime.aaaparticles.common.network.S2CAddParticle;
@@ -368,7 +369,9 @@ public class ParticleEmitterInfo implements Cloneable {
             } else {
                 x = y = z = 0;
             }
-            emitter.setPosition(x, y, z);
+            if (!hasBoundEntity) {
+                emitter.setPosition(x, y, z);
+            }
 
             if (isRotationSet) {
                 emitter.setRotation(rotX, rotY, rotZ);
@@ -391,7 +394,7 @@ public class ParticleEmitterInfo implements Cloneable {
                 var headSpace = usingEntityHeadSpace();
                 var entitySpace = headSpace || isEntitySpaceRelativePosSet();
                 var rotZ = this.rotZ;
-                emitter.addPreDrawCallback((em, partial) -> {
+                ParticleEmitter.PreDrawCallback updater = (em, partial) -> {
                     Optional.ofNullable(entity.get()).filter(Entity::isAlive).ifPresentOrElse(et -> {
                         float relX, relY, relZ;
                         if (entitySpace) {
@@ -423,7 +426,9 @@ public class ParticleEmitterInfo implements Cloneable {
                                 (float) Mth.lerp(partial, et.zOld, et.getZ()) + relZ
                         );
                     }, em::stop);
-                });
+                };
+                updater.accept(emitter, 0);
+                emitter.addPreDrawCallback(updater);
             }
         });
     }
