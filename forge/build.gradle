@@ -6,6 +6,10 @@ architectury {
     forge()
 }
 
+base {
+    archivesName = rootProject.archives_base_name.replace('_', '-') + "-" + project.name
+}
+
 configurations {
     common
     shadowCommon // Don't use shadow from the shadow plugin because we don't want IDEA to index this.
@@ -57,7 +61,6 @@ shadowJar {
 remapJar {
     inputFile.set shadowJar.archiveFile
     dependsOn shadowJar
-    archiveClassifier.set("forge")
 }
 
 jar {
@@ -84,7 +87,7 @@ components.java {
 publishing {
     publications {
         mavenForge(MavenPublication) {
-            artifactId = rootProject.archives_base_name + "-" + project.name
+            artifactId = archivesBaseName
             pom.withXml {
                 def node = asNode()
                 if(node.dependencies.size() > 0)

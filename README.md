@@ -17,8 +17,8 @@ repositories {
 }
 dependencies {
     // Choose one of these depending on your platform/toolchain
-    implementation fg.deobf('mod.chloeprime:aaa_particles-forge:1.20.1-1.4.10')
-    modImplementation 'mod.chloeprime:aaa_particles-fabric:1.20.1-1.4.10'
+    implementation fg.deobf('mod.chloeprime:aaa-particles-forge:1.20.1-1.4.11')
+    modImplementation 'mod.chloeprime:aaa-particles-fabric:1.20.1-1.4.11'
 }
 ```
 Then follow the [tutorial](https://github.com/ChloePrime/AAAParticles/wiki/How-To-Add-Particles)
