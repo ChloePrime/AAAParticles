@@ -27,7 +27,7 @@ public class ModNetwork {
     // I found this solution on https://github.com/Buuz135/FindMe/commit/b73519f2d9918e3dfb9b2655178230270dcdd7e0 's repository, many thanks!
     @SuppressWarnings("SameParameterValue")
     private static <T extends CustomPacketPayload> void register(NetworkManager.Side side, Class<T> type, StreamMemberEncoder<FriendlyByteBuf, T> encoder, StreamDecoder<FriendlyByteBuf, T> decoder, BiConsumer<T, Supplier<NetworkManager.PacketContext>> handler) {
-        CustomPayload.Id<T> payloadType = new CustomPayload.Id(AAAParticles.loc(String.valueOf(id.getAndIncrement())));
+        CustomPayload.Id<T> payloadType = new CustomPayload.Id(AAAParticles.loc(String.valueOf(ModNetwork.id.getAndIncrement())));
         TYPE_TO_ID_MAP.put(type, payloadType);
         PacketCodec<PacketByteBuf, T> codec = PacketCodec.of(encoder, decoder);
 
