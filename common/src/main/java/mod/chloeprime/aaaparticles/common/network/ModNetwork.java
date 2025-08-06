@@ -23,11 +23,18 @@ public class ModNetwork {
         register(NetworkManager.Side.S2C, S2CSendEmitterTrigger.class, S2CSendEmitterTrigger::encode, S2CSendEmitterTrigger::new, S2CSendEmitterTrigger::handle);
     }
 
+    // I would suggest a more robust solution with additional methods for registering on both sides, however for our use cases this will suffice.
+    // I found this solution on https://github.com/Buuz135/FindMe/commit/b73519f2d9918e3dfb9b2655178230270dcdd7e0 's repository, many thanks!
     @SuppressWarnings("SameParameterValue")
     private static <T extends CustomPacketPayload> void register(NetworkManager.Side side, Class<T> type, StreamMemberEncoder<FriendlyByteBuf, T> encoder, StreamDecoder<FriendlyByteBuf, T> decoder, BiConsumer<T, Supplier<NetworkManager.PacketContext>> handler) {
-        var payloadType = new CustomPacketPayload.Type<T>(AAAParticles.loc(String.valueOf(ModNetwork.id.getAndIncrement())));
+        CustomPayload.Id<T> payloadType = new CustomPayload.Id(AAAParticles.loc(String.valueOf(id.getAndIncrement())));
         TYPE_TO_ID_MAP.put(type, payloadType);
-        var codec = StreamCodec.ofMember(encoder, decoder);
-        NetworkManager.registerReceiver(side, payloadType, codec, (packet, context) -> handler.accept(packet, () -> context));
+        PacketCodec<PacketByteBuf, T> codec = PacketCodec.of(encoder, decoder);
+
+        if (Platform.getEnvironment().equals(Env.SERVER)) {
+            NetworkAggregator.registerS2CType(payloadType, codec, List.of());
+        } else {
+            NetworkAggregator.registerReceiver(NetworkManager.s2c(), payloadType, codec, Collections.emptyList(), (packet, context) -> handler.accept(packet, (Supplier)() -> context));
+        }
     }
 }
