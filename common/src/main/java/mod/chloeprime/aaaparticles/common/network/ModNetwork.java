@@ -1,6 +1,8 @@
 package mod.chloeprime.aaaparticles.common.network;
 
 import dev.architectury.networking.NetworkManager;
+import dev.architectury.platform.Platform;
+import dev.architectury.utils.Env;
 import mod.chloeprime.aaaparticles.AAAParticles;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
@@ -25,9 +27,16 @@ public class ModNetwork {
 
     @SuppressWarnings("SameParameterValue")
     private static <T extends CustomPacketPayload> void register(NetworkManager.Side side, Class<T> type, StreamMemberEncoder<FriendlyByteBuf, T> encoder, StreamDecoder<FriendlyByteBuf, T> decoder, BiConsumer<T, Supplier<NetworkManager.PacketContext>> handler) {
-        var payloadType = new CustomPacketPayload.Type<T>(AAAParticles.loc(String.valueOf(ModNetwork.id.getAndIncrement())));
+        var payloadType = new CustomPacketPayload.Type<T>(AAAParticles.loc(String.valueOf(id.getAndIncrement())));
         TYPE_TO_ID_MAP.put(type, payloadType);
         var codec = StreamCodec.ofMember(encoder, decoder);
-        NetworkManager.registerReceiver(side, payloadType, codec, (packet, context) -> handler.accept(packet, () -> context));
+
+        // Fix crash on Fabric dedicated server.
+        // Solution found by LeBoundlessJame in #60
+        if (side == NetworkManager.Side.S2C && Platform.getEnvironment() == Env.SERVER) {
+            NetworkManager.registerS2CPayloadType(payloadType, codec);
+        } else {
+            NetworkManager.registerReceiver(side, payloadType, codec, (packet, context) -> handler.accept(packet, () -> context));
+        }
     }
 }
