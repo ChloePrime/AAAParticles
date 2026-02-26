@@ -5,8 +5,10 @@ import com.mojang.blaze3d.platform.Window;
 import mod.chloeprime.aaaparticles.client.internal.ReloadTrackable;
 import mod.chloeprime.aaaparticles.client.internal.RenderStateCapture;
 import mod.chloeprime.aaaparticles.client.registry.EffectRegistry;
+import mod.chloeprime.aaaparticles.common.util.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.main.GameConfig;
+import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -62,5 +64,14 @@ public abstract class MixinMinecraft implements ReloadTrackable, Executor {
     @Override
     public boolean aaa_particles$isReloading() {
         return aaa_particles$myReloadTracker.get() > 0;
+    }
+
+    // Delta Time Tracking
+
+    @Inject(
+            method = "runTick",
+            at = @At(value = "FIELD", opcode = Opcodes.GETFIELD, target = "Lnet/minecraft/client/Minecraft;noRender:Z"))
+    private void trackDeltaTime(boolean bl, CallbackInfo ci) {
+        DeltaTracker.run();
     }
 }

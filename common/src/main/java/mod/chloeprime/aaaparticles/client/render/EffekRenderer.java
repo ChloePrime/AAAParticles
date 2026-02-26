@@ -10,6 +10,7 @@ import mod.chloeprime.aaaparticles.client.internal.EffekFpvRenderer;
 import mod.chloeprime.aaaparticles.client.internal.RenderContext;
 import mod.chloeprime.aaaparticles.client.internal.RenderStateCapture;
 import mod.chloeprime.aaaparticles.client.loader.EffekAssetLoader;
+import mod.chloeprime.aaaparticles.common.util.DeltaTracker;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ItemInHandRenderer;
@@ -114,7 +115,7 @@ public class EffekRenderer {
         Optional.ofNullable(MINECRAFT.levelRenderer.getParticlesTarget())
                 .ifPresent(rt -> RenderUtil.copyDepthSafely(MINECRAFT.getMainRenderTarget(), rt));
 
-        float deltaFrames = 60 * getDeltaTime(type);
+        float deltaFrames = 60 * DeltaTracker.getDeltaTime();
         float realDelta = MINECRAFT.isPaused() ? 0 : deltaFrames;
 
         RenderType.PARTICLES_TARGET.setupRenderState();
@@ -175,20 +176,6 @@ public class EffekRenderer {
         m.put(0xD , m13);
         m.put(0xE , m23);
         m.put(0xF , m33);
-    }
-
-    private static final long[] lastDrawTimeByNanos = new long[256];
-
-    private static float getDeltaTime(ParticleEmitter.Type type) {
-        long last = lastDrawTimeByNanos[type.ordinal()];
-        if (last == 0) {
-            lastDrawTimeByNanos[type.ordinal()] = System.nanoTime();
-            return 1f / 60;
-        }
-
-        long now = System.nanoTime();
-        lastDrawTimeByNanos[type.ordinal()] = now;
-        return (float) ((now - last) * 1e-9);
     }
 
     public static final class MinecraftHolder {
