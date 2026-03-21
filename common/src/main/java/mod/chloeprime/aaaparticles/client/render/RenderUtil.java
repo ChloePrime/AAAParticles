@@ -2,14 +2,15 @@ package mod.chloeprime.aaaparticles.client.render;
 
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import dev.architectury.injectables.annotations.ExpectPlatform;
-import dev.architectury.platform.Platform;
 import mod.chloeprime.aaaparticles.client.internal.ReloadTrackable;
 import mod.chloeprime.aaaparticles.client.internal.RenderStateCapture;
 import net.minecraft.client.Minecraft;
+import org.apache.commons.lang3.mutable.MutableObject;
 import org.jetbrains.annotations.ApiStatus;
 import org.lwjgl.opengl.GL11;
 
 import java.util.Optional;
+import java.util.function.Supplier;
 
 import static org.lwjgl.opengl.GL30.*;
 
@@ -103,6 +104,12 @@ public class RenderUtil {
             glPixelStorei(GL_UNPACK_SKIP_PIXELS, 0);
             code.run();
         });
+    }
+
+    public static <T> T supplyPixelStoreCodeHealthily(Supplier<T> code) {
+        var ret = new MutableObject<T>();
+        runPixelStoreCodeHealthily(() -> ret.setValue(code.get()));
+        return ret.getValue();
     }
 
     public static boolean isReloadingResourcePacks() {
