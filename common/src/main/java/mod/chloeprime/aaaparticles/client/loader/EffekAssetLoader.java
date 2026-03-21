@@ -1,11 +1,14 @@
 package mod.chloeprime.aaaparticles.client.loader;
 
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
 import com.mojang.logging.LogUtils;
 import mod.chloeprime.aaaparticles.api.client.effekseer.EffekseerEffect;
 import mod.chloeprime.aaaparticles.api.client.effekseer.TextureType;
 import mod.chloeprime.aaaparticles.client.installer.NativePlatform;
 import mod.chloeprime.aaaparticles.client.internal.LimitlessResourceLocationFactory;
 import mod.chloeprime.aaaparticles.client.registry.EffectDefinition;
+import mod.chloeprime.aaaparticles.client.registry.LazyEffectDefinition;
 import mod.chloeprime.aaaparticles.client.render.EffekRenderer;
 import mod.chloeprime.aaaparticles.client.render.RenderUtil;
 import net.minecraft.resources.ResourceLocation;
@@ -24,6 +27,7 @@ import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.IntFunction;
+import java.util.function.Supplier;
 
 /**
  * Loading effects from minecraft's resource system.
@@ -36,51 +40,56 @@ public class EffekAssetLoader extends SimplePreparableReloadListener<EffekAssetL
         return INSTANCE;
     }
 
-    @Nullable
-    public EffectDefinition get(ResourceLocation id) {
+    public @Nullable LazyEffectDefinition get(ResourceLocation id) {
         return loadedEffects.get(id);
     }
 
-    public Set<Map.Entry<ResourceLocation, EffectDefinition>> entries() {
+    public @Nullable ResourceLocation getKey(LazyEffectDefinition def) {
+        return loadedEffects.inverse().get(def);
+    }
+
+    public Set<Map.Entry<ResourceLocation, LazyEffectDefinition>> entries() {
         return loadedEffects.entrySet();
     }
 
-    public void forEach(BiConsumer<ResourceLocation, EffectDefinition> action) {
+    public void forEach(BiConsumer<ResourceLocation, LazyEffectDefinition> action) {
         loadedEffects.forEach(action);
     }
 
-    private Optional<EffekseerEffect> loadEffect(ResourceManager manager, ResourceLocation name, Resource efkefc) {
-        try (var input = efkefc.open()) {
-            EffekseerEffect effect = new EffekseerEffect();
-            boolean success = effect.load(input, 1);
-            if (!success) {
-                LOGGER.error("Failed to load {}", name);
-                return Optional.empty();
-            }
-
-            try {
-                for (TextureType texType : TextureType.values()) {
-                    int count = effect.textureCount(texType);
-                    load(
-                            manager,
-                            name, count,
-                            i -> effect.getTexturePath(i, texType),
-                            (b, len, i) -> effect.loadTexture(b, len, i, texType)
-                    );
+    private Supplier<Optional<EffekseerEffect>> loadEffect(ResourceManager manager, ResourceLocation name, Resource efkefc) {
+        return () -> {
+            try (var input = efkefc.open()) {
+                EffekseerEffect effect = new EffekseerEffect();
+                boolean success = effect.load(input, 1);
+                if (!success) {
+                    LOGGER.error("Failed to load {}", name);
+                    return Optional.empty();
                 }
-                load(manager, name, effect.modelCount(), effect::getModelPath, effect::loadModel);
-                load(manager, name, effect.curveCount(), effect::getCurvePath, effect::loadCurve);
-                load(manager, name, effect.materialCount(), effect::getMaterialPath, effect::loadMaterial);
-                return Optional.of(effect);
-            } catch (FileNotFoundException ex) {
-                LOGGER.error("Failed to load {}", name, ex);
-                effect.close();
+
+                try {
+                    for (TextureType texType : TextureType.values()) {
+                        int count = effect.textureCount(texType);
+                        load(
+                                manager,
+                                name, count,
+                                i -> effect.getTexturePath(i, texType),
+                                (b, len, i) -> effect.loadTexture(b, len, i, texType)
+                        );
+                    }
+                    load(manager, name, effect.modelCount(), effect::getModelPath, effect::loadModel);
+                    load(manager, name, effect.curveCount(), effect::getCurvePath, effect::loadCurve);
+                    load(manager, name, effect.materialCount(), effect::getMaterialPath, effect::loadMaterial);
+                    return Optional.of(effect);
+                } catch (FileNotFoundException ex) {
+                    LOGGER.error("Failed to load {}", name, ex);
+                    effect.close();
+                    return Optional.empty();
+                }
+            } catch (IOException ex) {
+                handleCheckedException(ex);
                 return Optional.empty();
             }
-        } catch (IOException ex) {
-            handleCheckedException(ex);
-            return Optional.empty();
-        }
+        };
     }
 
     private static final BiFunction<String, String, ResourceLocation> UNVALIDATED_RES_LOC_FACTORY =
@@ -130,11 +139,11 @@ public class EffekAssetLoader extends SimplePreparableReloadListener<EffekAssetL
     }
 
     protected static class Preparations {
-        private final Map<ResourceLocation, EffectDefinition> loadedEffects = new LinkedHashMap<>();
+        private final Map<ResourceLocation, LazyEffectDefinition> loadedEffects = new LinkedHashMap<>();
     }
 
     private void unloadAll() {
-        loadedEffects.values().forEach(EffectDefinition::close);
+        loadedEffects.values().forEach(LazyEffectDefinition::close);
         loadedEffects.clear();
     }
 
@@ -166,7 +175,11 @@ public class EffekAssetLoader extends SimplePreparableReloadListener<EffekAssetL
                 var prep = new Preparations();
                 manager.listResources("effeks", rl -> rl.getPath().endsWith(".efkefc")).forEach((location, resource) -> {
                     var name = createEffekName(location);
-                    loadEffect(manager, name, resource).ifPresent(effect -> prep.loadedEffects.put(name, new EffectDefinition().setEffect(effect)));
+                    var loaded = loadEffect(manager, name, resource);
+                    var def = new LazyEffectDefinition(() -> loaded.get()
+                            .map(effect -> new EffectDefinition().setEffect(effect))
+                            .orElse(null));
+                    prep.loadedEffects.put(name, def);
                 });
                 loadedEffects.putAll(prep.loadedEffects);
             });
@@ -194,6 +207,6 @@ public class EffekAssetLoader extends SimplePreparableReloadListener<EffekAssetL
 
     private static final Logger LOGGER = LogUtils.getLogger();
 
-    private final Map<ResourceLocation, EffectDefinition> loadedEffects = new LinkedHashMap<>();
+    private final BiMap<ResourceLocation, LazyEffectDefinition> loadedEffects = HashBiMap.create();
 }
 
