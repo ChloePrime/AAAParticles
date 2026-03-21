@@ -5,6 +5,7 @@ import it.unimi.dsi.fastutil.ints.IntList;
 import mod.chloeprime.aaaparticles.api.client.effekseer.ParticleEmitter;
 import mod.chloeprime.aaaparticles.client.installer.NativePlatform;
 import mod.chloeprime.aaaparticles.client.registry.EffectRegistry;
+import mod.chloeprime.aaaparticles.client.registry.LazyEffectDefinition;
 import mod.chloeprime.aaaparticles.common.network.S2CAddParticle;
 import mod.chloeprime.aaaparticles.common.util.Basis;
 import net.minecraft.network.FriendlyByteBuf;
@@ -349,7 +350,8 @@ public class ParticleEmitterInfo implements Cloneable {
         if (NativePlatform.isRunningOnUnsupportedPlatform()) {
             return;
         }
-        Optional.ofNullable(EffectRegistry.get(effek)).ifPresent(effek -> {
+        var loaded = Optional.ofNullable(EffectRegistry.get(effek)).map(LazyEffectDefinition::load);
+        loaded.ifPresent(future -> future.thenAccept(def -> def.ifPresent(effek -> {
             var emitter = hasEmitter() ? effek.play(this.emitter) : effek.play();
             var hasBoundEntity = hasBoundEntity();
             var isPositionSet = isPositionSet();
@@ -430,7 +432,7 @@ public class ParticleEmitterInfo implements Cloneable {
                 updater.accept(emitter, 0);
                 emitter.addPreDrawCallback(updater);
             }
-        });
+        })));
     }
 
     @ApiStatus.Internal
