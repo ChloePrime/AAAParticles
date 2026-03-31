@@ -11,10 +11,7 @@ import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.management.ManagementFactory;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.BiConsumer;
 
 /**
@@ -31,7 +28,9 @@ public class EffectRegistry {
     }
 
     public static Collection<Map.Entry<ResourceLocation, LazyEffectDefinition>> entries() {
-        return EffekAssetLoader.get().entries();
+        return Optional.ofNullable(EffekAssetLoader.get())
+                .map(EffekAssetLoader::entries)
+                .orElse(Collections.emptySet());
     }
 
     static {
