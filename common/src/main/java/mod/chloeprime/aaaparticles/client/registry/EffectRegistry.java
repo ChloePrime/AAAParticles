@@ -6,8 +6,7 @@ import mod.chloeprime.aaaparticles.client.loader.EffekAssetLoader;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Collection;
-import java.util.Map;
+import java.util.*;
 import java.util.function.BiConsumer;
 
 /**
@@ -21,7 +20,9 @@ public class EffectRegistry {
     }
 
     public static Collection<Map.Entry<ResourceLocation, EffectDefinition>> entries() {
-        return EffekAssetLoader.get().entries();
+        return Optional.ofNullable(EffekAssetLoader.get())
+                .map(EffekAssetLoader::entries)
+                .orElse(Collections.emptySet());
     }
 
     public static void clearAllPlaying() {
