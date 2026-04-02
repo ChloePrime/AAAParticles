@@ -13,6 +13,6 @@ public class AAAParticlesForgeClient extends AAAParticles {
     @SuppressWarnings("unused")
     static void onClientSetup(FMLClientSetupEvent e) {
         e.enqueueWork(AAAParticlesClient::setup);
-        e.enqueueWork(() -> RenderUtil.runPixelStoreCodeHealthily(RenderStateCapture::init));
+        e.enqueueWork(() -> RenderUtil.runForeignRenderCodeHealthily(RenderStateCapture::init));
     }
 }

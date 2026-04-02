@@ -3,6 +3,7 @@ package mod.chloeprime.aaaparticles.mixin.client;
 import com.mojang.blaze3d.vertex.PoseStack;
 import mod.chloeprime.aaaparticles.client.internal.RenderContext;
 import mod.chloeprime.aaaparticles.client.render.EffekRenderer;
+import mod.chloeprime.aaaparticles.client.render.RenderUtil;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.ItemInHandRenderer;
 import org.objectweb.asm.Opcodes;

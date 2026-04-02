@@ -1,5 +1,6 @@
 package mod.chloeprime.aaaparticles.client.render;
 
+import com.mojang.blaze3d.shaders.ProgramManager;
 import com.mojang.blaze3d.vertex.PoseStack;
 import mod.chloeprime.aaaparticles.AAAParticles;
 import mod.chloeprime.aaaparticles.api.client.effekseer.DeviceType;
@@ -10,10 +11,13 @@ import mod.chloeprime.aaaparticles.client.internal.EffekFpvRenderer;
 import mod.chloeprime.aaaparticles.client.internal.RenderContext;
 import mod.chloeprime.aaaparticles.client.internal.RenderStateCapture;
 import mod.chloeprime.aaaparticles.client.loader.EffekAssetLoader;
+import mod.chloeprime.aaaparticles.client.util.GlDebug;
+import mod.chloeprime.aaaparticles.client.util.GlDebugIds;
 import mod.chloeprime.aaaparticles.common.util.DeltaTracker;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ItemInHandRenderer;
+import net.minecraft.client.renderer.RenderStateShard;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.world.InteractionHand;
 import org.joml.Matrix4f;
@@ -119,9 +123,11 @@ public class EffekRenderer {
         float realDelta = MINECRAFT.isPaused() ? 0 : deltaFrames;
 
         RenderType.PARTICLES_TARGET.setupRenderState();
+        var background = MINECRAFT.getMainRenderTarget();
 
-        RenderUtil.runPixelStoreCodeSafely(() -> {
-            var background = RenderUtil.prepareBackgroundBuffer().orElse(null);
+        RenderUtil.runForeignRenderCodeSafely(() -> {
+            RenderStateShard.TRANSLUCENT_TRANSPARENCY.setupRenderState();
+            GlDebug.pushDebugGroup(GlDebugIds.EFFEK_RENDER_DISPATCH, () -> "[AAAParticle] Rendering Effeks");
             EffekAssetLoader.get().forEach((id, lazy) -> lazy.lazyGet().ifPresent(def -> def.draw(
                     type,
                     camera.getLookVector(), camera.getPosition().toVector3f(),
@@ -129,6 +135,9 @@ public class EffekRenderer {
                     CAMERA_TRANSFORM_DATA, PROJECTION_MATRIX_DATA,
                     realDelta, partialTick, background
             )));
+            RenderStateShard.TRANSLUCENT_TRANSPARENCY.clearRenderState();
+            GlDebug.popDebugGroup();
+            ProgramManager.glUseProgram(0);
         });
 
         RenderType.PARTICLES_TARGET.clearRenderState();
