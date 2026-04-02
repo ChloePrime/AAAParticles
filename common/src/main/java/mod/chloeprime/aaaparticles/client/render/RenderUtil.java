@@ -8,12 +8,20 @@ import mod.chloeprime.aaaparticles.client.internal.RenderStateCapture;
 import net.minecraft.client.Minecraft;
 import org.jetbrains.annotations.ApiStatus;
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL41C;
 
 import java.util.Optional;
 
-import static org.lwjgl.opengl.GL30.*;
+import static org.lwjgl.opengl.GL41C.*;
 
 public class RenderUtil {
+    public static void clearSamplerBindings(int start) {
+        var max = glGetInteger(GL41C.GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS);
+        for (int i = start; i < max; i++) {
+            glBindSampler(i, 0);
+        }
+    }
+
     public static void copyDepthSafely(RenderTarget from, RenderTarget to) {
         var read = GL11.glGetInteger(GL_READ_FRAMEBUFFER_BINDING);
         var draw = GL11.glGetInteger(GL_DRAW_FRAMEBUFFER_BINDING);
