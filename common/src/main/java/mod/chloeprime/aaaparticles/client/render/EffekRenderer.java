@@ -10,6 +10,8 @@ import mod.chloeprime.aaaparticles.client.internal.EffekFpvRenderer;
 import mod.chloeprime.aaaparticles.client.internal.RenderContext;
 import mod.chloeprime.aaaparticles.client.internal.RenderStateCapture;
 import mod.chloeprime.aaaparticles.client.loader.EffekAssetLoader;
+import mod.chloeprime.aaaparticles.client.util.GlDebug;
+import mod.chloeprime.aaaparticles.client.util.GlDebugIds;
 import net.minecraft.client.Camera;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
@@ -123,6 +125,7 @@ public class EffekRenderer {
         RenderType.PARTICLES_TARGET.setupRenderState();
 
         RenderUtil.runPixelStoreCodeSafely(() -> {
+            GlDebug.pushDebugGroup(GlDebugIds.EFFEK_RENDER_DISPATCH, () -> "[AAAParticle] Rendering Effeks");
             var background = RenderUtil.prepareBackgroundBuffer().orElse(null);
             EffekAssetLoader.get().forEach((id, inst) -> inst.draw(
                     type,
@@ -131,6 +134,8 @@ public class EffekRenderer {
                     CAMERA_TRANSFORM_DATA, PROJECTION_MATRIX_DATA,
                     realDelta, partialTick, background
             ));
+            RenderUtil.clearSamplerBindings(5);
+            GlDebug.popDebugGroup();
         });
 
         RenderType.PARTICLES_TARGET.clearRenderState();
