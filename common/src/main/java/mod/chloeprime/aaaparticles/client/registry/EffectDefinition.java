@@ -1,17 +1,22 @@
 package mod.chloeprime.aaaparticles.client.registry;
 
+import com.google.common.base.Suppliers;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import mod.chloeprime.aaaparticles.api.client.effekseer.EffekseerEffect;
 import mod.chloeprime.aaaparticles.api.client.effekseer.EffekseerManager;
 import mod.chloeprime.aaaparticles.api.client.effekseer.ParticleEmitter;
 import mod.chloeprime.aaaparticles.client.render.RenderUtil;
+import mod.chloeprime.aaaparticles.client.util.GlDebug;
+import mod.chloeprime.aaaparticles.client.util.GlDebugIds;
 import net.minecraft.resources.ResourceLocation;
 import org.apache.commons.lang3.mutable.MutableInt;
+import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 
 import java.io.Closeable;
 import java.util.*;
+import java.util.function.Supplier;
 import java.util.random.RandomGenerator;
 import java.util.stream.Stream;
 
@@ -27,6 +32,11 @@ public class EffectDefinition implements Closeable {
             oneShotEmitters.put(type, new LinkedHashSet<>());
             namedEmitters.put(type, new LinkedHashMap<>());
         }
+    }
+
+    @SuppressWarnings("unused")
+    public ResourceLocation getId() {
+        return id.get();
     }
 
     public ParticleEmitter play() {
@@ -120,6 +130,9 @@ public class EffectDefinition implements Closeable {
         return managers.values().stream();
     }
 
+    private final Supplier<ResourceLocation> id = Suppliers.memoize(this::fetchId);
+    private final Supplier<String> glDebugLabel = Suppliers.memoize(() -> "[AAAParticles] Begin Rendering Effek %s".formatted(id.get()));
+
     private EffekseerEffect effect;
     private final EnumMap<ParticleEmitter.Type, EffekseerManager> managers = new EnumMap<>(ParticleEmitter.Type.class);
     private final EnumMap<ParticleEmitter.Type, Set<ParticleEmitter>> oneShotEmitters = new EnumMap<>(ParticleEmitter.Type.class);
@@ -130,6 +143,17 @@ public class EffectDefinition implements Closeable {
     private int gcTicks;
     private final EnumMap<ParticleEmitter.Type, MutableInt> backgroundColorIds = new EnumMap<>(ParticleEmitter.Type.class);
     private final EnumMap<ParticleEmitter.Type, MutableInt> backgroundDepthIds = new EnumMap<>(ParticleEmitter.Type.class);
+
+    private @Nullable ResourceLocation fetchId() {
+        return EffectRegistry.entries().stream()
+                .flatMap(kvp -> kvp.getValue().lazyGet()
+                        .map(ed -> Pair.of(kvp.getKey(), ed))
+                        .stream())
+                .filter(pair -> pair.getRight() == this)
+                .findFirst()
+                .map(Pair::getKey)
+                .orElse(null);
+    }
 
     public void draw(
             ParticleEmitter.Type type,
@@ -162,12 +186,13 @@ public class EffectDefinition implements Closeable {
             manager.getImpl().SetDepth(backgroundDepthId.intValue(), false);
         }
 
-        manager.startUpdate();
+        manager.getImpl().SetLayerParameter(1, pos.x, pos.y, pos.z, 0);
         manager.update(deltaFrames);
-        manager.endUpdate();
 
         emitters(type).forEach(emitter -> emitter.runPreDrawCallbacks(partialTicks));
+        GlDebug.pushDebugGroup(GlDebugIds.EFFEK_DRAWING, glDebugLabel);
         manager.draw();
+        GlDebug.popDebugGroup();
 
         if (type == ParticleEmitter.Type.WORLD) {
             gcTicks = (gcTicks + 1) % GC_DELAY;
