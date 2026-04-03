@@ -10,7 +10,7 @@ public class GlDebug {
 
     public static void pushDebugGroup(int id, Supplier<? extends CharSequence> message) {
         if (ENABLED) {
-            AppleFriendlyGL.glPushDebugGroup(GL43C.GL_DEBUG_SOURCE_APPLICATION, id, message.get());
+            AppleFriendlyGL.glPushDebugGroup(GL43C.GL_DEBUG_SOURCE_THIRD_PARTY, id, message.get());
         }
     }
 

@@ -2,6 +2,7 @@ package mod.chloeprime.aaaparticles.client.registry;
 
 import com.google.common.base.Suppliers;
 import com.mojang.blaze3d.pipeline.RenderTarget;
+import mod.chloeprime.aaaparticles.AAAParticles;
 import mod.chloeprime.aaaparticles.api.client.effekseer.EffekseerEffect;
 import mod.chloeprime.aaaparticles.api.client.effekseer.EffekseerManager;
 import mod.chloeprime.aaaparticles.api.client.effekseer.ParticleEmitter;
@@ -131,7 +132,9 @@ public class EffectDefinition implements Closeable {
     }
 
     private final Supplier<ResourceLocation> id = Suppliers.memoize(this::fetchId);
-    private final Supplier<String> glDebugLabel = Suppliers.memoize(() -> "[AAAParticles] Begin Rendering Effek %s".formatted(id.get()));
+    private final Supplier<String> glDebugLabel = Suppliers.memoize(() -> "%s Begin Rendering Effek %s".formatted(AAAParticles.LOG_PREFIX, id.get()));
+    private final Supplier<String> glUnloadManagerLabel = Suppliers.memoize(() -> "%s Unloading managers for effek %s".formatted(AAAParticles.LOG_PREFIX, id.get()));
+    private final Supplier<String> glUnloadLabel = Suppliers.memoize(() -> "%s Unloading effek %s".formatted(AAAParticles.LOG_PREFIX, id.get()));
 
     private EffekseerEffect effect;
     private final EnumMap<ParticleEmitter.Type, EffekseerManager> managers = new EnumMap<>(ParticleEmitter.Type.class);
@@ -244,7 +247,11 @@ public class EffectDefinition implements Closeable {
     @Override
     public void close() {
         Arrays.stream(ParticleEmitter.Type.values()).forEach(this::unsetBackgrounds);
+        GlDebug.pushDebugGroup(GlDebugIds.EFFEK_MANAGER_UNLOADING, glUnloadManagerLabel);
         managers.values().forEach(EffekseerManager::close);
+        GlDebug.popDebugGroup();
+        GlDebug.pushDebugGroup(GlDebugIds.EFFEK_UNLOADING, glUnloadLabel);
         effect.close();
+        GlDebug.popDebugGroup();
     }
 }
