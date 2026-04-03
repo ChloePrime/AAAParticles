@@ -3,6 +3,7 @@ package mod.chloeprime.aaaparticles.client.loader;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.mojang.logging.LogUtils;
+import mod.chloeprime.aaaparticles.AAAParticles;
 import mod.chloeprime.aaaparticles.api.client.effekseer.EffekseerEffect;
 import mod.chloeprime.aaaparticles.api.client.effekseer.TextureType;
 import mod.chloeprime.aaaparticles.client.installer.NativePlatform;
@@ -10,6 +11,8 @@ import mod.chloeprime.aaaparticles.client.registry.EffectDefinition;
 import mod.chloeprime.aaaparticles.client.registry.LazyEffectDefinition;
 import mod.chloeprime.aaaparticles.client.render.EffekRenderer;
 import mod.chloeprime.aaaparticles.client.render.RenderUtil;
+import mod.chloeprime.aaaparticles.client.util.GlDebug;
+import mod.chloeprime.aaaparticles.client.util.GlDebugIds;
 import mod.chloeprime.aaaparticles.common.util.LimitlessResourceLocation;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
@@ -60,6 +63,7 @@ public class EffekAssetLoader extends SimplePreparableReloadListener<EffekAssetL
 
     private Supplier<Optional<EffekseerEffect>> loadEffect(ResourceManager manager, ResourceLocation name, Resource efkefc) {
         return () -> {
+            GlDebug.pushDebugGroup(GlDebugIds.EFFEK_LOADING, () -> AAAParticles.LOG_PREFIX + " Loading effek %s".formatted(name));
             try (var input = efkefc.open()) {
                 EffekseerEffect effect = new EffekseerEffect();
                 boolean success = effect.load(input, 1);
@@ -90,6 +94,8 @@ public class EffekAssetLoader extends SimplePreparableReloadListener<EffekAssetL
             } catch (IOException ex) {
                 handleCheckedException(ex);
                 return Optional.empty();
+            } finally {
+                GlDebug.popDebugGroup();
             }
         };
     }

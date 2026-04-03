@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 public class AAAParticles
 {
 	public static final String MOD_ID = "aaa_particles";
+	public static final String LOG_PREFIX = "[AAAParticles]";
 	public static final Logger LOGGER = LogUtils.getLogger();
 
 	public static void init() {
