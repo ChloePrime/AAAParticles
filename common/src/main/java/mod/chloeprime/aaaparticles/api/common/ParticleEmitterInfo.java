@@ -50,6 +50,7 @@ public class ParticleEmitterInfo implements Cloneable {
     protected double x, y, z;
     protected float rotX, rotY, rotZ;
     protected float scaleX = 1, scaleY = 1, scaleZ = 1;
+    protected float speed = 1;
     protected double esX, esY, esZ;
     protected int boundEntity;
     protected final List<DynamicParameter> parameters = new ArrayList<>();
@@ -101,6 +102,13 @@ public class ParticleEmitterInfo implements Cloneable {
         return (flags & 8) != 0;
     }
 
+    /**
+     * @since 2.0.0
+     */
+    public final boolean isSpeedSet() {
+        return (flags & 512) != 0;
+    }
+
     public final boolean hasParameters() {
         return (flags & 128) != 0;
     }
@@ -115,6 +123,7 @@ public class ParticleEmitterInfo implements Cloneable {
 
     /**
      * Set whether position and rotation are in entity space.
+     *
      * @return True if coordinates are in entity space, otherwise in world space.
      */
     public final boolean isEntitySpaceRelativePosSet() {
@@ -128,6 +137,7 @@ public class ParticleEmitterInfo implements Cloneable {
     /**
      * Set position. <br>
      * Will be relative position (in world space) if {@link #hasBoundEntity()}
+     *
      * @param pos Relative/Absolute position
      * @return self
      * @see #entitySpaceRelativePosition(double, double, double) for relative position in entity space.
@@ -139,6 +149,7 @@ public class ParticleEmitterInfo implements Cloneable {
     /**
      * Set position. <br>
      * Will be relative position if {@link #hasBoundEntity()}
+     *
      * @param x X position
      * @param y Y position
      * @param z Z position
@@ -155,6 +166,7 @@ public class ParticleEmitterInfo implements Cloneable {
     /**
      * Set rotation in radians.<br>
      * Euler order is YXZ
+     *
      * @param rot rotation vector(x, y), in radians
      * @return self
      */
@@ -164,7 +176,8 @@ public class ParticleEmitterInfo implements Cloneable {
 
     /**
      * Set rotation in radians.<br>
-     * Euler order is YXZ
+     * Euler order is YXZ.
+     *
      * @param x X rotation, in radians
      * @param y Y rotation, in radians
      * @param z Z rotation, in radians
@@ -178,15 +191,52 @@ public class ParticleEmitterInfo implements Cloneable {
         return this;
     }
 
+    /**
+     * Set scale of this emitter.<br>
+     *
+     * @param scale scale value.
+     * @return self
+     */
     public ParticleEmitterInfo scale(float scale) {
         return scale(scale, scale, scale);
     }
 
+    /**
+     * Set scale of this emitter.<br>
+     *
+     * @param x X-axis scale value.
+     * @param y y-axis scale value.
+     * @param z Z-axis scale value.
+     * @return self
+     */
     public ParticleEmitterInfo scale(float x, float y, float z) {
         this.scaleX = x;
         this.scaleY = y;
         this.scaleZ = z;
         flags |= 8;
+        return this;
+    }
+
+    /**
+     * Set relative play speed of this emitter.
+     * <p>
+     * WARNING: Effekseer effects are baked as 60 frames (by default), and
+     * changing this value to lower than {@code 1} may look lagged / stepped.
+     * <p>
+     * To fix this problem, you should set the play speed in your Effekseer editor
+     * as the slowest desired play speed, and call this method with the argument value not lesser than {@code 1},
+     * up to your max desired relative play speed.
+     * <p>
+     * WARNING: Do not set speed on long-time emitters.
+     * Emitters with relative speed other than {@code 1} (default)
+     * will increase performance cost by time, until it has been stopped.
+     *
+     * @param speed relative speed.
+     * @since 2.0.0
+     */
+    public ParticleEmitterInfo speed(float speed) {
+        this.speed = speed;
+        flags |= 512;
         return this;
     }
 
@@ -256,6 +306,10 @@ public class ParticleEmitterInfo implements Cloneable {
     public final Vec3 scale() {
         return isScaleSet() ? new Vec3(scaleX, scaleY, scaleZ) : VEC3_ONES;
     }
+    /** @since 2.0.0 */
+    public final float speed() {
+        return isSpeedSet() ? speed : 1;
+    }
     public Optional<Entity> getBoundEntity(Level level) {
         return hasBoundEntity() ? Optional.ofNullable(level.getEntity(boundEntity)) : Optional.empty();
     }
@@ -280,6 +334,9 @@ public class ParticleEmitterInfo implements Cloneable {
             buf.writeFloat(scaleX);
             buf.writeFloat(scaleY);
             buf.writeFloat(scaleZ);
+        }
+        if (isSpeedSet()) {
+            buf.writeFloat(speed);
         }
         if (hasParameters()) {
             buf.writeVarInt(parameters.size());
@@ -324,6 +381,9 @@ public class ParticleEmitterInfo implements Cloneable {
             scaleY = buf.readFloat();
             scaleZ = buf.readFloat();
         }
+        if (isSpeedSet()) {
+            speed = buf.readFloat();
+        }
         if (hasParameters()) {
             var paramCount = buf.readVarInt();
             for (int i = 0; i < paramCount; i++) {
@@ -357,6 +417,7 @@ public class ParticleEmitterInfo implements Cloneable {
             var isPositionSet = isPositionSet();
             var isRotationSet = isRotationSet();
             var isScaleSet = isScaleSet();
+            var isSpeedSet = isSpeedSet();
             var hasParams = hasParameters();
             var hasTriggs = hasTriggers();
             float x, y, z;
@@ -380,6 +441,9 @@ public class ParticleEmitterInfo implements Cloneable {
             }
             if (isScaleSet) {
                 emitter.setScale(scaleX, scaleY, scaleZ);
+            }
+            if (isSpeedSet) {
+                emitter.setSpeed(speed);
             }
 
             if (hasParams) {
@@ -447,6 +511,7 @@ public class ParticleEmitterInfo implements Cloneable {
         target.scaleX = this.scaleX;
         target.scaleY = this.scaleY;
         target.scaleZ = this.scaleZ;
+        target.speed = this.speed;
         target.parameters.clear();
         target.parameters.addAll(this.parameters);
         target.triggers.clear();

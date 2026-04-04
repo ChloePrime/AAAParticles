@@ -71,7 +71,8 @@ public enum Debug {
             return;
         }
 
-        var efk = Screen.hasControlDown() ? DISTORTION_PARTICLE : DEBUG_PARTICLE;
+        var ctrl = Screen.hasControlDown();
+        var efk = ctrl ? DISTORTION_PARTICLE : DEBUG_PARTICLE;
 
         Optional.ofNullable(mc.crosshairPickEntity).map(Entity::getId)
                 .ifPresent(eid -> {
@@ -79,12 +80,11 @@ public enum Debug {
                     var srv = Objects.requireNonNull(mc.getSingleplayerServer());
                     srv.execute(() -> {
                         var srvLevel = Objects.requireNonNull(srv.getLevel(dim));
-                        AAALevel.addParticle(srvLevel, new ParticleEmitterInfo(efk)
-                                        .bindOnEntity(Objects.requireNonNull(srvLevel.getEntity(eid)))
-//                        .position(0, 1.8, 0)
-//                        .entitySpaceRelativePosition(0.5, 0, -0.5)
-//                        .rotation((float) (Math.PI / 2), 0, 0)
-                        );
+                        var emitter = new ParticleEmitterInfo(efk).bindOnEntity(Objects.requireNonNull(srvLevel.getEntity(eid)));
+                        AAALevel.addParticle(srvLevel, ctrl ? emitter : emitter.speed((float) Math.pow(10, Math.random() - Math.random())));
+                        // .position(0, 1.8, 0)
+                        // .entitySpaceRelativePosition(0.5, 0, -0.5)
+                        // .rotation((float) (Math.PI / 2), 0, 0)
                     });
                 });
     }
