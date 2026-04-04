@@ -22,6 +22,8 @@ public class ParticleEmitter {
 
     public final int handle;
     public final Type type;
+    private float speed = 1;
+    private float frame = 0;
 
     private final EffekseerManager manager;
     private @Nullable PreDrawCallback callback;
@@ -176,6 +178,42 @@ public class ParticleEmitter {
     public void sendTrigger(int index) {
         if (isValid) {
             manager.getImpl().SendTrigger(this.handle, index);
+        }
+    }
+
+    /**
+     * @since 2.0.0
+     */
+    public float getSpeed() {
+        return speed;
+    }
+
+    /**
+     * Set relative play speed of this emitter.
+     * <p>
+     * WARNING: Effekseer effects are baked as 60 frames (by default), and
+     * changing this value to lower than {@code 1} may look lagged / stepped.
+     * <p>
+     * To fix this problem, you should set the play speed in your Effekseer editor
+     * as the slowest desired play speed, and call this method with the argument value not lesser than {@code 1},
+     * up to your max desired relative play speed.
+     * <p>
+     * WARNING: Do not set speed on long-time emitters.
+     * Emitters with relative speed other than {@code 1} (default)
+     * will increase performance cost by time, until it has been stopped.
+     *
+     * @since 2.0.0
+     */
+    public void setSpeed(float speed) {
+        this.speed = speed;
+    }
+
+    @ApiStatus.Internal
+    public void internalUpdateProgress(float deltaFrames) {
+        var speed = getSpeed();
+        frame += deltaFrames * speed;
+        if (Math.abs(speed - 1) > 1e-6) {
+            setProgress(frame);
         }
     }
 

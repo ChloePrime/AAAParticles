@@ -191,6 +191,7 @@ public class EffectDefinition implements Closeable {
 
         manager.getImpl().SetLayerParameter(1, pos.x, pos.y, pos.z, 0);
         manager.update(deltaFrames);
+        emitters(type).forEach(emitter -> emitter.internalUpdateProgress(deltaFrames));
 
         emitters(type).forEach(emitter -> emitter.runPreDrawCallbacks(partialTicks));
         GlDebug.pushDebugGroup(GlDebugIds.EFFEK_DRAWING, glDebugLabel);
