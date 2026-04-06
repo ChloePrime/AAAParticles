@@ -7,6 +7,9 @@ import java.io.IOException;
 import java.io.InputStream;
 
 /**
+ * Wrapper of {@link EffekseerEffectCore} with lowerCamelCase method names.
+ *
+ * @since 1.0.0
  * @author ChloePrime
  */
 @SuppressWarnings("unused")

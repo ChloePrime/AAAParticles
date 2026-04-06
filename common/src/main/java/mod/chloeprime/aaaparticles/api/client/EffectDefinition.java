@@ -1,4 +1,4 @@
-package mod.chloeprime.aaaparticles.client.registry;
+package mod.chloeprime.aaaparticles.api.client;
 
 import com.google.common.base.Suppliers;
 import com.mojang.blaze3d.pipeline.RenderTarget;
@@ -12,6 +12,7 @@ import mod.chloeprime.aaaparticles.client.util.GlDebugIds;
 import net.minecraft.resources.ResourceLocation;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.apache.commons.lang3.tuple.Pair;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 
@@ -25,6 +26,7 @@ import java.util.stream.Stream;
  * An effect wrapper with a registry name,
  * the effect instance is mutable.
  *
+ * @since 1.0.0
  * @author ChloePrime
  */
 public class EffectDefinition implements Closeable {
@@ -35,19 +37,42 @@ public class EffectDefinition implements Closeable {
         }
     }
 
+    /**
+     * Get the registry id of this effek.
+     *
+     * @return the id representing this loaded effek in {@link EffectRegistry}
+     */
     @SuppressWarnings("unused")
     public ResourceLocation getId() {
         return id.get();
     }
 
+    /**
+     * Create an anonymous emitter and play it.
+     *
+     * @return the particle emitter, a wrapper of an int handle from the Effekseer native api.
+     */
     public ParticleEmitter play() {
         return play(ParticleEmitter.Type.WORLD);
     }
 
+    /**
+     * Create a named emitter and play it.
+     * Created emitter can be retrieved by emitter name through {@link #getNamedEmitter(ParticleEmitter.Type, ResourceLocation)}.
+     *
+     * @param emitterName the name of the emitter.
+     * @return the particle emitter, a wrapper of an int handle from the Effekseer native api.
+     */
     public ParticleEmitter play(ResourceLocation emitterName) {
         return play(ParticleEmitter.Type.WORLD, emitterName);
     }
 
+    /**
+     * Get the registry id of this effek.
+     *
+     * @param type Type of this emitter.
+     * @return the id representing this loaded effek in {@link EffectRegistry}
+     */
     public ParticleEmitter play(ParticleEmitter.Type type) {
         if (RenderUtil.isReloadingResourcePacks()) {
             return ParticleEmitter.dummy(type);
@@ -58,6 +83,14 @@ public class EffectDefinition implements Closeable {
         return emitter;
     }
 
+    /**
+     * Create a named emitter and play it.
+     * Created emitter can be retrieved by emitter name through {@link #getNamedEmitter(ParticleEmitter.Type, ResourceLocation)}.
+     *
+     * @param type Type of this emitter.
+     * @param emitterName the name of the emitter.
+     * @return the particle emitter, a wrapper of an int handle from the Effekseer native api.
+     */
     public ParticleEmitter play(ParticleEmitter.Type type, ResourceLocation emitterName) {
         if (RenderUtil.isReloadingResourcePacks()) {
             return ParticleEmitter.dummy(type);
@@ -71,22 +104,53 @@ public class EffectDefinition implements Closeable {
         return emitter;
     }
 
+    /**
+     * Get an emitter through its name.
+     *
+     * @param type Type of this emitter.
+     * @param emitterName the name of the emitter.
+     * @return the particle emitter with the given emitter name. Empty if not exist.
+     */
     public Optional<ParticleEmitter> getNamedEmitter(ParticleEmitter.Type type, ResourceLocation emitterName) {
         return Optional.ofNullable(namedEmitters.get(type).get(emitterName));
     }
 
+    /**
+     * Get the underlying effekseer manager of this effek.
+     *
+     * @param type Type of this emitter. Each particle type has its own manager.
+     * @return the manager of this emitter type.
+     */
     public EffekseerManager getManager(ParticleEmitter.Type type) {
         return Objects.requireNonNull(managers.get(type));
     }
 
+    /**
+     * Get all existing emitters of this effek.
+     * May contain some finished emitters pending to be cleaned.
+     *
+     * @return all existing emitters of this effek.
+     */
     public Stream<ParticleEmitter> emitters() {
         return emitterContainers().flatMap(Collection::stream);
     }
 
+    /**
+     * Get all existing emitters of this effek of a given type.
+     * May contain some finished emitters pending to be cleaned.
+     *
+     * @param type Type of this emitter.
+     * @return all existing emitters of this effek with the given type.
+     */
     public Stream<ParticleEmitter> emitters(ParticleEmitter.Type type) {
         return emitterContainers(type).flatMap(Collection::stream);
     }
 
+    /**
+     * Get all existing emitters of this effek, both one-shot and named.
+     *
+     * @return all existing emitters of this effek, both one-shot and named.
+     */
     public Stream<Collection<ParticleEmitter>> emitterContainers() {
         return Stream.concat(
                 oneShotEmitters.values().stream(),
@@ -94,6 +158,12 @@ public class EffectDefinition implements Closeable {
         );
     }
 
+    /**
+     * Get all existing emitters of this effek under the given type, both one-shot and named.
+     *
+     * @param type Wanted emitter type.
+     * @return all existing emitters of this effek under the given type, both one-shot and named.
+     */
     public Stream<Collection<ParticleEmitter>> emitterContainers(ParticleEmitter.Type type) {
         var oneshot = Objects.requireNonNull(oneShotEmitters.get(type));
         var named   = Objects.requireNonNull(namedEmitters.get(type)).values();
@@ -101,6 +171,8 @@ public class EffectDefinition implements Closeable {
     }
 
     /**
+     * Get the direct wrapper of the underlying Effekseer effect.
+     *
      * @apiNote Do not keep reference of its return value.
      * Actual effect may be updated upon resource pack reloads.
      *
@@ -110,6 +182,7 @@ public class EffectDefinition implements Closeable {
         return effect;
     }
 
+    @ApiStatus.Internal
     public EffectDefinition setEffect(EffekseerEffect effect) {
         Objects.requireNonNull(effect);
         if (this.effect == effect) {
@@ -127,6 +200,10 @@ public class EffectDefinition implements Closeable {
         return this;
     }
 
+    /**
+     * Get all Effekseer managers of all emitter types.
+     * @return all Effekseer managers of all emitter types.
+     */
     public Stream<EffekseerManager> managers() {
         return managers.values().stream();
     }
@@ -158,6 +235,7 @@ public class EffectDefinition implements Closeable {
                 .orElse(null);
     }
 
+    @ApiStatus.Internal
     public void draw(
             ParticleEmitter.Type type,
             Vector3f front, Vector3f pos,
@@ -245,6 +323,9 @@ public class EffectDefinition implements Closeable {
         fpvOhManager.setupWorkerThreads(1);
     }
 
+    /**
+     * Dispose this effek definition.
+     */
     @Override
     public void close() {
         Arrays.stream(ParticleEmitter.Type.values()).forEach(this::unsetBackgrounds);

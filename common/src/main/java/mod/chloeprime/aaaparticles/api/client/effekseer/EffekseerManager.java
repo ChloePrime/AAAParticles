@@ -7,6 +7,9 @@ import org.joml.Matrix4f;
 import java.nio.FloatBuffer;
 
 /**
+ * Wrapper of {@link EffekseerManagerCore} with lowerCamelCase method names.
+ *
+ * @since 1.0.0
  * @author ChloePrime
  */
 @SuppressWarnings("unused")

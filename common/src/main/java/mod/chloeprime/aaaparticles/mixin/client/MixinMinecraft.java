@@ -4,7 +4,7 @@ import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.mojang.blaze3d.platform.Window;
 import mod.chloeprime.aaaparticles.client.internal.ReloadTrackable;
 import mod.chloeprime.aaaparticles.client.internal.RenderStateCapture;
-import mod.chloeprime.aaaparticles.client.registry.EffectRegistry;
+import mod.chloeprime.aaaparticles.api.client.EffectRegistry;
 import mod.chloeprime.aaaparticles.common.util.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.main.GameConfig;
