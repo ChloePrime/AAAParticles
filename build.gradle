@@ -71,6 +71,10 @@ allprojects {
         options.release = 17
     }
 
+    tasks.withType(Javadoc) {
+        options.encoding = "UTF-8"
+    }
+
     java {
         withSourcesJar()
     }

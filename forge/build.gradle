@@ -18,6 +18,10 @@ configurations {
     developmentForge.extendsFrom common
 }
 
+java {
+    withJavadocJar()
+}
+
 repositories {
     maven {
         url "https://maven.blamejared.com"
