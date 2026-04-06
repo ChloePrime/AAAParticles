@@ -4,12 +4,12 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.mojang.logging.LogUtils;
 import mod.chloeprime.aaaparticles.AAAParticles;
+import mod.chloeprime.aaaparticles.api.client.EffectHolder;
 import mod.chloeprime.aaaparticles.api.client.effekseer.EffekseerEffect;
 import mod.chloeprime.aaaparticles.api.client.effekseer.TextureType;
 import mod.chloeprime.aaaparticles.client.installer.NativePlatform;
 import mod.chloeprime.aaaparticles.client.internal.LimitlessResourceLocationFactory;
 import mod.chloeprime.aaaparticles.client.registry.EffectDefinition;
-import mod.chloeprime.aaaparticles.client.registry.LazyEffectDefinition;
 import mod.chloeprime.aaaparticles.client.render.EffekRenderer;
 import mod.chloeprime.aaaparticles.client.render.RenderUtil;
 import mod.chloeprime.aaaparticles.client.util.GlDebug;
@@ -43,19 +43,19 @@ public class EffekAssetLoader extends SimplePreparableReloadListener<EffekAssetL
         return INSTANCE;
     }
 
-    public @Nullable LazyEffectDefinition get(ResourceLocation id) {
+    public @Nullable EffectHolder get(ResourceLocation id) {
         return loadedEffects.get(id);
     }
 
-    public @Nullable ResourceLocation getKey(LazyEffectDefinition def) {
+    public @Nullable ResourceLocation getKey(EffectHolder def) {
         return loadedEffects.inverse().get(def);
     }
 
-    public Set<Map.Entry<ResourceLocation, LazyEffectDefinition>> entries() {
+    public Set<Map.Entry<ResourceLocation, EffectHolder>> entries() {
         return loadedEffects.entrySet();
     }
 
-    public void forEach(BiConsumer<ResourceLocation, LazyEffectDefinition> action) {
+    public void forEach(BiConsumer<ResourceLocation, EffectHolder> action) {
         loadedEffects.forEach(action);
     }
 
@@ -145,11 +145,11 @@ public class EffekAssetLoader extends SimplePreparableReloadListener<EffekAssetL
     }
 
     protected static class Preparations {
-        private final Map<ResourceLocation, LazyEffectDefinition> loadedEffects = new LinkedHashMap<>();
+        private final Map<ResourceLocation, EffectHolder> loadedEffects = new LinkedHashMap<>();
     }
 
     private void unloadAll() {
-        loadedEffects.values().forEach(LazyEffectDefinition::close);
+        loadedEffects.values().forEach(EffectHolder::close);
         loadedEffects.clear();
     }
 
@@ -182,7 +182,7 @@ public class EffekAssetLoader extends SimplePreparableReloadListener<EffekAssetL
                 manager.listResources("effeks", rl -> rl.getPath().endsWith(".efkefc")).forEach((location, resource) -> {
                     var name = createEffekName(location);
                     var loader = loadEffect(manager, name, resource);
-                    var def = new LazyEffectDefinition(() -> RenderUtil.supplyPixelStoreCodeHealthily(loader)
+                    var def = new EffectHolder(() -> RenderUtil.supplyPixelStoreCodeHealthily(loader)
                             .map(effect -> new EffectDefinition().setEffect(effect))
                             .orElse(null));
                     prep.loadedEffects.put(name, def);
@@ -213,6 +213,6 @@ public class EffekAssetLoader extends SimplePreparableReloadListener<EffekAssetL
 
     private static final Logger LOGGER = LogUtils.getLogger();
 
-    private final BiMap<ResourceLocation, LazyEffectDefinition> loadedEffects = HashBiMap.create();
+    private final BiMap<ResourceLocation, EffectHolder> loadedEffects = HashBiMap.create();
 }
 

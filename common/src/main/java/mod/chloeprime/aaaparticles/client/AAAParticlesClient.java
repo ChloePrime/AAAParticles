@@ -4,14 +4,14 @@ import dev.architectury.event.events.client.ClientLifecycleEvent;
 import dev.architectury.event.events.client.ClientPlayerEvent;
 import dev.architectury.registry.ReloadListenerRegistry;
 import mod.chloeprime.aaaparticles.AAAParticles;
+import mod.chloeprime.aaaparticles.api.client.EffectHolder;
 import mod.chloeprime.aaaparticles.api.client.effekseer.ParticleEmitter;
 import mod.chloeprime.aaaparticles.api.common.DynamicParameter;
 import mod.chloeprime.aaaparticles.api.common.ParticleEmitterInfo;
 import mod.chloeprime.aaaparticles.client.installer.JarExtractor;
 import mod.chloeprime.aaaparticles.client.installer.NativePlatform;
 import mod.chloeprime.aaaparticles.client.loader.EffekAssetLoader;
-import mod.chloeprime.aaaparticles.client.registry.EffectRegistry;
-import mod.chloeprime.aaaparticles.client.registry.LazyEffectDefinition;
+import mod.chloeprime.aaaparticles.api.client.EffectRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.PackType;
@@ -72,7 +72,7 @@ public class AAAParticlesClient
 
 	public static void setParam(ParticleEmitter.Type type, ResourceLocation effek, ResourceLocation emitterName, DynamicParameter[] params) {
 		Optional.ofNullable(EffectRegistry.get(effek))
-				.flatMap(LazyEffectDefinition::lazyGet)
+				.flatMap(EffectHolder::lazyGet)
 				.flatMap(mng -> mng.getNamedEmitter(type, emitterName))
 				.ifPresent(emitter -> {
 					for (var param : params) {
@@ -83,7 +83,7 @@ public class AAAParticlesClient
 
 	public static void sendTrigger(ParticleEmitter.Type type, ResourceLocation effek, ResourceLocation emitterName, int[] triggers) {
 		Optional.ofNullable(EffectRegistry.get(effek))
-				.flatMap(LazyEffectDefinition::lazyGet)
+				.flatMap(EffectHolder::lazyGet)
 				.flatMap(mng -> mng.getNamedEmitter(type, emitterName))
 				.ifPresent(emitter -> Arrays.stream(triggers).forEach(emitter::sendTrigger));
 	}
