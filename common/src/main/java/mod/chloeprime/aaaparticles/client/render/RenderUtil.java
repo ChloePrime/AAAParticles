@@ -90,6 +90,18 @@ public class RenderUtil {
         glBindTexture(GL_TEXTURE_2D, texture);
     }
 
+    public static void runEffekLoadCodeHealthily(Runnable code) {
+        runPixelStoreCodeHealthily(() -> {
+            var vao = glGetInteger(GL_VERTEX_ARRAY_BINDING);
+            var vbo = glGetInteger(GL_ARRAY_BUFFER);
+            var ibo = glGetInteger(GL_ELEMENT_ARRAY_BUFFER_BINDING);
+            code.run();
+            glBindVertexArray(vao);
+            glBindBuffer(GL_ARRAY_BUFFER, vbo);
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+        });
+    }
+
     @ApiStatus.Internal
     public static void runPixelStoreCodeSafely(Runnable code) {
         var packAlignment = glGetInteger(GL_PACK_ALIGNMENT);
@@ -120,6 +132,12 @@ public class RenderUtil {
         return ret.getValue();
     }
 
+    public static <T> T supplyEffekLoadCodeHealthily(Supplier<T> code) {
+        var ret = new MutableObject<T>();
+        runEffekLoadCodeHealthily(() -> ret.setValue(code.get()));
+        return ret.getValue();
+    }
+
     public static boolean isReloadingResourcePacks() {
         return ((ReloadTrackable) MC).aaa_particles$isReloading();
     }
@@ -136,6 +154,12 @@ public class RenderUtil {
         syncStencilState(MC.getMainRenderTarget(), background);
         RenderUtil.copySafely(MC.getMainRenderTarget(), background);
         return Optional.of(background);
+    }
+
+    @ExpectPlatform
+    @SuppressWarnings("unused")
+    public static int getDepthFormat(RenderTarget fb) {
+        throw new AbstractMethodError();
     }
 
     @ExpectPlatform

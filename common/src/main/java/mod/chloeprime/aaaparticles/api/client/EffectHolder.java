@@ -2,6 +2,7 @@ package mod.chloeprime.aaaparticles.api.client;
 
 import com.google.common.base.Suppliers;
 import mod.chloeprime.aaaparticles.AAAParticles;
+import mod.chloeprime.aaaparticles.client.render.RenderUtil;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.Closeable;
@@ -24,8 +25,8 @@ public final class EffectHolder implements Closeable {
     private long lastUsed = -1;
 
     public EffectHolder(Supplier<@Nullable EffectDefinition> rawGetter) {
-        this.rawGetter = rawGetter;
-        this.getter = Suppliers.memoize(rawGetter::get);
+        this.rawGetter = () -> RenderUtil.supplyEffekLoadCodeHealthily(rawGetter);
+        this.getter = Suppliers.memoize(this.rawGetter::get);
     }
 
     /**

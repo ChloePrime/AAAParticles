@@ -244,6 +244,8 @@ public class EffectDefinition implements Closeable {
             @Nullable RenderTarget background
     ) {
         var manager = Objects.requireNonNull(managers.get(type));
+        manager.startUpdate();
+
         manager.setViewport(w, h);
         manager.setCameraMatrix(camera);
         manager.setProjectionMatrix(projection);
@@ -264,12 +266,14 @@ public class EffectDefinition implements Closeable {
             backgroundDepthId.setValue(background.getDepthTextureId());
             // Update actual values of background/depth
             manager.getImpl().SetBackground(backgroundColorId.intValue(), false);
-            manager.getImpl().SetDepth(backgroundDepthId.intValue(), false);
+            manager.getImpl().SetDepth(backgroundDepthId.intValue(), false, RenderUtil.getDepthFormat(background));
         }
 
         manager.getImpl().SetLayerParameter(1, pos.x, pos.y, pos.z, 0);
-        manager.update(deltaFrames);
         emitters(type).forEach(emitter -> emitter.internalUpdateProgress(deltaFrames));
+        manager.update(deltaFrames);
+
+        manager.endUpdate();
 
         emitters(type).forEach(emitter -> emitter.runPreDrawCallbacks(partialTicks));
         GlDebug.pushDebugGroup(GlDebugIds.EFFEK_DRAWING, glDebugLabel);
