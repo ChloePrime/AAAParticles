@@ -29,7 +29,9 @@ public class EffectRegistry {
      * @since 2.0.0 Effeks are lazily loaded.
      */
     public static @Nullable EffectHolder get(ResourceLocation id) {
-        return EffekAssetLoader.get().get(id);
+        return Optional.ofNullable(EffekAssetLoader.get())
+                .map(loader -> loader.get(id))
+                .orElse(null);
     }
 
     /**
@@ -40,7 +42,9 @@ public class EffectRegistry {
      * @since 2.0.0 Effeks are lazily loaded.
      */
     public static @Nullable ResourceLocation getKey(EffectHolder def) {
-        return EffekAssetLoader.get().getKey(def);
+        return Optional.ofNullable(EffekAssetLoader.get())
+                .map(loader -> loader.getKey(def))
+                .orElse(null);
     }
 
     /**

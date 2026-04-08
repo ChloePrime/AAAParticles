@@ -182,7 +182,7 @@ public class EffekAssetLoader extends SimplePreparableReloadListener<EffekAssetL
                 manager.listResources("effeks", rl -> rl.getPath().endsWith(".efkefc")).forEach((location, resource) -> {
                     var name = createEffekName(location);
                     var loader = loadEffect(manager, name, resource);
-                    var def = new EffectHolder(() -> RenderUtil.supplyPixelStoreCodeHealthily(loader)
+                    var def = new EffectHolder(() -> loader.get()
                             .map(effect -> new EffectDefinition().setEffect(effect))
                             .orElse(null));
                     prep.loadedEffects.put(name, def);
