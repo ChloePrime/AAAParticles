@@ -128,11 +128,9 @@ public class RenderUtil {
     public static void runFrameBufferCodeSafely(Runnable code) {
         var readBackup = GL11.glGetInteger(GL_READ_FRAMEBUFFER_BINDING);
         var drawBackup = GL11.glGetInteger(GL_DRAW_FRAMEBUFFER_BINDING);
-        var texture = GL11.glGetInteger(GL_TEXTURE_BINDING_2D);
         code.run();
         glBindFramebuffer(GL_READ_FRAMEBUFFER, readBackup);
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, drawBackup);
-        glBindTexture(GL_TEXTURE_2D, texture);
     }
 
     public static void runEffekLoadCodeHealthily(Runnable code) {
@@ -215,7 +213,7 @@ public class RenderUtil {
 
     @SuppressWarnings("SameParameterValue")
     private static void refreshFrameBuffer(RenderTarget fb) {
-        RenderUtil.runPixelStoreCodeHealthily(() -> fb.resize(fb.width, fb.height, Minecraft.ON_OSX));
+        RenderUtil.runFrameBufferCodeSafely(() -> fb.resize(fb.width, fb.height, Minecraft.ON_OSX));
     }
 
     public static final Minecraft MC = Minecraft.getInstance();
