@@ -275,8 +275,6 @@ public class EffectDefinition implements Closeable {
         emitters(type).forEach(emitter -> emitter.internalUpdateProgress(deltaFrames));
         manager.update(deltaFrames);
 
-        manager.endUpdate();
-
         emitters(type).forEach(emitter -> emitter.runPreDrawCallbacks(partialTicks));
         GlDebug.pushDebugGroup(GlDebugIds.EFFEK_DRAWING, glDebugLabel);
         manager.draw();
@@ -288,6 +286,8 @@ public class EffectDefinition implements Closeable {
                 emitterContainers().forEach(container -> container.removeIf(emitter -> !emitter.exists()));
             }
         }
+
+        manager.endUpdate();
     }
 
     private void unsetBackgrounds(EffekseerManager manager, MutableInt backgroundColorId, MutableInt backgroundDepthId) {
