@@ -267,6 +267,8 @@ public class EffectDefinition implements Closeable {
             // Update actual values of background/depth
             manager.getImpl().SetBackground(backgroundColorId.intValue(), false);
             manager.getImpl().SetDepth(backgroundDepthId.intValue(), false, RenderUtil.getDepthFormat(background));
+        } else {
+            manager.getImpl().SetDepth(backgroundDepthId.intValue(), false, RenderUtil.getDepthFormat(background));
         }
 
         manager.getImpl().SetLayerParameter(1, pos.x, pos.y, pos.z, 0);
