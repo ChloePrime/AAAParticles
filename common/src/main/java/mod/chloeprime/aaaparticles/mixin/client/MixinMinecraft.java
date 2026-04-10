@@ -5,6 +5,7 @@ import com.mojang.blaze3d.platform.Window;
 import mod.chloeprime.aaaparticles.client.internal.ReloadTrackable;
 import mod.chloeprime.aaaparticles.client.internal.RenderStateCapture;
 import mod.chloeprime.aaaparticles.api.client.EffectRegistry;
+import mod.chloeprime.aaaparticles.client.render.RenderUtil;
 import mod.chloeprime.aaaparticles.common.util.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.main.GameConfig;
@@ -33,7 +34,7 @@ public abstract class MixinMinecraft implements ReloadTrackable, Executor {
     @Inject(method = "resizeDisplay", at = @At("RETURN"))
     private void resizeCapturedDepthBuffer(CallbackInfo ci) {
         if (aaa_particles$constructed) {
-            RenderStateCapture.onResize(window.getWidth(), window.getHeight(), ON_OSX);
+            RenderUtil.runFrameBufferCodeSafely(() -> RenderStateCapture.onResize(window.getWidth(), window.getHeight(), ON_OSX));
         }
     }
 
