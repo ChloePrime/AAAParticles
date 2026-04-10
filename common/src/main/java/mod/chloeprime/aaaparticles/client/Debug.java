@@ -18,6 +18,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
 import org.apache.logging.log4j.LogManager;
 
 import java.lang.ref.WeakReference;
@@ -76,8 +77,11 @@ public enum Debug {
 
         Optional.ofNullable(mc.crosshairPickEntity).map(Entity::getId)
                 .ifPresent(eid -> {
-                    var dim = Objects.requireNonNull(mc.level).dimension();
-                    var srv = Objects.requireNonNull(mc.getSingleplayerServer());
+                    var dim = Optional.ofNullable(mc.level).map(Level::dimension).orElse(null);
+                    var srv = mc.getSingleplayerServer();
+                    if (srv == null || dim == null) {
+                        return;
+                    }
                     srv.execute(() -> {
                         var srvLevel = Objects.requireNonNull(srv.getLevel(dim));
                         var emitter = new ParticleEmitterInfo(efk).bindOnEntity(Objects.requireNonNull(srvLevel.getEntity(eid)));
