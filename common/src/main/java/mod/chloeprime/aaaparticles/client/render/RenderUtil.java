@@ -16,6 +16,51 @@ import java.util.function.Supplier;
 import static org.lwjgl.opengl.GL41C.*;
 
 public class RenderUtil {
+    public static void transposeMatrix4x4(float[] m) {
+        if (m.length != 16) {
+            throw new IllegalArgumentException("Length of flattened 4x4 matrix \"m\" should be 16");
+        }
+
+        float m00, m01, m02, m03;
+        float m10, m11, m12, m13;
+        float m20, m21, m22, m23;
+        float m30, m31, m32, m33;
+
+        m00 = m[0];
+        m01 = m[1];
+        m02 = m[2];
+        m03 = m[3];
+        m10 = m[4];
+        m11 = m[5];
+        m12 = m[6];
+        m13 = m[7];
+        m20 = m[8];
+        m21 = m[9];
+        m22 = m[0xA];
+        m23 = m[0xB];
+        m30 = m[0xC];
+        m31 = m[0xD];
+        m32 = m[0xE];
+        m33 = m[0xF];
+
+        m[0] = m00;
+        m[1] = m10;
+        m[2] = m20;
+        m[3] = m30;
+        m[4] = m01;
+        m[5] = m11;
+        m[6] = m21;
+        m[7] = m31;
+        m[8] = m02;
+        m[9] = m12;
+        m[0xA] = m22;
+        m[0xB] = m32;
+        m[0xC] = m03;
+        m[0xD] = m13;
+        m[0xE] = m23;
+        m[0xF] = m33;
+    }
+
     public static void clearSamplerBindings(int start) {
         var max = glGetInteger(GL41C.GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS);
         for (int i = start; i < max; i++) {
