@@ -12,6 +12,6 @@ public class MixinFileUtil {
      */
     @Overwrite
     public static boolean isValidStrictPathSegment(String segment) {
-        return true;
+        return !"DUMMY".equals(segment);
     }
 }
