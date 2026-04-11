@@ -111,6 +111,7 @@ public class EffectRegistry {
         }
         entries().stream()
                 .map(Map.Entry::getValue)
+                .filter(holder -> !holder.getMetadata().preload())
                 .filter(EffectHolder::isPresent)
                 .sorted(Comparator.comparing(EffectHolder::getLastUsed))
                 .limit(1)

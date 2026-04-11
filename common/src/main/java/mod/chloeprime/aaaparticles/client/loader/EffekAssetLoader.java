@@ -2,9 +2,14 @@ package mod.chloeprime.aaaparticles.client.loader;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
+import com.mojang.datafixers.util.Pair;
 import com.mojang.logging.LogUtils;
+import com.mojang.serialization.JsonOps;
 import mod.chloeprime.aaaparticles.AAAParticles;
 import mod.chloeprime.aaaparticles.api.client.EffectHolder;
+import mod.chloeprime.aaaparticles.api.client.EffectMetadata;
 import mod.chloeprime.aaaparticles.api.client.effekseer.EffekseerEffect;
 import mod.chloeprime.aaaparticles.api.client.effekseer.TextureType;
 import mod.chloeprime.aaaparticles.client.installer.NativePlatform;
@@ -23,8 +28,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.function.BiConsumer;
@@ -58,6 +63,29 @@ public class EffekAssetLoader extends SimplePreparableReloadListener<EffekAssetL
     public void forEach(BiConsumer<ResourceLocation, EffectHolder> action) {
         loadedEffects.forEach(action);
     }
+
+    // Metadata Loading
+
+    private static EffectMetadata loadMetadata(ResourceManager manager, ResourceLocation path) {
+        return manager.getResource(path)
+                .flatMap(res -> parseMetadata(res, path))
+                .orElse(EffectMetadata.DEFAULT);
+    }
+
+    private static Optional<EffectMetadata> parseMetadata(Resource metaFile, ResourceLocation path) {
+        JsonElement parsed;
+        try (var input = metaFile.open()) {
+            parsed = JsonParser.parseReader(new InputStreamReader(input, StandardCharsets.UTF_8));
+        } catch (IOException ex) {
+            LOGGER.error("Failed to load effek metadata {}", path, ex);
+            return Optional.empty();
+        }
+        var decoded = EffectMetadata.CODEC.decode(JsonOps.INSTANCE, parsed);
+        decoded.error().ifPresent(error -> LOGGER.error("Error decoding effek metadata {}: {}", path, error.message()));
+        return decoded.result().map(Pair::getFirst);
+    }
+
+    // Effek Loading
 
     private Supplier<Optional<EffekseerEffect>> loadEffect(ResourceManager manager, ResourceLocation name, Resource efkefc) {
         return () -> {
@@ -144,6 +172,19 @@ public class EffekAssetLoader extends SimplePreparableReloadListener<EffekAssetL
         return manager.getResource(path).or(() -> manager.getResource(fallback));
     }
 
+    // Preload Handling
+
+    /**
+     * Load all effeks that are marked as `preloading`
+     */
+    private void doPreloading() {
+        loadedEffects.values().stream()
+                .filter(holder -> holder.getMetadata().preload())
+                .forEach(EffectHolder::load);
+    }
+
+    // Resource Load System
+
     protected static class Preparations {
         private final Map<ResourceLocation, EffectHolder> loadedEffects = new LinkedHashMap<>();
     }
@@ -180,10 +221,12 @@ public class EffekAssetLoader extends SimplePreparableReloadListener<EffekAssetL
             RenderUtil.runPixelStoreCodeHealthily(() -> {
                 var prep = new Preparations();
                 manager.listResources("effeks", rl -> rl.getPath().endsWith(".efkefc")).forEach((location, resource) -> {
+                    var metaPath = new LimitlessResourceLocation(location.getNamespace(), location.getPath() + ".mcmeta");
+                    var metadata = loadMetadata(manager, metaPath);
                     var name = createEffekName(location);
                     var loader = loadEffect(manager, name, resource);
-                    var def = new EffectHolder(() -> loader.get()
-                            .map(effect -> new EffectDefinition().setEffect(effect))
+                    var def = new EffectHolder(metadata, () -> loader.get()
+                            .map(effect -> new EffectDefinition(metadata).setEffect(effect))
                             .orElse(null));
                     prep.loadedEffects.put(name, def);
                 });
@@ -191,6 +234,7 @@ public class EffekAssetLoader extends SimplePreparableReloadListener<EffekAssetL
             });
         }
         INSTANCE = this;
+        doPreloading();
     }
 
     @FunctionalInterface
