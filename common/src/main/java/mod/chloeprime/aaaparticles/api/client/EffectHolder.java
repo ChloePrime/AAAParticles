@@ -3,9 +3,11 @@ package mod.chloeprime.aaaparticles.api.client;
 import com.google.common.base.Suppliers;
 import mod.chloeprime.aaaparticles.AAAParticles;
 import mod.chloeprime.aaaparticles.client.render.RenderUtil;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.Closeable;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -18,15 +20,29 @@ import java.util.function.Supplier;
  * @author ChloePrime
  */
 public final class EffectHolder implements Closeable {
+    private final EffectMetadata metadata;
     private Supplier<@Nullable EffectDefinition> rawGetter;
     private Supplier<@Nullable EffectDefinition> getter;
     private final AtomicBoolean isPresent = new AtomicBoolean();
     private boolean disposed;
     private long lastUsed = -1;
 
-    public EffectHolder(Supplier<@Nullable EffectDefinition> rawGetter) {
+    public EffectHolder(
+            @NotNull EffectMetadata metadata,
+            Supplier<@Nullable EffectDefinition> rawGetter
+    ) {
+        this.metadata = Objects.requireNonNull(metadata);
         this.rawGetter = () -> RenderUtil.supplyEffekLoadCodeHealthily(rawGetter);
         this.getter = Suppliers.memoize(this.rawGetter::get);
+    }
+
+    /**
+     * Get the metadata of this effek.
+     *
+     * @return metadata of this effek.
+     */
+    public @NotNull EffectMetadata getMetadata() {
+        return metadata;
     }
 
     /**

@@ -13,6 +13,7 @@ import net.minecraft.resources.ResourceLocation;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 
@@ -30,7 +31,8 @@ import java.util.stream.Stream;
  * @author ChloePrime
  */
 public class EffectDefinition implements Closeable {
-    public EffectDefinition() {
+    public EffectDefinition(@NotNull EffectMetadata metadata) {
+        this.metadata = Objects.requireNonNull(metadata);
         for (ParticleEmitter.Type type : ParticleEmitter.Type.values()) {
             oneShotEmitters.put(type, new LinkedHashSet<>());
             namedEmitters.put(type, new LinkedHashMap<>());
@@ -45,6 +47,16 @@ public class EffectDefinition implements Closeable {
     @SuppressWarnings("unused")
     public ResourceLocation getId() {
         return id.get();
+    }
+
+    /**
+     * Get the metadata of this effek.
+     *
+     * @return metadata of this effek.
+     */
+    @SuppressWarnings("unused")
+    public EffectMetadata getMetadata() {
+            return metadata;
     }
 
     /**
@@ -221,6 +233,7 @@ public class EffectDefinition implements Closeable {
     private static final int GC_DELAY = 20;
     private final int magicLoadBalancer = Math.abs(RNG.nextInt() >>> 2) % GC_DELAY;
     private int gcTicks;
+    private final EffectMetadata metadata;
     private final EnumMap<ParticleEmitter.Type, MutableInt> backgroundColorIds = new EnumMap<>(ParticleEmitter.Type.class);
     private final EnumMap<ParticleEmitter.Type, MutableInt> backgroundDepthIds = new EnumMap<>(ParticleEmitter.Type.class);
 
