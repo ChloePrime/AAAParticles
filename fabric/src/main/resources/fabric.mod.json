@@ -1,31 +1,37 @@
 {
-  "schemaVersion": 1,
-  "id": "aaa_particles",
-  "version": "${version}",
-
-  "name": "AAAParticles",
-  "description": "",
-  "authors": [],
-  "contact": {},
-
-  "license": "MIT",
-  "icon": "icon.png",
-
-  "environment": "*",
-  "entrypoints": {
-    "main": [
-      "mod.chloeprime.aaaparticles.fabric.AAAParticlesFabric"
+    "schemaVersion": 1,
+    "id": "aaa_particles",
+    "version": "${version}",
+    "name": "${mod_name}",
+    "description": "${description}",
+    "authors": [
+        "${mod_author}"
     ],
-    "client": [
-      "mod.chloeprime.aaaparticles.fabric.AAAParticlesFabricClient"
-    ]
-  },
-  "mixins": [
-    "aaa_particles.mixins.json",
-    "aaa_particles-common.mixins.json"
-  ],
-  "depends": {
-    "fabricloader": ">=0.15.7",
-    "minecraft": ">=1.20.1"
-  }
+    "contact": {
+        "homepage": "https://github.com/ChloePrime",
+        "sources": "https://github.com/ChloePrime/AAAParticles"
+    },
+    "license": "${license}",
+    "icon": "icon.png",
+    "environment": "*",
+    "entrypoints": {
+        "main": [
+            "mod.chloeprime.aaaparticles.fabric.AAAParticlesFabric"
+        ],
+        "client": [
+            "mod.chloeprime.aaaparticles.fabric.AAAParticlesFabricClient"
+        ]
+    },
+    "mixins": [
+        "${mod_id}.mixins.json",
+        "${mod_id}-common.mixins.json"
+    ],
+    "depends": {
+        "fabricloader": ">=0.14",
+        "fabric": "*",
+        "minecraft": "${minecraft_version}",
+        "java": ">=17"
+    },
+    "suggests": {
+    }
 }

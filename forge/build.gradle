@@ -1,26 +1,49 @@
 plugins {
-    id "com.github.johnrengelman.shadow" version "7.1.2"
-}
-architectury {
-    platformSetupLoomIde()
-    forge()
+    id 'multiloader-loader'
+    id 'net.neoforged.moddev.legacyforge'
 }
 
-base {
-    archivesName = rootProject.archives_base_name.replace('_', '-') + "-" + project.name
+mixin {
+    add(sourceSets.main, "${mod_id}.refmap.json")
+
+    config("${mod_id}.mixins.json")
+    config("${mod_id}-common.mixins.json")
 }
 
-configurations {
-    common
-    shadowCommon // Don't use shadow from the shadow plugin because we don't want IDEA to index this.
-    compileClasspath.extendsFrom common
-    runtimeClasspath.extendsFrom common
-    developmentForge.extendsFrom common
+legacyForge {
+    version = "${minecraft_version}-${forge_version}"
+
+    validateAccessTransformers = true
+
+    def at = project(':common').file('src/main/resources/META-INF/accesstransformer.cfg')
+    if (at.exists()) {
+        accessTransformers = ["src/main/resources/META-INF/accesstransformer.cfg"]
+    }
+    parchment {
+        minecraftVersion = parchment_minecraft
+        mappingsVersion = parchment_version
+    }
+    runs {
+        client {
+            client()
+        }
+        data {
+            data()
+            programArguments.addAll '--mod', project.mod_id, '--all', '--output', file('src/generated/resources/').getAbsolutePath(), '--existing', file('src/main/resources/').getAbsolutePath()
+        }
+        server {
+            server()
+        }
+    }
+
+    mods {
+        "${mod_id}" {
+            sourceSet sourceSets.main
+        }
+    }
 }
 
-java {
-    withJavadocJar()
-}
+sourceSets.main.resources.srcDir 'src/generated/resources'
 
 repositories {
     maven {
@@ -29,87 +52,25 @@ repositories {
 }
 
 dependencies {
-    forge "net.minecraftforge:forge:${rootProject.forge_version}"
-    // Remove the next line if you don't want to depend on the API
-    include modApi("dev.architectury:architectury-forge:${rootProject.architectury_version}")
-    modImplementation "dev.latvian.mods:kubejs-forge:$kubejs_version"
-    compileOnly "maven.modrinth:oculus:1.20.1-1.6.15a"
+    compileOnly project(":common")
+    annotationProcessor("org.spongepowered:mixin:0.8.5-SNAPSHOT:processor")
+
+    compileOnly "org.jetbrains:annotations:25.0.0"
 
     // MixinExtras
     compileOnly(annotationProcessor("io.github.llamalad7:mixinextras-common:0.4.1"))
-    include implementation("io.github.llamalad7:mixinextras-forge:0.4.1")
+    jarJar implementation("io.github.llamalad7:mixinextras-forge:0.4.1")
 
-    modRuntimeOnly "org.embeddedt:embeddium-1.20.1:0.3.9-git.f603a93+mc1.20.1"
-    modRuntimeOnly "maven.modrinth:oculus:1.20.1-1.7.0"
-
-    common(project(path: ":common", configuration: "namedElements")) { transitive false }
-    shadowCommon(project(path: ":common", configuration: "transformProductionForge")) { transitive = false }
-}
-
-processResources {
-    inputs.property "version", project.version
-
-    filesMatching("META-INF/mods.toml") {
-        expand "version": project.version
-    }
-}
-
-shadowJar {
-    exclude "fabric.mod.json"
-    exclude "architectury.common.json"
-
-    configurations = [project.configurations.shadowCommon]
-    archiveClassifier.set("dev-shadow")
-}
-
-remapJar {
-    inputFile.set shadowJar.archiveFile
-    dependsOn shadowJar
+    modApi jarJar("dev.architectury:architectury-forge:${rootProject.architectury_version}")
+    modImplementation "dev.latvian.mods:rhino-forge:$rhino_version"
+    modImplementation "dev.latvian.mods:kubejs-forge:$kubejs_version"
+    modImplementation "org.embeddedt:embeddium-1.20.1:0.3.9-git.f603a93+mc1.20.1"
+    modImplementation "maven.modrinth:oculus:1.20.1-1.8.0"
 }
 
 jar {
-    archiveClassifier.set("dev")
-    manifest {
-        attributes([
-                "MixinConfigs": "aaa_particles-common.mixins.json,aaa_particles.mixins.json"
-        ])
-    }
-}
-
-sourcesJar {
-    def commonSources = project(":common").sourcesJar
-    dependsOn commonSources
-    from commonSources.archiveFile.map { zipTree(it) }
-}
-
-components.java {
-    withVariantsFromConfiguration(project.configurations.shadowRuntimeElements) {
-        skip()
-    }
-}
-
-publishing {
-    publications {
-        mavenForge(MavenPublication) {
-            artifactId = archivesBaseName
-            pom.withXml {
-                def node = asNode()
-                if(node.dependencies.size() > 0)
-                    node.remove(node.dependencies) // Remove deps, as they are all mappings-dependent and/or forge
-            }
-            from components.java
-        }
-    }
-
-    // See https://docs.gradle.org/current/userguide/publishing_maven.html for information on how to set up publishing.
-    repositories {
-        maven {
-            name = "Chloe_Maven"
-            url = "https://maven.chloeprime.cn:4080/releases/"
-            credentials {
-                username "$CHLOE_MAVEN_USERNAME"
-                password "$CHLOE_MAVEN_PASSWORD"
-            }
-        }
-    }
+    finalizedBy('reobfJar')
+    manifest.attributes([
+            "MixinConfigs": "${mod_id}-common.mixins.json,${mod_id}.mixins.json"
+    ])
 }
