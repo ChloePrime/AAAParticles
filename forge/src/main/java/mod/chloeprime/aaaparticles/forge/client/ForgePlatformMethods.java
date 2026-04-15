@@ -1,12 +1,15 @@
-package mod.chloeprime.aaaparticles.client.installer.forge;
+package mod.chloeprime.aaaparticles.forge.client;
 
+import com.google.auto.service.AutoService;
 import com.google.common.base.Suppliers;
+import mod.chloeprime.aaaparticles.PlatformMethods;
+import net.neoforged.api.distmarker.Dist;
 import net.neoforged.fml.loading.FMLLoader;
 
 import java.util.function.Supplier;
 
-@SuppressWarnings("unused")
-public class NativePlatformImpl {
+@AutoService(PlatformMethods.class)
+public class ForgePlatformMethods implements PlatformMethods {
     private static final Supplier<Boolean> IS_DATA = Suppliers.memoize(
             () -> {
                 var name = FMLLoader.launcherHandlerName();
@@ -15,7 +18,15 @@ public class NativePlatformImpl {
                         "forgedatauserdev".equals(name);
             });
 
-    public static boolean isDataGen() {
+    private static final Dist DIST = FMLLoader.getDist();
+
+    @Override
+    public boolean isClientDist() {
+        return DIST.isClient();
+    }
+
+    @Override
+    public boolean isDatagen() {
         return IS_DATA.get();
     }
 }

@@ -1,7 +1,7 @@
 package mod.chloeprime.aaaparticles.client.render;
 
 import com.mojang.blaze3d.pipeline.RenderTarget;
-import dev.architectury.injectables.annotations.ExpectPlatform;
+import mod.chloeprime.aaaparticles.client.ClientPlatformMethods;
 import mod.chloeprime.aaaparticles.client.internal.ReloadTrackable;
 import mod.chloeprime.aaaparticles.client.internal.RenderStateCapture;
 import net.minecraft.client.Minecraft;
@@ -199,16 +199,12 @@ public class RenderUtil {
         return Optional.of(background);
     }
 
-    @ExpectPlatform
-    @SuppressWarnings("unused")
     public static int getDepthFormat(RenderTarget fb) {
-        throw new AbstractMethodError();
+        return ClientPlatformMethods.get().getDepthFormat(fb);
     }
 
-    @ExpectPlatform
-    @SuppressWarnings("unused")
     public static void syncStencilState(RenderTarget from, RenderTarget to) {
-        throw new AbstractMethodError();
+        ClientPlatformMethods.get().syncStencilState(from, to);
     }
 
     @SuppressWarnings("SameParameterValue")
