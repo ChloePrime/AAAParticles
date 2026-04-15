@@ -1,7 +1,7 @@
 package mod.chloeprime.aaaparticles.client.installer;
 
 import com.google.common.base.Suppliers;
-import dev.architectury.injectables.annotations.ExpectPlatform;
+import mod.chloeprime.aaaparticles.PlatformMethods;
 import net.minecraft.Util;
 
 import java.io.File;
@@ -19,14 +19,12 @@ public enum NativePlatform {
     MACOS_ARM(".dylib", "lib"),
     UNKNOWN(".so", "lib", true);
 
-    @SuppressWarnings("ConstantValue")
     public static boolean isRunningOnUnsupportedPlatform() {
         return current().unsupported || isDataGen();
     }
 
-    @ExpectPlatform
     public static boolean isDataGen() {
-        throw new AbstractMethodError();
+        return PlatformMethods.get().isDatagen();
     }
 
     public static NativePlatform current() {

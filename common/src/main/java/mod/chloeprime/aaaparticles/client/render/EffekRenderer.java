@@ -12,11 +12,11 @@ import mod.chloeprime.aaaparticles.client.internal.RenderStateCapture;
 import mod.chloeprime.aaaparticles.client.loader.EffekAssetLoader;
 import mod.chloeprime.aaaparticles.client.util.GlDebug;
 import mod.chloeprime.aaaparticles.client.util.GlDebugIds;
+import mod.chloeprime.aaaparticles.client.util.RenderTypes;
 import mod.chloeprime.aaaparticles.common.util.DeltaTracker;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ItemInHandRenderer;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.world.InteractionHand;
 import org.joml.Matrix4f;
 
@@ -114,7 +114,7 @@ public class EffekRenderer {
         float deltaFrames = 60 * DeltaTracker.getDeltaTime();
         float realDelta = MINECRAFT.isPaused() ? 0 : deltaFrames;
 
-        RenderType.PARTICLES_TARGET.setupRenderState();
+        RenderTypes.particleTarget().setupRenderState();
 
         RenderUtil.runPixelStoreCodeSafely(() -> {
             GlDebug.pushDebugGroup(GlDebugIds.EFFEK_RENDER_DISPATCH, () -> "[AAAParticle] Rendering Effeks");
@@ -130,7 +130,7 @@ public class EffekRenderer {
             GlDebug.popDebugGroup();
         });
 
-        RenderType.PARTICLES_TARGET.clearRenderState();
+        RenderTypes.particleTarget().clearRenderState();
     }
 
     private static void transposeMatrix(float[] m) {
