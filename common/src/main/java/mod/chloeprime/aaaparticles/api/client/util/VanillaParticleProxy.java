@@ -1,0 +1,105 @@
+package mod.chloeprime.aaaparticles.api.client.util;
+
+import com.mojang.blaze3d.vertex.VertexConsumer;
+import mod.chloeprime.aaaparticles.api.client.EffectDefinition;
+import mod.chloeprime.aaaparticles.api.client.EffectHolder;
+import mod.chloeprime.aaaparticles.api.client.EffectRegistry;
+import mod.chloeprime.aaaparticles.api.client.effekseer.ParticleEmitter;
+import net.minecraft.client.Camera;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.particle.Particle;
+import net.minecraft.client.particle.ParticleRenderType;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
+import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import javax.annotation.ParametersAreNonnullByDefault;
+import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+
+/**
+ * A vanilla particle that plays and holds an Effek emitter.
+ */
+@ApiStatus.Experimental
+@SuppressWarnings("unused")
+public class VanillaParticleProxy extends Particle {
+    private static final int MAX_LIFE_TIME = 20 * 60 * 30;
+    private static final int MAX_WAIT_TIME = 20 * 5;
+    private int age;
+    private final ResourceLocation effekId;
+    private @Nullable ParticleEmitter emitter;
+
+    protected VanillaParticleProxy(ResourceLocation effekId, ClientLevel level, double x, double y, double z, double dx, double dy, double dz) {
+        super(level, x, y, z, dx, dy, dz);
+        this.effekId = effekId;
+        this.lifetime = MAX_LIFE_TIME;
+        spawn(effekId).thenAccept(opt -> opt.ifPresent(emitter -> {
+            this.emitter = emitter;
+            updatePosition(this.x, this.y, this.z);
+        }));
+    }
+
+    /**
+     * Get the effek id of this particle.
+     *
+     * @return the effek id of this particle.
+     */
+    public ResourceLocation getEffekId() {
+        return effekId;
+    }
+
+    /**
+     * Override tick and call this if you want to make this emitter move.
+     */
+    public void move() {
+        super.tick();
+    }
+
+    private void updatePosition(double x, double y, double z) {
+        var emitter = this.emitter;
+        if (emitter != null) {
+            emitter.setPosition((float) x, (float) y, (float) z);
+        }
+    }
+
+    @Override
+    public void tick() {
+        if (removed) {
+            return;
+        }
+        var emitter = this.emitter;
+        if (this.age > this.lifetime) {
+            remove();
+        } else if (emitter == null && this.age > MAX_WAIT_TIME) {
+            remove();
+        } else if (emitter != null && !emitter.exists()) {
+            remove();
+        } else {
+            super.age = this.age++;
+        }
+    }
+
+    @Override
+    @ParametersAreNonnullByDefault
+    public void render(VertexConsumer buffer, Camera camera, float partialTicks) {
+        double x = Mth.lerp(partialTicks, this.xo, this.x);
+        double y = Mth.lerp(partialTicks, this.yo, this.y);
+        double z = Mth.lerp(partialTicks, this.zo, this.z);
+        updatePosition(x, y, z);
+    }
+
+    @Override
+    public @NotNull ParticleRenderType getRenderType() {
+        return ParticleRenderType.CUSTOM;
+    }
+
+    private static CompletableFuture<Optional<ParticleEmitter>> spawn(ResourceLocation effekId) {
+        var loaded = Optional.ofNullable(EffectRegistry.get(effekId)).map(EffectHolder::load).orElse(null);
+        if (loaded == null) {
+            return CompletableFuture.completedFuture(Optional.empty());
+        }
+        return loaded.thenApply(opt -> opt.map(EffectDefinition::play));
+    }
+}
