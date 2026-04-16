@@ -13,7 +13,6 @@ import mod.chloeprime.aaaparticles.client.loader.EffekAssetLoader;
 import mod.chloeprime.aaaparticles.client.util.GlDebug;
 import mod.chloeprime.aaaparticles.client.util.GlDebugIds;
 import mod.chloeprime.aaaparticles.client.util.RenderTypes;
-import mod.chloeprime.aaaparticles.common.util.DeltaTracker;
 import net.minecraft.client.Camera;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;

@@ -8,13 +8,13 @@ import com.mojang.datafixers.util.Pair;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.JsonOps;
 import mod.chloeprime.aaaparticles.AAAParticles;
+import mod.chloeprime.aaaparticles.api.client.EffectDefinition;
 import mod.chloeprime.aaaparticles.api.client.EffectHolder;
 import mod.chloeprime.aaaparticles.api.client.EffectMetadata;
 import mod.chloeprime.aaaparticles.api.client.effekseer.EffekseerEffect;
 import mod.chloeprime.aaaparticles.api.client.effekseer.TextureType;
 import mod.chloeprime.aaaparticles.client.installer.NativePlatform;
 import mod.chloeprime.aaaparticles.client.internal.LimitlessResourceLocationFactory;
-import mod.chloeprime.aaaparticles.client.registry.EffectDefinition;
 import mod.chloeprime.aaaparticles.client.render.EffekRenderer;
 import mod.chloeprime.aaaparticles.client.render.RenderUtil;
 import mod.chloeprime.aaaparticles.client.util.GlDebug;
@@ -28,6 +28,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 
+import javax.annotation.ParametersAreNonnullByDefault;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
@@ -196,6 +197,7 @@ public class EffekAssetLoader extends SimplePreparableReloadListener<EffekAssetL
 
     @Override
     @SuppressWarnings("DataFlowIssue")
+    @ParametersAreNonnullByDefault
     protected @NotNull Preparations prepare(ResourceManager manager, ProfilerFiller profilerFiller) {
         return null;
     }
@@ -213,6 +215,7 @@ public class EffekAssetLoader extends SimplePreparableReloadListener<EffekAssetL
 
     @Override
     @SuppressWarnings("resource")
+    @ParametersAreNonnullByDefault
     protected void apply(Preparations prep_, ResourceManager manager, ProfilerFiller profilerFiller) {
         EffekRenderer.init();
         if (!NativePlatform.isRunningOnUnsupportedPlatform()) {
@@ -221,7 +224,7 @@ public class EffekAssetLoader extends SimplePreparableReloadListener<EffekAssetL
             RenderUtil.runPixelStoreCodeHealthily(() -> {
                 var prep = new Preparations();
                 manager.listResources("effeks", rl -> rl.getPath().endsWith(".efkefc")).forEach((location, resource) -> {
-                    var metaPath = new LimitlessResourceLocation(location.getNamespace(), location.getPath() + ".mcmeta");
+                    var metaPath = UNVALIDATED_RES_LOC_FACTORY.apply(location.getNamespace(), location.getPath() + ".mcmeta");
                     var metadata = loadMetadata(manager, metaPath);
                     var name = createEffekName(location);
                     var loader = loadEffect(manager, name, resource);
