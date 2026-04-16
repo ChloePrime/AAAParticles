@@ -1,125 +1,87 @@
 plugins {
-    id "com.github.johnrengelman.shadow" version "7.1.2"
-}
-architectury {
-    platformSetupLoomIde()
-    neoForge {
-        platformPackage = "forge"
-    }
+    id 'multiloader-loader'
+    id 'net.neoforged.moddev'
 }
 
 base {
-    archivesName = rootProject.archives_base_name.replace('_', '-') + "-neo" + project.name
-}
-
-configurations {
-    common
-    shadowCommon // Don't use shadow from the shadow plugin because we don't want IDEA to index this.
-    compileClasspath.extendsFrom common
-    runtimeClasspath.extendsFrom common
-    developmentNeoForge.extendsFrom common
+    archivesName = archivesName.get().replace("forge", "neoforge")
 }
 
 repositories {
-    maven { url "https://maven.neoforged.net/releases/" }
-    maven {
-        // KubeJS依赖
-        url 'https://jitpack.io'
-        content {
+    exclusiveContent {
+        // KubeJS Dep
+        forRepository {
+            maven {
+                url 'https://jitpack.io'
+            }
+        }
+        filter {
             includeGroup "com.github.rtyley"
         }
     }
-    maven {
-        url "https://maven.latvian.dev/releases"
-        content {
+    exclusiveContent {
+        forRepository {
+            maven {
+                name "KubeJS Maven"
+                url "https://maven.latvian.dev/releases"
+            }
+        }
+        filter {
             includeGroup "dev.latvian.mods"
             includeGroup "dev.latvian.apps"
         }
     }
 }
 
-repositories {
-    maven {
-        url "https://maven.blamejared.com"
-    }
-}
-
 dependencies {
-    neoForge "net.neoforged:neoforge:${rootProject.forge_version}"
-    // Remove the next line if you don't want to depend on the API
-    include modApi("dev.architectury:architectury-neoforge:${rootProject.architectury_version}")
+    // Architectury
+    implementation jarJar("dev.architectury:architectury-neoforge:${architectury_version}")
 
     // KubeJS
-    modCompileOnly "dev.latvian.mods:kubejs-neoforge:$kubejs_version"
-    modCompileOnly 'dev.latvian.apps:tiny-java-server:1.0.0-build.16'
+    implementation "dev.latvian.mods:kubejs-neoforge:$kubejs_version"
+    implementation 'dev.latvian.apps:tiny-java-server:1.0.0-build.16'
 
     // Oculus
-    modCompileOnly "maven.modrinth:sodium:mc1.21.1-0.6.5-neoforge"
-    modCompileOnly "maven.modrinth:iris:1.8.1+1.21.1-neoforge"
-
-    common(project(path: ":common", configuration: "namedElements")) { transitive false }
-    shadowCommon(project(path: ":common", configuration: "transformProductionNeoForge")) { transitive = false }
+    implementation "maven.modrinth:sodium:mc1.21.1-0.6.13-neoforge"
+    implementation "maven.modrinth:iris:1.8.1+1.21.1-neoforge"
 }
 
-processResources {
-    inputs.property "version", project.version
-
-    filesMatching("META-INF/neoforge.mods.toml") {
-        expand "version": project.version
+neoForge {
+    version = neoforge_version
+    // Automatically enable neoforge AccessTransformers if the file exists
+    def at = project(':common').file('src/main/resources/META-INF/accesstransformer.cfg')
+    if (at.exists()) {
+        accessTransformers.from(at.absolutePath)
     }
-}
-
-shadowJar {
-    exclude "fabric.mod.json"
-    exclude "architectury.common.json"
-
-    configurations = [project.configurations.shadowCommon]
-    archiveClassifier.set("dev-shadow")
-}
-
-remapJar {
-    inputFile.set shadowJar.archiveFile
-    dependsOn shadowJar
-}
-
-jar {
-    archiveClassifier.set("dev")
-}
-
-sourcesJar {
-    def commonSources = project(":common").sourcesJar
-    dependsOn commonSources
-    from commonSources.archiveFile.map { zipTree(it) }
-}
-
-components.java {
-    withVariantsFromConfiguration(project.configurations.shadowRuntimeElements) {
-        skip()
+    parchment {
+        minecraftVersion = parchment_minecraft
+        mappingsVersion = parchment_version
     }
-}
+    runs {
+        configureEach {
+            systemProperty('neoforge.enabledGameTestNamespaces', mod_id)
+            ideName = "NeoForge ${it.name.capitalize()} (${project.path})" // Unify the run config names with fabric
+        }
+        client {
+            client()
+        }
+        data {
+            data()
 
-publishing {
-    publications {
-        mavenNeoForge(MavenPublication) {
-            artifactId = archivesBaseName
-            pom.withXml {
-                def node = asNode()
-                if(node.dependencies.size() > 0)
-                    node.remove(node.dependencies) // Remove deps, as they are all mappings-dependent and/or forge
-            }
-            from components.java
+            // DataGen can be run by - "./gradlew :neoforge:runData" in Terminal.
+            // Specify the modid for data generation, where to output the resulting resource, and where to look for existing resources.
+            programArguments.addAll '--mod', project.mod_id, '--all', '--output', file('src/generated/resources/').getAbsolutePath(), '--existing', file('src/main/resources/').getAbsolutePath()
+
+        }
+        server {
+            server()
         }
     }
-
-    // See https://docs.gradle.org/current/userguide/publishing_maven.html for information on how to set up publishing.
-    repositories {
-        maven {
-            name = "Chloe_Maven"
-            url = "https://maven.chloeprime.cn:4080/releases/"
-            credentials {
-                username "$CHLOE_MAVEN_USERNAME"
-                password "$CHLOE_MAVEN_PASSWORD"
-            }
+    mods {
+        "${mod_id}" {
+            sourceSet sourceSets.main
         }
     }
 }
+
+sourceSets.main.resources { srcDir 'src/generated/resources' }
