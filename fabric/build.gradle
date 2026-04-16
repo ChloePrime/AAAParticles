@@ -1,30 +1,27 @@
 plugins {
     id 'multiloader-loader'
-    id 'fabric-loom'
+    id 'net.fabricmc.fabric-loom'
 }
 dependencies {
     minecraft "com.mojang:minecraft:${minecraft_version}"
-    mappings loom.layered {
-        officialMojangMappings()
-        parchment("org.parchmentmc.data:parchment-${parchment_minecraft}:${parchment_version}@zip")
-    }
-    modImplementation "net.fabricmc:fabric-loader:${fabric_loader_version}"
-    modImplementation "net.fabricmc.fabric-api:fabric-api:${fabric_version}"\
+    implementation "net.fabricmc:fabric-loader:${fabric_loader_version}"
+    implementation "net.fabricmc.fabric-api:fabric-api:${fabric_version}"
 
-    include modApi("dev.architectury:architectury-fabric:${rootProject.architectury_version}")
+    // javax.annotation
+    include implementation("com.google.code.findbugs:jsr305:3.0.2")
+
+    // Architectury
+    include api("dev.architectury:architectury-fabric:${architectury_version}")
 
     // Oculus
-    modImplementation "maven.modrinth:sodium:mc1.21.1-0.6.13-fabric"
-    modImplementation "maven.modrinth:iris:1.8.8+1.21.1-fabric"
+    implementation "maven.modrinth:sodium:mc26.1.1-0.8.9-fabric"
+    implementation "maven.modrinth:iris:1.10.9+26.1-fabric"
 }
 
 loom {
     def aw = project(':common').file("src/main/resources/${mod_id}.accesswidener")
     if (aw.exists()) {
         accessWidenerPath.set(aw)
-    }
-    mixin {
-        defaultRefmapName.set("${mod_id}.refmap.json")
     }
     runs {
         client {
@@ -38,6 +35,25 @@ loom {
             setConfigName('Fabric Server')
             ideConfigGenerated(true)
             runDir('runs/server')
+        }
+    }
+}
+
+// Implement mcgradleconventions loader attribute
+def loaderAttribute = Attribute.of('io.github.mcgradleconventions.loader', String)
+['apiElements', 'runtimeElements', 'sourcesElements', 'javadocElements', 'includeInternal', 'modCompileClasspath'].each { variant ->
+    configurations.named("$variant") {
+        attributes {
+            attribute(loaderAttribute, 'fabric')
+        }
+    }
+}
+sourceSets.configureEach {
+    [it.compileClasspathConfigurationName, it.runtimeClasspathConfigurationName].each { variant->
+        configurations.named("$variant") {
+            attributes {
+                attribute(loaderAttribute, 'fabric')
+            }
         }
     }
 }

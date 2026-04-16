@@ -42,24 +42,15 @@ repositories {
     }
     exclusiveContent {
         forRepositories(
-                maven {
-                    name = 'ParchmentMC'
-                    url = 'https://maven.parchmentmc.org/'
-                },
-                maven {
-                    name = "NeoForge"
-                    url = 'https://maven.neoforged.net/releases'
-                }
-        )
-        filter { includeGroup('org.parchmentmc.data') }
-    }
-    exclusiveContent {
-        forRepository {
             maven {
                 name "Architectury Mavenn"
                 url "https://maven.architectury.dev/"
+            },
+            // Architectury for 26.1 exists but is not released officially.
+            flatDir {
+                dir '../libs'
             }
-        }
+        )
         filter { includeGroupAndSubgroups('dev.architectury') }
     }
     exclusiveContent {
@@ -82,19 +73,6 @@ repositories {
 dependencies {
     implementation 'com.google.auto.service:auto-service:1.1.1'
     annotationProcessor 'com.google.auto.service:auto-service:1.1.1'
-}
-
-// Declare capabilities on the outgoing configurations.
-// Read more about capabilities here: https://docs.gradle.org/current/userguide/component_capabilities.html#sec:declaring-additional-capabilities-for-a-local-component
-['apiElements', 'runtimeElements', 'sourcesElements', 'javadocElements'].each { variant ->
-    configurations."$variant".outgoing {
-        capability("$group:${base.archivesName.get()}:$version")
-        capability("$group:$mod_id-${project.name}-${minecraft_version}:$version")
-        capability("$group:$mod_id:$version")
-    }
-    publishing.publications.configureEach {
-        suppressPomMetadataWarningsFor(variant)
-    }
 }
 
 sourcesJar {
@@ -136,15 +114,22 @@ processResources {
             'description'                  : project.description,
             'neoforge_version'             : neoforge_version,
             'neoforge_loader_version_range': neoforge_loader_version_range,
-            "forge_version": forge_version,
-            "forge_loader_version_range": forge_loader_version_range,
             'credits'                      : credits,
             'java_version'                 : java_version
     ]
 
-    filesMatching(['pack.mcmeta', 'fabric.mod.json', 'META-INF/mods.toml', 'META-INF/neoforge.mods.toml', '*.mixins.json']) {
+    var jsonExpandProps = expandProps.collectEntries {
+        key, value -> [(key): value instanceof String ? value.replace("\n", "\\\\n") : value]
+    }
+
+    filesMatching(['META-INF/mods.toml', 'META-INF/neoforge.mods.toml']) {
         expand expandProps
     }
+
+    filesMatching(['pack.mcmeta', 'fabric.mod.json', '*.mixins.json']) {
+        expand jsonExpandProps
+    }
+
     inputs.properties(expandProps)
 }
 
@@ -152,11 +137,6 @@ publishing {
     publications {
         register('mavenJava', MavenPublication) {
             artifactId base.archivesName.get()
-            pom.withXml {
-                def node = asNode()
-                if(node.dependencies.size() > 0)
-                    node.remove(node.dependencies) // Remove deps, as they are all mappings-dependent and/or forge
-            }
             from components.java
         }
     }

@@ -10,10 +10,6 @@ neoForge {
     if (at.exists()) {
         accessTransformers.from(at.absolutePath)
     }
-    parchment {
-        minecraftVersion = parchment_minecraft
-        mappingsVersion = parchment_version
-    }
 }
 
 dependencies {
@@ -26,7 +22,7 @@ dependencies {
     compileOnly "io.github.llamalad7:mixinextras-common:0.4.1"
 
     // Oculus
-    compileOnly "maven.modrinth:iris:1.8.12+1.21.1-neoforge"
+    compileOnly "maven.modrinth:iris:1.10.9+26.1-neoforge"
     // Remove the next line if you don't want to depend on the API
     api "dev.architectury:architectury-neoforge:${architectury_version}"
 }
@@ -47,3 +43,21 @@ artifacts {
     commonResources sourceSets.main.resources.sourceDirectories.singleFile
 }
 
+// Implement mcgradleconventions loader attribute
+def loaderAttribute = Attribute.of('io.github.mcgradleconventions.loader', String)
+['apiElements', 'runtimeElements', 'sourcesElements', 'javadocElements'].each { variant ->
+    configurations.named("$variant") {
+        attributes {
+            attribute(loaderAttribute, 'common')
+        }
+    }
+}
+sourceSets.configureEach {
+    [it.compileClasspathConfigurationName, it.runtimeClasspathConfigurationName].each { variant->
+        configurations.named("$variant") {
+            attributes {
+                attribute(loaderAttribute, 'common')
+            }
+        }
+    }
+}
