@@ -2,6 +2,7 @@ package mod.chloeprime.aaaparticles.client.render;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import mod.chloeprime.aaaparticles.AAAParticles;
+import mod.chloeprime.aaaparticles.api.client.EffectRegistry;
 import mod.chloeprime.aaaparticles.api.client.effekseer.DeviceType;
 import mod.chloeprime.aaaparticles.api.client.effekseer.Effekseer;
 import mod.chloeprime.aaaparticles.api.client.effekseer.ParticleEmitter;
@@ -9,7 +10,6 @@ import mod.chloeprime.aaaparticles.client.installer.NativePlatform;
 import mod.chloeprime.aaaparticles.client.internal.EffekFpvRenderer;
 import mod.chloeprime.aaaparticles.client.internal.RenderContext;
 import mod.chloeprime.aaaparticles.client.internal.RenderStateCapture;
-import mod.chloeprime.aaaparticles.client.loader.EffekAssetLoader;
 import mod.chloeprime.aaaparticles.client.util.GlDebug;
 import mod.chloeprime.aaaparticles.client.util.GlDebugIds;
 import mod.chloeprime.aaaparticles.client.util.RenderTypes;
@@ -121,7 +121,7 @@ public class EffekRenderer {
         RenderUtil.runPixelStoreCodeSafely(() -> {
             GlDebug.pushDebugGroup(GlDebugIds.EFFEK_RENDER_DISPATCH, () -> "[AAAParticle] Rendering Effeks");
             var background = RenderUtil.prepareBackgroundBuffer().orElse(null);
-            EffekAssetLoader.get().forEach((id, lazy) -> lazy.lazyGet().ifPresent(def -> def.draw(
+            EffectRegistry.forEach((id, lazy) -> lazy.lazyGet().ifPresent(def -> def.draw(
                     type,
                     camera.getLookVector(), camera.getPosition().toVector3f(),
                     w, h,
