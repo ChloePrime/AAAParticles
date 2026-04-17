@@ -2,7 +2,6 @@ package mod.chloeprime.aaaparticles.client;
 
 import dev.architectury.event.events.client.ClientLifecycleEvent;
 import dev.architectury.event.events.client.ClientPlayerEvent;
-import dev.architectury.registry.ReloadListenerRegistry;
 import mod.chloeprime.aaaparticles.AAAParticles;
 import mod.chloeprime.aaaparticles.api.client.EffectHolder;
 import mod.chloeprime.aaaparticles.api.client.effekseer.ParticleEmitter;
@@ -10,11 +9,9 @@ import mod.chloeprime.aaaparticles.api.common.DynamicParameter;
 import mod.chloeprime.aaaparticles.api.common.ParticleEmitterInfo;
 import mod.chloeprime.aaaparticles.client.installer.JarExtractor;
 import mod.chloeprime.aaaparticles.client.installer.NativePlatform;
-import mod.chloeprime.aaaparticles.client.loader.EffekAssetLoader;
 import mod.chloeprime.aaaparticles.api.client.EffectRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.Identifier;
-import net.minecraft.server.packs.PackType;
 import net.minecraft.world.level.Level;
 
 import java.io.IOException;
@@ -25,9 +22,6 @@ public class AAAParticlesClient
 {
 	public static void init() {
 		installNativeLibrary();
-		if (!NativePlatform.isDataGen()) {
-			ReloadListenerRegistry.register(PackType.CLIENT_RESOURCES, new EffekAssetLoader(), AAAParticles.loc("effek"));
-		}
 		ClientLifecycleEvent.CLIENT_LEVEL_LOAD.register(level -> EffectRegistry.clearAllPlaying());
 		ClientPlayerEvent.CLIENT_PLAYER_QUIT.register(player -> EffectRegistry.clearAllPlaying());
 		Debug.INSTANCE.registerDebugHooks();
