@@ -2,6 +2,7 @@ package mod.chloeprime.aaaparticles.client.render;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import mod.chloeprime.aaaparticles.AAAParticles;
+import mod.chloeprime.aaaparticles.api.client.EffectRegistry;
 import mod.chloeprime.aaaparticles.api.client.effekseer.DeviceType;
 import mod.chloeprime.aaaparticles.api.client.effekseer.Effekseer;
 import mod.chloeprime.aaaparticles.api.client.effekseer.ParticleEmitter;
@@ -11,7 +12,6 @@ import mod.chloeprime.aaaparticles.client.internal.RenderContext;
 import mod.chloeprime.aaaparticles.client.internal.RenderStateCapture;
 import mod.chloeprime.aaaparticles.client.internal.mc26_1.FramebufferContainer;
 import mod.chloeprime.aaaparticles.client.internal.mc26_1.RenderUtil26_1;
-import mod.chloeprime.aaaparticles.client.loader.EffekAssetLoader;
 import mod.chloeprime.aaaparticles.client.util.GlDebug;
 import mod.chloeprime.aaaparticles.client.util.GlDebugIds;
 import net.minecraft.client.Camera;
@@ -130,7 +130,7 @@ public class EffekRenderer {
                 RenderUtil26_1.recordSamplers();
                 GL30C.glBindFramebuffer(GL30C.GL_READ_FRAMEBUFFER, fbc.framebuffer().frameBufferId);
                 GL30C.glBindFramebuffer(GL30C.GL_DRAW_FRAMEBUFFER, fbc.framebuffer().frameBufferId);
-                EffekAssetLoader.get().forEach((id, lazy) -> lazy.lazyGet().ifPresent(def -> def.draw(
+                EffectRegistry.forEach((id, lazy) -> lazy.lazyGet().ifPresent(def -> def.draw(
                         type,
                         new Vector3f(camera.forwardVector()), cameraState.pos.toVector3f(),
                         w, h,

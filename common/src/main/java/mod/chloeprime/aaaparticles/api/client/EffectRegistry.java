@@ -86,7 +86,7 @@ public class EffectRegistry {
     }
 
     public static void forEach(BiConsumer<Identifier, EffectHolder> action) {
-        EffekAssetLoader.get().forEach(action);
+        Optional.ofNullable(EffekAssetLoader.get()).ifPresent(loader -> loader.forEach(action));
     }
 
     /**
