@@ -19,7 +19,7 @@ import mod.chloeprime.aaaparticles.client.render.EffekRenderer;
 import mod.chloeprime.aaaparticles.client.render.RenderUtil;
 import mod.chloeprime.aaaparticles.client.util.GlDebug;
 import mod.chloeprime.aaaparticles.client.util.GlDebugIds;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
@@ -49,31 +49,31 @@ public class EffekAssetLoader extends SimplePreparableReloadListener<EffekAssetL
         return INSTANCE;
     }
 
-    public @Nullable EffectHolder get(ResourceLocation id) {
+    public @Nullable EffectHolder get(Identifier id) {
         return loadedEffects.get(id);
     }
 
-    public @Nullable ResourceLocation getKey(EffectHolder def) {
+    public @Nullable Identifier getKey(EffectHolder def) {
         return loadedEffects.inverse().get(def);
     }
 
-    public Set<Map.Entry<ResourceLocation, EffectHolder>> entries() {
+    public Set<Map.Entry<Identifier, EffectHolder>> entries() {
         return loadedEffects.entrySet();
     }
 
-    public void forEach(BiConsumer<ResourceLocation, EffectHolder> action) {
+    public void forEach(BiConsumer<Identifier, EffectHolder> action) {
         loadedEffects.forEach(action);
     }
 
     // Metadata Loading
 
-    private static EffectMetadata loadMetadata(ResourceManager manager, ResourceLocation path) {
+    private static EffectMetadata loadMetadata(ResourceManager manager, Identifier path) {
         return manager.getResource(path)
                 .flatMap(res -> parseMetadata(res, path))
                 .orElse(EffectMetadata.DEFAULT);
     }
 
-    private static Optional<EffectMetadata> parseMetadata(Resource metaFile, ResourceLocation path) {
+    private static Optional<EffectMetadata> parseMetadata(Resource metaFile, Identifier path) {
         JsonElement parsed;
         try (var input = metaFile.open()) {
             parsed = JsonParser.parseReader(new InputStreamReader(input, StandardCharsets.UTF_8));
@@ -88,7 +88,7 @@ public class EffekAssetLoader extends SimplePreparableReloadListener<EffekAssetL
 
     // Effek Loading
 
-    private Supplier<Optional<EffekseerEffect>> loadEffect(ResourceManager manager, ResourceLocation name, Resource efkefc) {
+    private Supplier<Optional<EffekseerEffect>> loadEffect(ResourceManager manager, Identifier name, Resource efkefc) {
         return () -> {
             GlDebug.pushDebugGroup(GlDebugIds.EFFEK_LOADING, () -> AAAParticles.LOG_PREFIX + " Loading effek %s".formatted(name));
             try (var input = efkefc.open()) {
@@ -127,12 +127,12 @@ public class EffekAssetLoader extends SimplePreparableReloadListener<EffekAssetL
         };
     }
 
-    private static final BiFunction<String, String, ResourceLocation> UNVALIDATED_RES_LOC_FACTORY =
-            ((LimitlessResourceLocationFactory) (Object) ResourceLocation.withDefaultNamespace("mole"))::aaa$createUninitialized;
+    private static final BiFunction<String, String, Identifier> UNVALIDATED_RES_LOC_FACTORY =
+            ((LimitlessResourceLocationFactory) (Object) Identifier.withDefaultNamespace("mole"))::aaa$createUninitialized;
 
     private void load(
             ResourceManager manager,
-            ResourceLocation name, int count,
+            Identifier name, int count,
             IntFunction<String> pathGetter,
             TriConsumer<byte[]> loadMethod
     ) throws IOException {
@@ -167,8 +167,8 @@ public class EffekAssetLoader extends SimplePreparableReloadListener<EffekAssetL
 
     private static Optional<Resource> getResourceOrUseFallbackPath(
             ResourceManager manager,
-            ResourceLocation path,
-            ResourceLocation fallback
+            Identifier path,
+            Identifier fallback
     ) {
         return manager.getResource(path).or(() -> manager.getResource(fallback));
     }
@@ -187,7 +187,7 @@ public class EffekAssetLoader extends SimplePreparableReloadListener<EffekAssetL
     // Resource Load System
 
     protected static class Preparations {
-        private final Map<ResourceLocation, EffectHolder> loadedEffects = new LinkedHashMap<>();
+        private final Map<Identifier, EffectHolder> loadedEffects = new LinkedHashMap<>();
     }
 
     private void unloadAll() {
@@ -202,7 +202,7 @@ public class EffekAssetLoader extends SimplePreparableReloadListener<EffekAssetL
         return null;
     }
 
-    private static ResourceLocation createEffekName(ResourceLocation location) {
+    private static Identifier createEffekName(Identifier location) {
         var filePath = location.getPath();
         if (filePath.startsWith("effeks/")) {
             filePath = filePath.substring("effeks/".length());
@@ -249,7 +249,7 @@ public class EffekAssetLoader extends SimplePreparableReloadListener<EffekAssetL
          * @param length arg2
          * @param index  arg2
          * @return success or fail
-         * @see #load(ResourceManager, ResourceLocation, int, IntFunction, TriConsumer)
+         * @see #load(ResourceManager, Identifier, int, IntFunction, TriConsumer)
          */
         boolean accept(T bytes, int length, int index);
     }
@@ -260,6 +260,6 @@ public class EffekAssetLoader extends SimplePreparableReloadListener<EffekAssetL
 
     private static final Logger LOGGER = LogUtils.getLogger();
 
-    private final BiMap<ResourceLocation, EffectHolder> loadedEffects = HashBiMap.create();
+    private final BiMap<Identifier, EffectHolder> loadedEffects = HashBiMap.create();
 }
 

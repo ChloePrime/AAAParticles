@@ -9,7 +9,7 @@ import mod.chloeprime.aaaparticles.api.client.EffectHolder;
 import mod.chloeprime.aaaparticles.common.network.S2CAddParticle;
 import mod.chloeprime.aaaparticles.common.util.Basis;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
@@ -28,7 +28,7 @@ public class ParticleEmitterInfo implements Cloneable {
      * Create a packet when on logic server,
      * with an anonymous emitter that can't be referenced later.
      */
-    public static ParticleEmitterInfo create(Level level, ResourceLocation location) {
+    public static ParticleEmitterInfo create(Level level, Identifier location) {
         return level.isClientSide()
                 ? new ParticleEmitterInfo(location)
                 : new S2CAddParticle(location);
@@ -38,14 +38,14 @@ public class ParticleEmitterInfo implements Cloneable {
      * Create a packet when on logic server,
      * with a named emitter that can be referenced later.
      */
-    public static ParticleEmitterInfo create(Level level, ResourceLocation location, ResourceLocation emitterName) {
+    public static ParticleEmitterInfo create(Level level, Identifier location, Identifier emitterName) {
         return level.isClientSide()
                 ? new ParticleEmitterInfo(location, emitterName)
                 : new S2CAddParticle(location, emitterName);
     }
 
-    public final ResourceLocation effek;
-    public final ResourceLocation emitter;
+    public final Identifier effek;
+    public final Identifier emitter;
     protected int flags;
     protected double x, y, z;
     protected float rotX, rotY, rotZ;
@@ -58,18 +58,18 @@ public class ParticleEmitterInfo implements Cloneable {
     private static final Vec3 VEC3_ONES = new Vec3(1, 1, 1);
 
     /**
-     * @see #create(Level, ResourceLocation)
+     * @see #create(Level, Identifier)
      */
     @ApiStatus.Internal
-    public ParticleEmitterInfo(ResourceLocation effek) {
+    public ParticleEmitterInfo(Identifier effek) {
         this(effek, null);
     }
 
     /**
-     * @see #create(Level, ResourceLocation, ResourceLocation)
+     * @see #create(Level, Identifier, Identifier)
      */
     @ApiStatus.Internal
-    public ParticleEmitterInfo(ResourceLocation effek, ResourceLocation emitter) {
+    public ParticleEmitterInfo(Identifier effek, Identifier emitter) {
         this.effek = effek;
         this.emitter = emitter;
         if (emitter != null) {
@@ -315,10 +315,10 @@ public class ParticleEmitterInfo implements Cloneable {
     }
 
     public void encode(FriendlyByteBuf buf) {
-        buf.writeResourceLocation(effek);
+        buf.writeIdentifier(effek);
         buf.writeVarInt(flags);
         if (hasEmitter()) {
-            buf.writeResourceLocation(emitter);
+            buf.writeIdentifier(emitter);
         }
         if (isPositionSet()) {
             buf.writeDouble(x);
@@ -359,10 +359,10 @@ public class ParticleEmitterInfo implements Cloneable {
     }
 
     public ParticleEmitterInfo(FriendlyByteBuf buf) {
-        effek = buf.readResourceLocation();
+        effek = buf.readIdentifier();
         flags = buf.readVarInt();
         if (hasEmitter()) {
-            emitter = buf.readResourceLocation();
+            emitter = buf.readIdentifier();
         } else {
             emitter = null;
         }

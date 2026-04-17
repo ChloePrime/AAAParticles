@@ -4,7 +4,7 @@ import dev.architectury.networking.NetworkManager;
 import mod.chloeprime.aaaparticles.api.client.effekseer.ParticleEmitter;
 import mod.chloeprime.aaaparticles.client.AAAParticlesClient;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.ApiStatus;
 
 import java.util.function.Supplier;
@@ -12,11 +12,11 @@ import java.util.function.Supplier;
 @ApiStatus.Experimental
 public class S2CSendEmitterTrigger implements PacketBase {
     private final ParticleEmitter.Type type;
-    private final ResourceLocation effek;
-    private final ResourceLocation emitterName;
+    private final Identifier effek;
+    private final Identifier emitterName;
     private final int[] triggers;
 
-    public S2CSendEmitterTrigger(ParticleEmitter.Type type, ResourceLocation effek, ResourceLocation emitterName, int[] triggers) {
+    public S2CSendEmitterTrigger(ParticleEmitter.Type type, Identifier effek, Identifier emitterName, int[] triggers) {
         this.type = type;
         this.effek = effek;
         this.emitterName = emitterName;
@@ -25,15 +25,15 @@ public class S2CSendEmitterTrigger implements PacketBase {
 
     S2CSendEmitterTrigger(FriendlyByteBuf buf) {
         type = buf.readEnum(ParticleEmitter.Type.class);
-        effek = buf.readResourceLocation();
-        emitterName = buf.readResourceLocation();
+        effek = buf.readIdentifier();
+        emitterName = buf.readIdentifier();
         this.triggers = buf.readVarIntArray();
     }
 
     public void encode(FriendlyByteBuf buf) {
         buf.writeEnum(type);
-        buf.writeResourceLocation(effek);
-        buf.writeResourceLocation(emitterName);
+        buf.writeIdentifier(effek);
+        buf.writeIdentifier(emitterName);
         buf.writeVarIntArray(triggers);
     }
 

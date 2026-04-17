@@ -4,6 +4,8 @@ import com.mojang.blaze3d.pipeline.RenderTarget;
 import mod.chloeprime.aaaparticles.client.ClientPlatformMethods;
 import mod.chloeprime.aaaparticles.client.internal.ReloadTrackable;
 import mod.chloeprime.aaaparticles.client.internal.RenderStateCapture;
+import mod.chloeprime.aaaparticles.client.internal.mc26_1.Framebuffer;
+import mod.chloeprime.aaaparticles.client.internal.mc26_1.FramebufferContainer;
 import net.minecraft.client.Minecraft;
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.jetbrains.annotations.ApiStatus;
@@ -76,26 +78,26 @@ public class RenderUtil {
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, draw);
     }
 
-    public static void copyCurrentDepthTo(RenderTarget target) {
+    public static void copyCurrentDepthTo(Framebuffer target) {
         var frameBuffer = GL11.glGetInteger(GL_DRAW_FRAMEBUFFER_BINDING);
         var window = MC.getWindow();
         copyDepthSafely(frameBuffer, window.getWidth(), window.getHeight(), target);
     }
 
-    public static void copyCurrentTo(RenderTarget target) {
+    public static void copyCurrentTo(Framebuffer target) {
         var frameBuffer = GL11.glGetInteger(GL_DRAW_FRAMEBUFFER_BINDING);
         var window = MC.getWindow();
         copyDepthSafely(frameBuffer, window.getWidth(), window.getHeight(), target);
     }
 
-    public static void pasteToCurrentDepthFrom(RenderTarget source) {
+    public static void pasteToCurrentDepthFrom(Framebuffer source) {
         var frameBuffer = GL11.glGetInteger(GL_DRAW_FRAMEBUFFER_BINDING);
         var window = MC.getWindow();
         copyDepthSafely(source, frameBuffer, window.getWidth(), window.getHeight());
     }
 
 
-    public static void copyDepthSafely(int src, int srcWidth, int srcHeight, RenderTarget target) {
+    public static void copyDepthSafely(int src, int srcWidth, int srcHeight, Framebuffer target) {
         var readBackup = GL11.glGetInteger(GL_READ_FRAMEBUFFER_BINDING);
         var drawBackup = GL11.glGetInteger(GL_DRAW_FRAMEBUFFER_BINDING);
         glBindFramebuffer(GL_READ_FRAMEBUFFER, src);
@@ -105,7 +107,7 @@ public class RenderUtil {
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, drawBackup);
     }
 
-    public static void copyDepthSafely(RenderTarget src, int target, int targetWidth, int targetHeight) {
+    public static void copyDepthSafely(Framebuffer src, int target, int targetWidth, int targetHeight) {
         var readBackup = GL11.glGetInteger(GL_READ_FRAMEBUFFER_BINDING);
         var drawBackup = GL11.glGetInteger(GL_DRAW_FRAMEBUFFER_BINDING);
         glBindFramebuffer(GL_READ_FRAMEBUFFER, src.frameBufferId);
@@ -115,7 +117,7 @@ public class RenderUtil {
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, drawBackup);
     }
 
-    public static void copySafely(RenderTarget src, RenderTarget target) {
+    public static void copySafely(Framebuffer src, Framebuffer target) {
         var readBackup = GL11.glGetInteger(GL_READ_FRAMEBUFFER_BINDING);
         var drawBackup = GL11.glGetInteger(GL_DRAW_FRAMEBUFFER_BINDING);
         glBindFramebuffer(GL_READ_FRAMEBUFFER, src.frameBufferId);
@@ -189,27 +191,24 @@ public class RenderUtil {
         refreshFrameBuffer(RenderStateCapture.DISTORTION_BACKGROUND);
     }
 
-    public static Optional<RenderTarget> prepareBackgroundBuffer() {
+    public static Optional<Framebuffer> prepareBackgroundBuffer() {
         if (isReloadingResourcePacks()) {
             return Optional.empty();
         }
         var background = RenderStateCapture.DISTORTION_BACKGROUND;
-        syncStencilState(MC.getMainRenderTarget(), background);
-        RenderUtil.copySafely(MC.getMainRenderTarget(), background);
+        try (var fbc = new FramebufferContainer(MC.getMainRenderTarget())) {
+            RenderUtil.copySafely(fbc.framebuffer(), background);
+        }
         return Optional.of(background);
     }
 
-    public static int getDepthFormat(RenderTarget fb) {
-        return ClientPlatformMethods.get().getDepthFormat(fb);
-    }
-
-    public static void syncStencilState(RenderTarget from, RenderTarget to) {
-        ClientPlatformMethods.get().syncStencilState(from, to);
+    public static int getDepthFormat(Framebuffer fb) {
+        return ClientPlatformMethods.get().getDepthFormat(fb.getRenderTarget());
     }
 
     @SuppressWarnings("SameParameterValue")
-    private static void refreshFrameBuffer(RenderTarget fb) {
-        RenderUtil.runFrameBufferCodeSafely(() -> fb.resize(fb.width, fb.height, Minecraft.ON_OSX));
+    private static void refreshFrameBuffer(Framebuffer fb) {
+        RenderUtil.runFrameBufferCodeSafely(() -> fb.resize(fb.width, fb.height));
     }
 
     public static final Minecraft MC = Minecraft.getInstance();

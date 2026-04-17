@@ -2,7 +2,7 @@ package mod.chloeprime.aaaparticles.client.installer;
 
 import com.google.common.base.Suppliers;
 import mod.chloeprime.aaaparticles.PlatformMethods;
-import net.minecraft.Util;
+import net.minecraft.util.Util;
 
 import java.io.File;
 import java.util.Arrays;

@@ -9,21 +9,26 @@ import mod.chloeprime.aaaparticles.client.installer.NativePlatform;
 import mod.chloeprime.aaaparticles.client.internal.EffekFpvRenderer;
 import mod.chloeprime.aaaparticles.client.internal.RenderContext;
 import mod.chloeprime.aaaparticles.client.internal.RenderStateCapture;
+import mod.chloeprime.aaaparticles.client.internal.mc26_1.FramebufferContainer;
+import mod.chloeprime.aaaparticles.client.internal.mc26_1.RenderUtil26_1;
 import mod.chloeprime.aaaparticles.client.loader.EffekAssetLoader;
 import mod.chloeprime.aaaparticles.client.util.GlDebug;
 import mod.chloeprime.aaaparticles.client.util.GlDebugIds;
-import mod.chloeprime.aaaparticles.client.util.RenderTypes;
 import net.minecraft.client.Camera;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ItemInHandRenderer;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.world.InteractionHand;
 import org.joml.Matrix4f;
+import org.joml.Vector3f;
+import org.lwjgl.opengl.GL30C;
 
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static mod.chloeprime.aaaparticles.client.render.EffekRenderer.MinecraftHolder.MINECRAFT;
+import static mod.chloeprime.aaaparticles.client.render.RenderUtil.MC;
 import static mod.chloeprime.aaaparticles.client.render.RenderUtil.pasteToCurrentDepthFrom;
 import static org.lwjgl.opengl.GL11.*;
 
@@ -61,7 +66,7 @@ public class EffekRenderer {
             RenderStateCapture.LEVEL.hasCapture = false;
 
             pasteToCurrentDepthFrom(RenderStateCapture.CAPTURED_WORLD_DEPTH_BUFFER);
-            EffekRenderer.renderWorldEffeks(partial, RenderStateCapture.LEVEL.pose, RenderStateCapture.LEVEL.projection, RenderStateCapture.LEVEL.camera);
+            EffekRenderer.renderWorldEffeks(partial, RenderStateCapture.LEVEL.pose, RenderStateCapture.LEVEL.cameraState_26_1.projectionMatrix, RenderStateCapture.LEVEL.camera, RenderStateCapture.LEVEL.cameraState_26_1);
         }
         if (RenderContext.renderHandDeferred() && renderHand) {
             if (RenderContext.captureHandDepth()) {
@@ -71,14 +76,14 @@ public class EffekRenderer {
         }
     }
 
-    public static void renderWorldEffeks(float partialTick, PoseStack pose, Matrix4f projection, Camera camera) {
+    public static void renderWorldEffeks(float partialTick, PoseStack pose, Matrix4f projection, Camera camera, CameraRenderState cameraState) {
         if (NativePlatform.isRunningOnUnsupportedPlatform()) {
             return;
         }
-        draw(ParticleEmitter.Type.WORLD, partialTick, pose, projection, camera);
+        draw(ParticleEmitter.Type.WORLD, partialTick, pose, projection, camera, cameraState);
     }
 
-    public static void onRenderHand(float partialTick, InteractionHand hand, PoseStack pose, Matrix4f projection, Camera camera) {
+    public static void onRenderHand(float partialTick, InteractionHand hand, PoseStack pose, Matrix4f projection, Camera camera, CameraRenderState cameraState) {
         if (NativePlatform.isRunningOnUnsupportedPlatform()) {
             return;
         }
@@ -86,13 +91,13 @@ public class EffekRenderer {
             case MAIN_HAND -> ParticleEmitter.Type.FIRST_PERSON_MAINHAND;
             case OFF_HAND -> ParticleEmitter.Type.FIRST_PERSON_OFFHAND;
         };
-        draw(type, partialTick, pose, projection, camera);
+        draw(type, partialTick, pose, projection, camera, cameraState);
     }
 
     private static final float[] CAMERA_TRANSFORM_DATA = new float[16];
     private static final float[] PROJECTION_MATRIX_DATA = new float[16];
 
-    private static void draw(ParticleEmitter.Type type, float partialTick, PoseStack pose, Matrix4f projection, Camera camera) {
+    private static void draw(ParticleEmitter.Type type, float partialTick, PoseStack pose, Matrix4f projection, Camera camera, CameraRenderState cameraState) {
         int w = MINECRAFT.getWindow().getWidth();
         int h = MINECRAFT.getWindow().getHeight();
 
@@ -102,7 +107,7 @@ public class EffekRenderer {
         pose.pushPose();
         {
             if (type == ParticleEmitter.Type.WORLD) {
-                pose.translate(-camera.getPosition().x(), -camera.getPosition().y(), -camera.getPosition().z());
+                pose.translate(-cameraState.pos.x(), -cameraState.pos.y(), -cameraState.pos.z());
             }
 
             pose.last().pose().get(CAMERA_TRANSFORM_DATA);
@@ -116,23 +121,30 @@ public class EffekRenderer {
         float deltaFrames = 60 * mod.chloeprime.aaaparticles.common.util.DeltaTracker.getDeltaTime();
         float realDelta = MINECRAFT.isPaused() ? 0 : deltaFrames;
 
-        RenderTypes.particleTarget().setupRenderState();
+        // RenderTypes.particleTarget().setupRenderState();
 
         RenderUtil.runPixelStoreCodeSafely(() -> {
             GlDebug.pushDebugGroup(GlDebugIds.EFFEK_RENDER_DISPATCH, () -> "[AAAParticle] Rendering Effeks");
             var background = RenderUtil.prepareBackgroundBuffer().orElse(null);
-            EffekAssetLoader.get().forEach((id, lazy) -> lazy.lazyGet().ifPresent(def -> def.draw(
-                    type,
-                    camera.getLookVector(), camera.getPosition().toVector3f(),
-                    w, h,
-                    CAMERA_TRANSFORM_DATA, PROJECTION_MATRIX_DATA,
-                    realDelta, partialTick, background
-            )));
-            RenderUtil.clearSamplerBindings(5);
+            try (var fbc = new FramebufferContainer(MC.getMainRenderTarget())) {
+                RenderUtil26_1.recordSamplers();
+                GL30C.glBindFramebuffer(GL30C.GL_READ_FRAMEBUFFER, fbc.framebuffer().frameBufferId);
+                GL30C.glBindFramebuffer(GL30C.GL_DRAW_FRAMEBUFFER, fbc.framebuffer().frameBufferId);
+                EffekAssetLoader.get().forEach((id, lazy) -> lazy.lazyGet().ifPresent(def -> def.draw(
+                        type,
+                        new Vector3f(camera.forwardVector()), cameraState.pos.toVector3f(),
+                        w, h,
+                        CAMERA_TRANSFORM_DATA, PROJECTION_MATRIX_DATA,
+                        realDelta, partialTick, background
+                )));
+                GL30C.glBindFramebuffer(GL30C.GL_READ_FRAMEBUFFER, 0);
+                GL30C.glBindFramebuffer(GL30C.GL_DRAW_FRAMEBUFFER, 0);
+                RenderUtil26_1.recoverSamplers();
+            }
             GlDebug.popDebugGroup();
         });
 
-        RenderTypes.particleTarget().clearRenderState();
+        // RenderTypes.particleTarget().clearRenderState();
     }
 
     private static void transposeMatrix(float[] m) {

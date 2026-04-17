@@ -12,7 +12,9 @@
     "client.MixinGameRenderer",
     "client.MixinItemInHandRenderer",
     "client.MixinLevelRenderer",
-    "client.MixinMinecraft"
+    "client.MixinMinecraft",
+    "client.mc26_1.MixinCamera",
+    "client.mc26_1.MixinCameraRenderState"
   ],
   "injectors": {
     "defaultRequire": 1

@@ -13,8 +13,8 @@ import mod.chloeprime.aaaparticles.api.common.ParticleEmitterInfo;
 import mod.chloeprime.aaaparticles.client.installer.NativePlatform;
 import mod.chloeprime.aaaparticles.api.client.EffectRegistry;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
@@ -32,8 +32,8 @@ public enum Debug {
     INSTANCE;
     public static final boolean DEBUG_ENABLED = Platform.isDevelopmentEnvironment() || Boolean.getBoolean("mod.chloeprime.aaaparticles.debug");
     private static final int DEBUG_KEY = InputConstants.KEY_F;
-    private static final ResourceLocation DEBUG_PARTICLE = ResourceLocation.fromNamespaceAndPath(AAAParticles.MOD_ID, "debug");
-    private static final ResourceLocation DISTORTION_PARTICLE = ResourceLocation.fromNamespaceAndPath(AAAParticles.MOD_ID, "simple_distortion");
+    private static final Identifier DEBUG_PARTICLE = Identifier.fromNamespaceAndPath(AAAParticles.MOD_ID, "debug");
+    private static final Identifier DISTORTION_PARTICLE = Identifier.fromNamespaceAndPath(AAAParticles.MOD_ID, "simple_distortion");
 
     public void registerDebugHooks() {
         if (!DEBUG_ENABLED) {
@@ -43,28 +43,28 @@ public enum Debug {
         InteractionEvent.CLIENT_LEFT_CLICK_AIR.register(this::leftClick);
     }
 
-    public EventResult keyPressed(Minecraft client, int keyCode, int scanCode, int action, int modifiers) {
-        keyPressed0(client, keyCode, scanCode, action, modifiers);
+    public EventResult keyPressed(Minecraft client, int action, KeyEvent keyEvent) {
+        keyPressed0(client, action, keyEvent);
         return EventResult.pass();
     }
 
-    public static void keyPressed0(Minecraft client, int keyCode, int scanCode, int action, int modifiers) {
+    public static void keyPressed0(Minecraft client, int action, KeyEvent keyEvent) {
         if (action != InputConstants.PRESS || NativePlatform.isRunningOnUnsupportedPlatform()) {
             return;
         }
         var mc = Minecraft.getInstance();
-        if (keyCode == InputConstants.KEY_R) {
-            LogManager.getLogger().info("ResDomains = " + mc.getResourceManager().getNamespaces());
+        if (keyEvent.key() == InputConstants.KEY_R) {
+            LogManager.getLogger().info("ResDomains = {}", mc.getResourceManager().getNamespaces());
             return;
         }
-        if (keyCode == InputConstants.KEY_M) {
+        if (keyEvent.key() == InputConstants.KEY_M) {
             var effect = new WeakReference<>(new EffekseerEffect());
             while (effect.get() != null) {
                 System.gc();
             }
             return;
         }
-        if (keyCode != DEBUG_KEY) {
+        if (keyEvent.key() != DEBUG_KEY) {
             return;
         }
         var player = mc.player;
@@ -72,7 +72,7 @@ public enum Debug {
             return;
         }
 
-        var ctrl = Screen.hasControlDown();
+        var ctrl = client.hasControlDown();
         var efk = ctrl ? DISTORTION_PARTICLE : DEBUG_PARTICLE;
 
         Optional.ofNullable(mc.crosshairPickEntity).map(Entity::getId)

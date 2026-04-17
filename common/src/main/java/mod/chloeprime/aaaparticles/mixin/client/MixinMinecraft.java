@@ -9,7 +9,6 @@ import mod.chloeprime.aaaparticles.client.render.RenderUtil;
 import mod.chloeprime.aaaparticles.common.util.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.main.GameConfig;
-import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -31,15 +30,14 @@ public abstract class MixinMinecraft implements ReloadTrackable, Executor {
         aaa_particles$constructed = true;
     }
 
-    @Inject(method = "resizeDisplay", at = @At("RETURN"))
+    @Inject(method = "resizeGui", at = @At("RETURN"))
     private void resizeCapturedDepthBuffer(CallbackInfo ci) {
         if (aaa_particles$constructed) {
-            RenderUtil.runFrameBufferCodeSafely(() -> RenderStateCapture.onResize(window.getWidth(), window.getHeight(), ON_OSX));
+            RenderUtil.runFrameBufferCodeSafely(() -> RenderStateCapture.onResize(window.getWidth(), window.getHeight(), false));
         }
     }
 
     @Shadow @Final private Window window;
-    @Shadow @Final public static boolean ON_OSX;
 
     private @Unique boolean aaa_particles$constructed;
     private final @Unique AtomicInteger aaa_particles$myReloadTracker = new AtomicInteger();
@@ -71,7 +69,7 @@ public abstract class MixinMinecraft implements ReloadTrackable, Executor {
 
     @Inject(
             method = "runTick",
-            at = @At(value = "FIELD", opcode = Opcodes.GETFIELD, target = "Lnet/minecraft/client/Minecraft;noRender:Z"))
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;renderFrame(Z)V"))
     private void trackDeltaTime(boolean bl, CallbackInfo ci) {
         DeltaTracker.run();
     }

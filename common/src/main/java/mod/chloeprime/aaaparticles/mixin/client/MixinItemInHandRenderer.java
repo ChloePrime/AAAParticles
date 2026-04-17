@@ -6,15 +6,14 @@ import mod.chloeprime.aaaparticles.client.internal.EffekFpvRenderer;
 import mod.chloeprime.aaaparticles.client.internal.RenderContext;
 import mod.chloeprime.aaaparticles.client.internal.RenderStateCapture;
 import mod.chloeprime.aaaparticles.client.render.EffekRenderer;
-import mod.chloeprime.aaaparticles.client.render.ItemTransformHooks;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.ItemInHandRenderer;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.entity.ItemRenderer;
+import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.item.ItemModelResolver;
+import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import org.spongepowered.asm.mixin.Final;
@@ -28,17 +27,18 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import java.util.EnumMap;
 import java.util.Objects;
 
+import static mod.chloeprime.aaaparticles.client.render.RenderUtil.MC;
 import static mod.chloeprime.aaaparticles.client.render.RenderUtil.copyCurrentDepthTo;
 
 @Mixin(value = ItemInHandRenderer.class, priority = 1005)
 public class MixinItemInHandRenderer implements EffekFpvRenderer {
     @Shadow @Final private Minecraft minecraft;
-    @Shadow @Final private ItemRenderer itemRenderer;
+    @Shadow @Final private ItemModelResolver itemModelResolver;
     @Unique private final EnumMap<InteractionHand, RenderStateCapture> aaaParticles$captures = new EnumMap<>(InteractionHand.class);
     @Unique private final boolean aaaParticles$DISABLE_FPV_RENDERING = Boolean.getBoolean("mod.chloeprime.aaaparticles.disableFpvRendering");
 
     @Inject(method = "renderArmWithItem", at = @At("HEAD"))
-    private void resetCaptureState(AbstractClientPlayer player, float f, float g, InteractionHand hand, float h, ItemStack itemStack, float i, PoseStack poseStack, MultiBufferSource multiBufferSource, int j, CallbackInfo ci) {
+    private void resetCaptureState(AbstractClientPlayer player, float partial, float xRot, InteractionHand hand, float attack, ItemStack itemStack, float inverseArmHeight, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, int lightCoords, CallbackInfo ci) {
         var capture = aaaParticles$captures.computeIfAbsent(hand, arg -> new RenderStateCapture());
         capture.hasCapture = false;
         capture.item = null;
@@ -46,20 +46,20 @@ public class MixinItemInHandRenderer implements EffekFpvRenderer {
 
     @Inject(
             method = "renderArmWithItem",
-            at = @At(value = "INVOKE", shift = At.Shift.AFTER, target = "Lnet/minecraft/client/renderer/ItemInHandRenderer;renderItem(Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/ItemDisplayContext;ZLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V")
+            at = @At(value = "INVOKE", shift = At.Shift.AFTER, target = "Lnet/minecraft/client/renderer/ItemInHandRenderer;renderItem(Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/ItemDisplayContext;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;I)V")
     )
-    private void setFpvRenderState(AbstractClientPlayer player, float partial, float g, InteractionHand hand, float h, ItemStack stack, float i, PoseStack poseStack, MultiBufferSource buffer, int j, CallbackInfo ci) {
+    private void setFpvRenderState(AbstractClientPlayer player, float partial, float xRot, InteractionHand hand, float attack, ItemStack stack, float inverseArmHeight, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, int lightCoords, CallbackInfo ci) {
         var stackTop = poseStack.last();
         var capture = Objects.requireNonNull(aaaParticles$captures.get(hand));
         capture.hasCapture = true;
         capture.pose.last().pose().set(stackTop.pose());
         capture.pose.last().normal().set(stackTop.normal());
-        capture.projection.set(RenderSystem.getProjectionMatrix());
         capture.item = stack;
+        capture.projectionBuffer_26_1 = RenderSystem.getProjectionMatrixBuffer();
     }
 
     @Inject(method = "renderHandsWithItems", at = @At("RETURN"))
-    private void captureHandDepth(float partial, PoseStack poseStack, MultiBufferSource.BufferSource bufferSource, LocalPlayer player, int i, CallbackInfo ci) {
+    private void captureHandDepth(float partial, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, LocalPlayer player, int lightCoords, CallbackInfo ci) {
         if (RenderContext.renderHandDeferred()) {
             if (RenderContext.captureHandDepth()) {
                 copyCurrentDepthTo(RenderStateCapture.CAPTURED_HAND_DEPTH_BUFFER);
@@ -74,13 +74,13 @@ public class MixinItemInHandRenderer implements EffekFpvRenderer {
         if (aaaParticles$DISABLE_FPV_RENDERING) {
             return;
         }
-        var oldProjection = RenderSystem.getProjectionMatrix();
-        var oldVertexSort = RenderSystem.getVertexSorting();
+        var oldProjection = RenderSystem.getProjectionMatrixBuffer();
+        var oldVertexSort = RenderSystem.getProjectionType();
         try {
             var camera = minecraft.gameRenderer.getMainCamera();
             aaaParticles$captures.forEach((hand, capture) -> {
                 if (capture.hasCapture && capture.item != null) {
-                    RenderSystem.setProjectionMatrix(capture.projection, oldVertexSort);
+                    RenderSystem.setProjectionMatrix(capture.projectionBuffer_26_1, oldVertexSort);
 
                     var arm = hand == InteractionHand.MAIN_HAND ? player.getMainArm() : player.getMainArm().getOpposite();
                     var tran = switch (arm) {
@@ -90,10 +90,11 @@ public class MixinItemInHandRenderer implements EffekFpvRenderer {
                     var poseStack = capture.pose;
                     poseStack.pushPose();
 
-                    var model = itemRenderer.getModel(capture.item, player.level(), player, player.getId() + tran.ordinal());
-                    ItemTransformHooks.applyItemTransform(poseStack, model, tran, arm == HumanoidArm.LEFT);
-                    poseStack.translate(-0.5, -0.5, -0.5);
-                    EffekRenderer.onRenderHand(partial, hand, poseStack, capture.projection, camera);
+                    var itemState = new ItemStackRenderState();
+                    this.itemModelResolver.updateForTopItem(itemState, capture.item, tran, minecraft.level, player, player.getId() + tran.ordinal());
+
+                    var cameraState = MC.gameRenderer.getGameRenderState().levelRenderState.cameraRenderState;
+                    EffekRenderer.onRenderHand(partial, hand, poseStack, cameraState.projectionMatrix, camera, cameraState);
 
                     poseStack.popPose();
                 }

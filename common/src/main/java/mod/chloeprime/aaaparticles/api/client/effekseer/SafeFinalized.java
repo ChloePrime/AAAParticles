@@ -29,7 +29,7 @@ abstract class SafeFinalized<T> implements Closeable {
         try {
             var kept = this.kept.get();
             if (kept != null) {
-                Minecraft.getInstance().tell(this::close);
+                Minecraft.getInstance().execute(this::close);
             }
         } finally {
             super.finalize();

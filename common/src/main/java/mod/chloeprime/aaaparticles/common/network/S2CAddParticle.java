@@ -3,7 +3,7 @@ package mod.chloeprime.aaaparticles.common.network;
 import dev.architectury.networking.NetworkManager.PacketContext;
 import mod.chloeprime.aaaparticles.api.common.ParticleEmitterInfo;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.ApiStatus;
 
@@ -11,18 +11,18 @@ import java.util.function.Supplier;
 
 public class S2CAddParticle extends ParticleEmitterInfo implements PacketBase {
     /**
-     * @see #create(Level, ResourceLocation)
+     * @see #create(Level, Identifier)
      */
     @ApiStatus.Internal
-    public S2CAddParticle(ResourceLocation effek) {
+    public S2CAddParticle(Identifier effek) {
         super(effek);
     }
 
     /**
-     * @see #create(Level, ResourceLocation, ResourceLocation)
+     * @see #create(Level, Identifier, Identifier)
      */
     @ApiStatus.Internal
-    public S2CAddParticle(ResourceLocation effek, ResourceLocation emitter) {
+    public S2CAddParticle(Identifier effek, Identifier emitter) {
         super(effek, emitter);
     }
 

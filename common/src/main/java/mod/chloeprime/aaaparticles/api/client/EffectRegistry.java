@@ -7,7 +7,7 @@ import dev.architectury.utils.Env;
 import mod.chloeprime.aaaparticles.api.client.effekseer.EffekseerManager;
 import mod.chloeprime.aaaparticles.api.client.effekseer.ParticleEmitter;
 import mod.chloeprime.aaaparticles.client.loader.EffekAssetLoader;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.management.ManagementFactory;
@@ -28,7 +28,7 @@ public class EffectRegistry {
      * @return the effek holder.
      * @since 2.0.0 Effeks are lazily loaded.
      */
-    public static @Nullable EffectHolder get(ResourceLocation id) {
+    public static @Nullable EffectHolder get(Identifier id) {
         return Optional.ofNullable(EffekAssetLoader.get())
                 .map(loader -> loader.get(id))
                 .orElse(null);
@@ -41,7 +41,7 @@ public class EffectRegistry {
      * @return the effek id.
      * @since 2.0.0 Effeks are lazily loaded.
      */
-    public static @Nullable ResourceLocation getKey(EffectHolder def) {
+    public static @Nullable Identifier getKey(EffectHolder def) {
         return Optional.ofNullable(EffekAssetLoader.get())
                 .map(loader -> loader.getKey(def))
                 .orElse(null);
@@ -53,14 +53,14 @@ public class EffectRegistry {
      * @param def the loaded effek definition
      * @since 2.0.0
      */
-    public static @Nullable ResourceLocation getKey(EffectDefinition def) {
+    public static @Nullable Identifier getKey(EffectDefinition def) {
         return def.getId();
     }
 
     /**
      * Get all effeks that has been scanned by the effek asset loader.
      */
-    public static Collection<Map.Entry<ResourceLocation, EffectHolder>> entries() {
+    public static Collection<Map.Entry<Identifier, EffectHolder>> entries() {
         return Optional.ofNullable(EffekAssetLoader.get())
                 .map(EffekAssetLoader::entries)
                 .orElse(Collections.emptySet());
@@ -85,7 +85,7 @@ public class EffectRegistry {
                 .forEach(EffekseerManager::stopAllEffects);
     }
 
-    public static void forEach(BiConsumer<ResourceLocation, EffectHolder> action) {
+    public static void forEach(BiConsumer<Identifier, EffectHolder> action) {
         EffekAssetLoader.get().forEach(action);
     }
 

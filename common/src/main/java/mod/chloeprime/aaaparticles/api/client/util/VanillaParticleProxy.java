@@ -1,19 +1,20 @@
 package mod.chloeprime.aaaparticles.api.client.util;
 
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import mod.chloeprime.aaaparticles.api.client.EffectDefinition;
 import mod.chloeprime.aaaparticles.api.client.EffectHolder;
 import mod.chloeprime.aaaparticles.api.client.EffectRegistry;
 import mod.chloeprime.aaaparticles.api.client.effekseer.ParticleEmitter;
+import mod.chloeprime.aaaparticles.client.ClientPlatformMethods;
 import net.minecraft.client.Camera;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleRenderType;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.client.particle.SingleQuadParticle;
+import net.minecraft.client.renderer.state.level.QuadParticleRenderState;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import org.jetbrains.annotations.ApiStatus;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.Optional;
@@ -24,15 +25,15 @@ import java.util.concurrent.CompletableFuture;
  */
 @ApiStatus.Experimental
 @SuppressWarnings("unused")
-public class VanillaParticleProxy extends Particle {
+public class VanillaParticleProxy extends SingleQuadParticle {
     private static final int MAX_LIFE_TIME = 20 * 60 * 30;
     private static final int MAX_WAIT_TIME = 20 * 5;
     private int age;
-    private final ResourceLocation effekId;
+    private final Identifier effekId;
     private @Nullable ParticleEmitter emitter;
 
-    protected VanillaParticleProxy(ResourceLocation effekId, ClientLevel level, double x, double y, double z, double dx, double dy, double dz) {
-        super(level, x, y, z, dx, dy, dz);
+    protected VanillaParticleProxy(Identifier effekId, ClientLevel level, double x, double y, double z, double dx, double dy, double dz) {
+        super(level, x, y, z, dx, dy, dz, ClientPlatformMethods.get().getPlaceholderAtlasSprite26_1());
         this.effekId = effekId;
         this.lifetime = MAX_LIFE_TIME;
         spawn(effekId).thenAccept(opt -> opt.ifPresent(emitter -> {
@@ -46,7 +47,7 @@ public class VanillaParticleProxy extends Particle {
      *
      * @return the effek id of this particle.
      */
-    public ResourceLocation getEffekId() {
+    public Identifier getEffekId() {
         return effekId;
     }
 
@@ -82,20 +83,25 @@ public class VanillaParticleProxy extends Particle {
     }
 
     @Override
+    public @NonNull ParticleRenderType getGroup() {
+        return ParticleRenderType.SINGLE_QUADS;
+    }
+
+    @Override
+    protected @NonNull Layer getLayer() {
+        return Layer.OPAQUE;
+    }
+
+    @Override
     @ParametersAreNonnullByDefault
-    public void render(VertexConsumer buffer, Camera camera, float partialTicks) {
+    public void extract(QuadParticleRenderState particleTypeRenderState, Camera camera, float partialTicks) {
         double x = Mth.lerp(partialTicks, this.xo, this.x);
         double y = Mth.lerp(partialTicks, this.yo, this.y);
         double z = Mth.lerp(partialTicks, this.zo, this.z);
         updatePosition(x, y, z);
     }
 
-    @Override
-    public @NotNull ParticleRenderType getRenderType() {
-        return ParticleRenderType.CUSTOM;
-    }
-
-    private static CompletableFuture<Optional<ParticleEmitter>> spawn(ResourceLocation effekId) {
+    private static CompletableFuture<Optional<ParticleEmitter>> spawn(Identifier effekId) {
         var loaded = Optional.ofNullable(EffectRegistry.get(effekId)).map(EffectHolder::load).orElse(null);
         if (loaded == null) {
             return CompletableFuture.completedFuture(Optional.empty());

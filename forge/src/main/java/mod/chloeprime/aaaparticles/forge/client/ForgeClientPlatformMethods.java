@@ -2,27 +2,30 @@ package mod.chloeprime.aaaparticles.forge.client;
 
 import com.google.auto.service.AutoService;
 import com.mojang.blaze3d.pipeline.RenderTarget;
-import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.pipeline.TextureTarget;
 import mod.chloeprime.aaaparticles.client.ClientPlatformMethods;
-import net.minecraft.client.resources.model.BakedModel;
-import net.minecraft.world.item.ItemDisplayContext;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.neoforged.neoforge.client.textures.UnitTextureAtlasSprite;
 
 @AutoService(ClientPlatformMethods.class)
 public class ForgeClientPlatformMethods implements ClientPlatformMethods {
     @Override
     public int getDepthFormat(RenderTarget fb) {
-        return fb.isStencilEnabled() ? 2 : 1;
+        return fb.useStencil ? 2 : 1;
     }
 
     @Override
-    public void syncStencilState(RenderTarget from, RenderTarget to) {
-        if (from.isStencilEnabled() && !to.isStencilEnabled()) {
-            to.enableStencil();
-        }
+    public TextureAtlasSprite getPlaceholderAtlasSprite26_1() {
+        return UnitTextureAtlasSprite.INSTANCE;
     }
 
     @Override
-    public void applyItemTransform(PoseStack poseStack, BakedModel model, ItemDisplayContext context, boolean applyLeftHandTransform) {
-        model.applyTransform(context, poseStack, applyLeftHandTransform);
+    public boolean isStencilEnabled26_1(RenderTarget target) {
+        return target.useStencil;
+    }
+
+    @Override
+    public RenderTarget newTextureTarget26_1(String label, int w, int h, boolean depth, boolean stencil) {
+        return new TextureTarget(label, w, h, depth, stencil);
     }
 }

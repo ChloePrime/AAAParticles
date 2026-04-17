@@ -19,7 +19,7 @@ public class DeltaTracker {
             return;
         }
         var curTick = level.getGameTime();
-        var curPartial = GAME.getTimer().getGameTimeDeltaPartialTick(true);
+        var curPartial = GAME.getDeltaTracker().getGameTimeDeltaPartialTick(true);
         // 超过 5 秒则判定为时间异常，
         // 为防止 Effekseer 引擎瞬间计算大量动画时间，此处重置 delta
         if (Math.abs(curTick - lastTick) > 20 * 5) {

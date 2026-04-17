@@ -13,7 +13,7 @@ import mod.chloeprime.aaaparticles.client.installer.NativePlatform;
 import mod.chloeprime.aaaparticles.client.loader.EffekAssetLoader;
 import mod.chloeprime.aaaparticles.api.client.EffectRegistry;
 import net.minecraft.client.Minecraft;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.world.level.Level;
 
@@ -70,7 +70,7 @@ public class AAAParticlesClient
 		info.spawnInWorld(level, player);
 	}
 
-	public static void setParam(ParticleEmitter.Type type, ResourceLocation effek, ResourceLocation emitterName, DynamicParameter[] params) {
+	public static void setParam(ParticleEmitter.Type type, Identifier effek, Identifier emitterName, DynamicParameter[] params) {
 		Optional.ofNullable(EffectRegistry.get(effek))
 				.flatMap(EffectHolder::lazyGet)
 				.flatMap(mng -> mng.getNamedEmitter(type, emitterName))
@@ -81,7 +81,7 @@ public class AAAParticlesClient
 				});
 	}
 
-	public static void sendTrigger(ParticleEmitter.Type type, ResourceLocation effek, ResourceLocation emitterName, int[] triggers) {
+	public static void sendTrigger(ParticleEmitter.Type type, Identifier effek, Identifier emitterName, int[] triggers) {
 		Optional.ofNullable(EffectRegistry.get(effek))
 				.flatMap(EffectHolder::lazyGet)
 				.flatMap(mng -> mng.getNamedEmitter(type, emitterName))

@@ -5,7 +5,7 @@ import mod.chloeprime.aaaparticles.api.client.effekseer.ParticleEmitter;
 import mod.chloeprime.aaaparticles.api.common.DynamicParameter;
 import mod.chloeprime.aaaparticles.client.AAAParticlesClient;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.ApiStatus;
 
 import java.util.function.Supplier;
@@ -13,11 +13,11 @@ import java.util.function.Supplier;
 @ApiStatus.Experimental
 public class S2CUpdateEmitterParam implements PacketBase {
     private final ParticleEmitter.Type type;
-    private final ResourceLocation effek;
-    private final ResourceLocation emitterName;
+    private final Identifier effek;
+    private final Identifier emitterName;
     private final DynamicParameter[] parameters;
 
-    public S2CUpdateEmitterParam(ParticleEmitter.Type type, ResourceLocation effek, ResourceLocation emitterName, DynamicParameter[] parameters) {
+    public S2CUpdateEmitterParam(ParticleEmitter.Type type, Identifier effek, Identifier emitterName, DynamicParameter[] parameters) {
         this.type = type;
         this.effek = effek;
         this.emitterName = emitterName;
@@ -26,8 +26,8 @@ public class S2CUpdateEmitterParam implements PacketBase {
 
     S2CUpdateEmitterParam(FriendlyByteBuf buf) {
         type = buf.readEnum(ParticleEmitter.Type.class);
-        effek = buf.readResourceLocation();
-        emitterName = buf.readResourceLocation();
+        effek = buf.readIdentifier();
+        emitterName = buf.readIdentifier();
 
         this.parameters = new DynamicParameter[buf.readVarInt()];
         for (int i = 0; i < this.parameters.length; i++) {
@@ -39,8 +39,8 @@ public class S2CUpdateEmitterParam implements PacketBase {
 
     public void encode(FriendlyByteBuf buf) {
         buf.writeEnum(type);
-        buf.writeResourceLocation(effek);
-        buf.writeResourceLocation(emitterName);
+        buf.writeIdentifier(effek);
+        buf.writeIdentifier(emitterName);
 
         buf.writeVarInt(parameters.length);
         for (var parameter : parameters) {

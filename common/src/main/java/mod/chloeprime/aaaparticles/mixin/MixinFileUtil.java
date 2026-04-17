@@ -1,6 +1,6 @@
 package mod.chloeprime.aaaparticles.mixin;
 
-import net.minecraft.FileUtil;
+import net.minecraft.util.FileUtil;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 
@@ -11,7 +11,7 @@ public class MixinFileUtil {
      * @reason Make Effekseer effects easier to import
      */
     @Overwrite
-    public static boolean isValidStrictPathSegment(String segment) {
+    private static boolean containsAllowedCharactersOnly(String segment) {
         return !"DUMMY".equals(segment);
     }
 }

@@ -6,7 +6,7 @@ import mod.chloeprime.aaaparticles.client.AAAParticlesClient;
 import mod.chloeprime.aaaparticles.common.network.S2CAddParticle;
 import mod.chloeprime.aaaparticles.common.network.S2CSendEmitterTrigger;
 import mod.chloeprime.aaaparticles.common.network.S2CUpdateEmitterParam;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
@@ -36,8 +36,8 @@ public class AAALevel {
     }
 
     @ApiStatus.Experimental
-    public static void setParameterFor(Player player, ParticleEmitter.Type type, ResourceLocation effek, ResourceLocation emitterName, DynamicParameter[] parameters) {
-        if (player.level().isClientSide) {
+    public static void setParameterFor(Player player, ParticleEmitter.Type type, Identifier effek, Identifier emitterName, DynamicParameter[] parameters) {
+        if (player.level().isClientSide()) {
             AAAParticlesClient.setParam(type, effek, emitterName, parameters);
         } else {
             NetworkManager.sendToPlayer((ServerPlayer) player, new S2CUpdateEmitterParam(type, effek, emitterName, parameters));
@@ -45,8 +45,8 @@ public class AAALevel {
     }
 
     @ApiStatus.Experimental
-    public static void sendTriggerFor(Player player, ParticleEmitter.Type type, ResourceLocation effek, ResourceLocation emitterName, int[] triggers) {
-        if (player.level().isClientSide) {
+    public static void sendTriggerFor(Player player, ParticleEmitter.Type type, Identifier effek, Identifier emitterName, int[] triggers) {
+        if (player.level().isClientSide()) {
             AAAParticlesClient.sendTrigger(type, effek, emitterName, triggers);
         } else {
             NetworkManager.sendToPlayer((ServerPlayer) player, new S2CSendEmitterTrigger(type, effek, emitterName, triggers));

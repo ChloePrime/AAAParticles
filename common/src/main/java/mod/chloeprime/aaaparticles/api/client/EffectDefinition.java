@@ -1,15 +1,15 @@
 package mod.chloeprime.aaaparticles.api.client;
 
 import com.google.common.base.Suppliers;
-import com.mojang.blaze3d.pipeline.RenderTarget;
 import mod.chloeprime.aaaparticles.AAAParticles;
 import mod.chloeprime.aaaparticles.api.client.effekseer.EffekseerEffect;
 import mod.chloeprime.aaaparticles.api.client.effekseer.EffekseerManager;
 import mod.chloeprime.aaaparticles.api.client.effekseer.ParticleEmitter;
+import mod.chloeprime.aaaparticles.client.internal.mc26_1.Framebuffer;
 import mod.chloeprime.aaaparticles.client.render.RenderUtil;
 import mod.chloeprime.aaaparticles.client.util.GlDebug;
 import mod.chloeprime.aaaparticles.client.util.GlDebugIds;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.ApiStatus;
@@ -45,7 +45,7 @@ public class EffectDefinition implements Closeable {
      * @return the id representing this loaded effek in {@link EffectRegistry}
      */
     @SuppressWarnings("unused")
-    public ResourceLocation getId() {
+    public Identifier getId() {
         return id.get();
     }
 
@@ -70,12 +70,12 @@ public class EffectDefinition implements Closeable {
 
     /**
      * Create a named emitter and play it.
-     * Created emitter can be retrieved by emitter name through {@link #getNamedEmitter(ParticleEmitter.Type, ResourceLocation)}.
+     * Created emitter can be retrieved by emitter name through {@link #getNamedEmitter(ParticleEmitter.Type, Identifier)}.
      *
      * @param emitterName the name of the emitter.
      * @return the particle emitter, a wrapper of an int handle from the Effekseer native api.
      */
-    public ParticleEmitter play(ResourceLocation emitterName) {
+    public ParticleEmitter play(Identifier emitterName) {
         return play(ParticleEmitter.Type.WORLD, emitterName);
     }
 
@@ -97,13 +97,13 @@ public class EffectDefinition implements Closeable {
 
     /**
      * Create a named emitter and play it.
-     * Created emitter can be retrieved by emitter name through {@link #getNamedEmitter(ParticleEmitter.Type, ResourceLocation)}.
+     * Created emitter can be retrieved by emitter name through {@link #getNamedEmitter(ParticleEmitter.Type, Identifier)}.
      *
      * @param type Type of this emitter.
      * @param emitterName the name of the emitter.
      * @return the particle emitter, a wrapper of an int handle from the Effekseer native api.
      */
-    public ParticleEmitter play(ParticleEmitter.Type type, ResourceLocation emitterName) {
+    public ParticleEmitter play(ParticleEmitter.Type type, Identifier emitterName) {
         if (RenderUtil.isReloadingResourcePacks()) {
             return ParticleEmitter.dummy(type);
         }
@@ -123,7 +123,7 @@ public class EffectDefinition implements Closeable {
      * @param emitterName the name of the emitter.
      * @return the particle emitter with the given emitter name. Empty if not exist.
      */
-    public Optional<ParticleEmitter> getNamedEmitter(ParticleEmitter.Type type, ResourceLocation emitterName) {
+    public Optional<ParticleEmitter> getNamedEmitter(ParticleEmitter.Type type, Identifier emitterName) {
         return Optional.ofNullable(namedEmitters.get(type).get(emitterName));
     }
 
@@ -220,7 +220,7 @@ public class EffectDefinition implements Closeable {
         return managers.values().stream();
     }
 
-    private final Supplier<ResourceLocation> id = Suppliers.memoize(this::fetchId);
+    private final Supplier<Identifier> id = Suppliers.memoize(this::fetchId);
     private final Supplier<String> glDebugLabel = Suppliers.memoize(() -> "%s Begin Rendering Effek %s".formatted(AAAParticles.LOG_PREFIX, id.get()));
     private final Supplier<String> glUnloadManagerLabel = Suppliers.memoize(() -> "%s Unloading managers for effek %s".formatted(AAAParticles.LOG_PREFIX, id.get()));
     private final Supplier<String> glUnloadLabel = Suppliers.memoize(() -> "%s Unloading effek %s".formatted(AAAParticles.LOG_PREFIX, id.get()));
@@ -228,7 +228,7 @@ public class EffectDefinition implements Closeable {
     private EffekseerEffect effect;
     private final EnumMap<ParticleEmitter.Type, EffekseerManager> managers = new EnumMap<>(ParticleEmitter.Type.class);
     private final EnumMap<ParticleEmitter.Type, Set<ParticleEmitter>> oneShotEmitters = new EnumMap<>(ParticleEmitter.Type.class);
-    private final EnumMap<ParticleEmitter.Type, Map<ResourceLocation, ParticleEmitter>> namedEmitters = new EnumMap<>(ParticleEmitter.Type.class);
+    private final EnumMap<ParticleEmitter.Type, Map<Identifier, ParticleEmitter>> namedEmitters = new EnumMap<>(ParticleEmitter.Type.class);
     private static final RandomGenerator RNG = new Random();
     private static final int GC_DELAY = 20;
     private final int magicLoadBalancer = Math.abs(RNG.nextInt() >>> 2) % GC_DELAY;
@@ -237,7 +237,7 @@ public class EffectDefinition implements Closeable {
     private final EnumMap<ParticleEmitter.Type, MutableInt> backgroundColorIds = new EnumMap<>(ParticleEmitter.Type.class);
     private final EnumMap<ParticleEmitter.Type, MutableInt> backgroundDepthIds = new EnumMap<>(ParticleEmitter.Type.class);
 
-    private @Nullable ResourceLocation fetchId() {
+    private @Nullable Identifier fetchId() {
         return EffectRegistry.entries().stream()
                 .flatMap(kvp -> kvp.getValue().lazyGet()
                         .map(ed -> Pair.of(kvp.getKey(), ed))
@@ -254,7 +254,7 @@ public class EffectDefinition implements Closeable {
             Vector3f front, Vector3f pos,
             int w, int h, float[] camera, float[] projection,
             float deltaFrames, float partialTicks,
-            @Nullable RenderTarget background
+            @Nullable Framebuffer background
     ) {
         var manager = Objects.requireNonNull(managers.get(type));
         manager.startUpdate();

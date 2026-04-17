@@ -1,23 +1,23 @@
 package mod.chloeprime.aaaparticles.mixin;
 
 import mod.chloeprime.aaaparticles.client.internal.LimitlessResourceLocationFactory;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.gen.Invoker;
 
-@Mixin(value = ResourceLocation.class, priority = Integer.MAX_VALUE)
+@Mixin(value = Identifier.class, priority = Integer.MAX_VALUE)
 public class MixinResourceLocation implements LimitlessResourceLocationFactory {
     @Shadow @Final @Mutable private String namespace;
     @Shadow @Final @Mutable private String path;
 
     @Invoker("<init>")
     @SuppressWarnings("SameParameterValue")
-    private static ResourceLocation invokeConstructor(String ns, String p) {
+    private static Identifier invokeConstructor(String ns, String p) {
         throw new AbstractMethodError();
     }
 
     @Override
-    public ResourceLocation aaa$createUninitialized(String namespace, String path) {
+    public Identifier aaa$createUninitialized(String namespace, String path) {
         var result = invokeConstructor("c", "a");
         var accessor = (MixinResourceLocation) (Object) result;
         accessor.namespace = namespace;
