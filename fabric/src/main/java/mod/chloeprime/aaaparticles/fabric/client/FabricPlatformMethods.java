@@ -13,6 +13,21 @@ public class FabricPlatformMethods implements PlatformMethods {
     private static final Supplier<Boolean> IS_DATAGEN = Suppliers.memoize(() -> System.getProperty("fabric-api.datagen") != null);
 
     @Override
+    public boolean isFabric() {
+        return true;
+    }
+
+    @Override
+    public boolean isForge() {
+        return false;
+    }
+
+    @Override
+    public boolean isModLoaded(String modid) {
+        return FabricLoader.getInstance().isModLoaded(modid);
+    }
+
+    @Override
     public boolean isClientDist() {
         return FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT;
     }

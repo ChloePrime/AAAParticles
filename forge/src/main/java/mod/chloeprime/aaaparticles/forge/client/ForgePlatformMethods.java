@@ -4,6 +4,7 @@ import com.google.auto.service.AutoService;
 import com.google.common.base.Suppliers;
 import mod.chloeprime.aaaparticles.PlatformMethods;
 import net.neoforged.api.distmarker.Dist;
+import net.neoforged.fml.ModList;
 import net.neoforged.fml.loading.FMLLoader;
 import net.neoforged.neoforge.data.loading.DatagenModLoader;
 
@@ -12,8 +13,22 @@ import java.util.function.Supplier;
 @AutoService(PlatformMethods.class)
 public class ForgePlatformMethods implements PlatformMethods {
     private static final Supplier<Boolean> IS_DATA = Suppliers.memoize(DatagenModLoader::isRunningDataGen);
-
     private static final Dist DIST = FMLLoader.getCurrent().getDist();
+
+    @Override
+    public boolean isFabric() {
+        return false;
+    }
+
+    @Override
+    public boolean isForge() {
+        return true;
+    }
+
+    @Override
+    public boolean isModLoaded(String modid) {
+        return ModList.get().isLoaded(modid);
+    }
 
     @Override
     public boolean isClientDist() {
