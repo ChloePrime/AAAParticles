@@ -1,5 +1,6 @@
 package mod.chloeprime.aaaparticles.api.client.util;
 
+import com.google.common.base.Suppliers;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import mod.chloeprime.aaaparticles.api.client.EffectDefinition;
 import mod.chloeprime.aaaparticles.api.client.EffectHolder;
@@ -16,8 +17,12 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.annotation.ParametersAreNonnullByDefault;
+import java.util.ArrayDeque;
 import java.util.Optional;
+import java.util.Queue;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 /**
  * A vanilla particle that plays and holds an Effek emitter.
@@ -30,14 +35,30 @@ public class VanillaParticleProxy extends Particle {
     private int age;
     private final ResourceLocation effekId;
     private @Nullable ParticleEmitter emitter;
+    private final CompletableFuture<ParticleEmitter> whenEmitted = new CompletableFuture<>();
+    private final Supplier<Queue<Consumer<ParticleEmitter>>> emitterActions = Suppliers.memoize(() -> new ArrayDeque<>(0));
 
-    protected VanillaParticleProxy(ResourceLocation effekId, ClientLevel level, double x, double y, double z, double dx, double dy, double dz) {
+    /**
+     * Create a new instance of VanillaParticleProxy.
+     *
+     * @param effekId The Effek id.
+     * @param level The client level instance.
+     * @param x X position
+     * @param y Y position
+     * @param z Z position
+     * @param dx Vanilla X speed.
+     * @param dy Vanilla Y speed.
+     * @param dz Vanilla Z speed.
+     * @since 2.0.1 this constructor is public.
+     */
+    public VanillaParticleProxy(ResourceLocation effekId, ClientLevel level, double x, double y, double z, double dx, double dy, double dz) {
         super(level, x, y, z, dx, dy, dz);
         this.effekId = effekId;
         this.lifetime = MAX_LIFE_TIME;
         spawn(effekId).thenAccept(opt -> opt.ifPresent(emitter -> {
             this.emitter = emitter;
             updatePosition(this.x, this.y, this.z);
+            whenEmitted.complete(emitter);
         }));
     }
 
@@ -48,6 +69,17 @@ public class VanillaParticleProxy extends Particle {
      */
     public ResourceLocation getEffekId() {
         return effekId;
+    }
+
+    /**
+     * Get the future of effek emitter of this particle.
+     *
+     * @return the future of the effek emitter of this particle.
+     * @implNote Effeks are loaded synchronized, immediately during constructor in MC versions below 26.2.
+     * @since 2.0.1
+     */
+    public CompletableFuture<ParticleEmitter> getEmitter() {
+        return this.whenEmitted;
     }
 
     /**
