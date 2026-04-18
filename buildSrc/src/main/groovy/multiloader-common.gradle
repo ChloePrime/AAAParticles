@@ -15,7 +15,7 @@ java {
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = "UTF-8"
-    options.release = 17
+    options.release = Integer.parseInt(java_version)
 }
 
 tasks.withType(Javadoc).configureEach {
