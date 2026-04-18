@@ -136,7 +136,7 @@ processResources {
 publishing {
     publications {
         register('mavenJava', MavenPublication) {
-            artifactId base.archivesName.get()
+            artifactId base.archivesName.get().replace("-forge", "-neoforge")
             from components.java
         }
     }
