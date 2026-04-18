@@ -151,7 +151,7 @@ processResources {
 publishing {
     publications {
         register('mavenJava', MavenPublication) {
-            artifactId base.archivesName.get()
+            artifactId base.archivesName.get().replace("-forge", "-neoforge")
             pom.withXml {
                 def node = asNode()
                 if(node.dependencies.size() > 0)
