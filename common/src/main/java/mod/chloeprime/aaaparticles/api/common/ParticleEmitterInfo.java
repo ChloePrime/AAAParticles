@@ -33,6 +33,7 @@ public class ParticleEmitterInfo implements Cloneable {
         public static final int HAS_BOUND_ENTITY = 16;
         public static final int IS_ENTITY_SPACE_RELATIVE_POSITION_SET = 32;
         public static final int USE_ENTITY_HEAD_SPACE = 64;
+        public static final int USE_ENTITY_VELOCITY_AS_ROTATION = 1024;
         public static final int HAS_PARAMETERS = 128;
         public static final int HAS_TRIGGERS = 256;
     }
@@ -147,6 +148,10 @@ public class ParticleEmitterInfo implements Cloneable {
         return (flags & FlagMask.USE_ENTITY_HEAD_SPACE) != 0;
     }
 
+    public final boolean usingEntityVelocityAsRotation() {
+        return (flags & FlagMask.USE_ENTITY_VELOCITY_AS_ROTATION) != 0;
+    }
+
     /**
      * Set position. <br>
      * Will be relative position (in world space) if {@link #hasBoundEntity()}
@@ -185,6 +190,33 @@ public class ParticleEmitterInfo implements Cloneable {
      */
     public ParticleEmitterInfo rotation(Vec2 rot) {
         return rotation(rot.x, rot.y, 0);
+    }
+
+    /**
+     * Set rotation from a forward vector.
+     * This method considers +Z in Effekseer editor as forward.
+     *
+     * @param forward the forward vector, does not need to be normalized.
+     * @return self
+     * @since 2.1.0
+     */
+    @SuppressWarnings("unused")
+    public ParticleEmitterInfo rotationFromForward(Vec3 forward) {
+        return rotationFromForward(forward, 0);
+    }
+
+    /**
+     * Set rotation from a forward vector.
+     * This method considers +Z in Effekseer editor as forward.
+     *
+     * @param forward the forward vector, does not need to be normalized.
+     * @param rotZ Z axis rotation.
+     * @return self
+     * @since 2.1.0
+     */
+    public ParticleEmitterInfo rotationFromForward(Vec3 forward, float rotZ) {
+        Vec2 rot = forward2rot(forward);
+        return rotation(wrapRadians(-Mth.PI / 2 - rot.x), wrapRadians(rot.y + Mth.PI), rotZ);
     }
 
     /**
@@ -306,6 +338,34 @@ public class ParticleEmitterInfo implements Cloneable {
             flags |= FlagMask.USE_ENTITY_HEAD_SPACE;
         } else {
             flags &= ~FlagMask.USE_ENTITY_HEAD_SPACE;
+        }
+        return this;
+    }
+
+    /**
+     * Set whether to use bound entity's velocity direction as the emitter's rotation.
+     *
+     * @return self
+     * @since 2.1.0
+     */
+    @SuppressWarnings("unused")
+    public ParticleEmitterInfo useEntityVelocityAsRotation() {
+        return useEntityVelocityAsRotation(true);
+    }
+
+    /**
+     * Set whether to use bound entity's velocity direction as the emitter's rotation.
+     * Useful for effeks bound to projectiles.
+     *
+     * @param value whether this flag is set to true
+     * @return self
+     * @since 2.1.0
+     */
+    public ParticleEmitterInfo useEntityVelocityAsRotation(boolean value) {
+        if (value) {
+            flags |= FlagMask.USE_ENTITY_VELOCITY_AS_ROTATION;
+        } else {
+            flags &= ~FlagMask.USE_ENTITY_VELOCITY_AS_ROTATION;
         }
         return this;
     }
@@ -472,6 +532,7 @@ public class ParticleEmitterInfo implements Cloneable {
                 var entity = new WeakReference<>(level.getEntity(boundEntity));
                 var headSpace = usingEntityHeadSpace();
                 var entitySpace = headSpace || isEntitySpaceRelativePosSet();
+                var velocitySpace = usingEntityVelocityAsRotation();
                 var rotZ = this.rotZ;
                 ParticleEmitter.PreDrawCallback updater = (em, partial) -> {
                     Optional.ofNullable(entity.get()).filter(Entity::isAlive).ifPresentOrElse(et -> {
@@ -488,6 +549,11 @@ public class ParticleEmitterInfo implements Cloneable {
                                 rotY = (float) Math.toRadians(Mth.lerp(partial, et.yRotO, et.getYRot()));
                                 rotX = 0;
                                 basis = Basis.fromEntityBody(et);
+                            }
+                            if (velocitySpace) {
+                                var rot = forward2rot(et.getDeltaMovement());
+                                rotY = -rot.y;
+                                rotX = rot.x - (float) (Math.PI / 2);
                             }
                             var esRelPos = basis.toGlobal(new Vec3(esX, esY, esZ));
                             relX = (float) (x + esRelPos.x);
@@ -530,5 +596,23 @@ public class ParticleEmitterInfo implements Cloneable {
         target.triggers.clear();
         target.triggers.addAll(this.triggers);
         target.boundEntity = this.boundEntity;
+    }
+
+    private static Vec2 forward2rot(Vec3 forward) {
+        double dx = forward.x();
+        double dy = forward.y();
+        double dz = forward.z();
+        double xz = Math.sqrt(dx * dx + dz * dz);
+        double rx = -wrapRadians(Mth.atan2(dy, xz) - Math.PI / 2);
+        double ry = -wrapRadians(Mth.atan2(dz, dx) - Math.PI / 2);
+        return new Vec2((float) rx, (float) ry);
+    }
+
+    private static float wrapRadians(float radians) {
+        return (float) wrapRadians((double) radians);
+    }
+
+    private static double wrapRadians(double radians) {
+        return Math.toRadians(Mth.wrapDegrees(Math.toDegrees(radians)));
     }
 }
