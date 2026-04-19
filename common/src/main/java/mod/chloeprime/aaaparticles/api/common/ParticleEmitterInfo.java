@@ -6,6 +6,7 @@ import mod.chloeprime.aaaparticles.api.client.effekseer.ParticleEmitter;
 import mod.chloeprime.aaaparticles.client.installer.NativePlatform;
 import mod.chloeprime.aaaparticles.api.client.EffectRegistry;
 import mod.chloeprime.aaaparticles.api.client.EffectHolder;
+import mod.chloeprime.aaaparticles.client.internal.EffekFinalizationHandler;
 import mod.chloeprime.aaaparticles.common.network.S2CAddParticle;
 import mod.chloeprime.aaaparticles.common.util.Basis;
 import net.minecraft.network.FriendlyByteBuf;
@@ -534,7 +535,11 @@ public class ParticleEmitterInfo implements Cloneable {
                 var entitySpace = headSpace || isEntitySpaceRelativePosSet();
                 var velocitySpace = usingEntityVelocityAsRotation();
                 var rotZ = this.rotZ;
+                var finalized = new boolean[]{false};
                 ParticleEmitter.PreDrawCallback updater = (em, partial) -> {
+                    if (finalized[0]) {
+                        return;
+                    }
                     Optional.ofNullable(entity.get()).filter(Entity::isAlive).ifPresentOrElse(et -> {
                         float relX, relY, relZ;
                         if (entitySpace) {
@@ -570,7 +575,12 @@ public class ParticleEmitterInfo implements Cloneable {
                                 (float) Mth.lerp(partial, et.yOld, et.getY()) + relY + (headSpace ? et.getEyeHeight() : 0),
                                 (float) Mth.lerp(partial, et.zOld, et.getZ()) + relZ
                         );
-                    }, em::stop);
+                    }, () -> {
+                        if (!finalized[0]) {
+                            finalized[0] = true;
+                            EffekFinalizationHandler.finalize(effek, em);
+                        }
+                    });
                 };
                 updater.accept(emitter, 0);
                 emitter.addPreDrawCallback(updater);
