@@ -5,7 +5,11 @@ import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.pipeline.TextureTarget;
 import mod.chloeprime.aaaparticles.client.ClientPlatformMethods;
 import mod.chloeprime.aaaparticles.fabric.client.internal.mc26_1.PlaceholderTextureAtlasSprite;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+
+import java.util.function.Consumer;
 
 @AutoService(ClientPlatformMethods.class)
 public class FabricClientPlatformMethods implements ClientPlatformMethods {
@@ -27,5 +31,10 @@ public class FabricClientPlatformMethods implements ClientPlatformMethods {
     @Override
     public RenderTarget newTextureTarget26_1(String label, int w, int h, boolean depth, boolean stencil) {
         return new TextureTarget(label, w, h, depth);
+    }
+
+    @Override
+    public void addClientPostTickCallback(Consumer<Minecraft> action) {
+        ClientTickEvents.END_CLIENT_TICK.register(action::accept);
     }
 }

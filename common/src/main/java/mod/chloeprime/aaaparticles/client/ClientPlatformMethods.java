@@ -2,7 +2,10 @@ package mod.chloeprime.aaaparticles.client;
 
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import mod.chloeprime.aaaparticles.PlatformMethods;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+
+import java.util.function.Consumer;
 
 public interface ClientPlatformMethods {
     static ClientPlatformMethods get() {
@@ -13,6 +16,7 @@ public interface ClientPlatformMethods {
     }
 
     int getDepthFormat(RenderTarget fb);
+    void addClientPostTickCallback(Consumer<Minecraft> action);
 
     TextureAtlasSprite getPlaceholderAtlasSprite26_1();
     boolean isStencilEnabled26_1(RenderTarget target);
