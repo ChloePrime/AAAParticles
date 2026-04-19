@@ -24,6 +24,19 @@ import java.util.List;
 import java.util.Optional;
 
 public class ParticleEmitterInfo implements Cloneable {
+    public static class FlagMask {
+        public static final int HAS_EMITTER = 1;
+        public static final int IS_POSITION_SET = 2;
+        public static final int IS_ROTATION_SET = 4;
+        public static final int IS_SCALE_SET = 8;
+        public static final int IS_SPEED_SET = 512;
+        public static final int HAS_BOUND_ENTITY = 16;
+        public static final int IS_ENTITY_SPACE_RELATIVE_POSITION_SET = 32;
+        public static final int USE_ENTITY_HEAD_SPACE = 64;
+        public static final int HAS_PARAMETERS = 128;
+        public static final int HAS_TRIGGERS = 256;
+    }
+
     /**
      * Create a packet when on logic server,
      * with an anonymous emitter that can't be referenced later.
@@ -73,7 +86,7 @@ public class ParticleEmitterInfo implements Cloneable {
         this.effek = effek;
         this.emitter = emitter;
         if (emitter != null) {
-            flags |= 1;
+            flags |= FlagMask.HAS_EMITTER;
         }
     }
 
@@ -87,38 +100,38 @@ public class ParticleEmitterInfo implements Cloneable {
     }
 
     public final boolean hasEmitter() {
-        return (flags & 1) != 0;
+        return (flags & FlagMask.HAS_EMITTER) != 0;
     }
 
     public final boolean isPositionSet() {
-        return (flags & 2) != 0;
+        return (flags & FlagMask.IS_POSITION_SET) != 0;
     }
 
     public final boolean isRotationSet() {
-        return (flags & 4) != 0;
+        return (flags & FlagMask.IS_ROTATION_SET) != 0;
     }
 
     public final boolean isScaleSet() {
-        return (flags & 8) != 0;
+        return (flags & FlagMask.IS_SCALE_SET) != 0;
     }
 
     /**
      * @since 2.0.0
      */
     public final boolean isSpeedSet() {
-        return (flags & 512) != 0;
+        return (flags & FlagMask.IS_SPEED_SET) != 0;
     }
 
     public final boolean hasParameters() {
-        return (flags & 128) != 0;
+        return (flags & FlagMask.HAS_PARAMETERS) != 0;
     }
 
     public final boolean hasTriggers() {
-        return (flags & 256) != 0;
+        return (flags & FlagMask.HAS_TRIGGERS) != 0;
     }
 
     public final boolean hasBoundEntity() {
-        return (flags & 16) != 0;
+        return (flags & FlagMask.HAS_BOUND_ENTITY) != 0;
     }
 
     /**
@@ -127,11 +140,11 @@ public class ParticleEmitterInfo implements Cloneable {
      * @return True if coordinates are in entity space, otherwise in world space.
      */
     public final boolean isEntitySpaceRelativePosSet() {
-        return (flags & 32) != 0;
+        return (flags & FlagMask.IS_ENTITY_SPACE_RELATIVE_POSITION_SET) != 0;
     }
 
     public final boolean usingEntityHeadSpace() {
-        return (flags & 64) != 0;
+        return (flags & FlagMask.USE_ENTITY_HEAD_SPACE) != 0;
     }
 
     /**
@@ -159,7 +172,7 @@ public class ParticleEmitterInfo implements Cloneable {
         this.x = x;
         this.y = y;
         this.z = z;
-        flags |= 2;
+        flags |= FlagMask.IS_POSITION_SET;
         return this;
     }
 
@@ -187,7 +200,7 @@ public class ParticleEmitterInfo implements Cloneable {
         this.rotX = x;
         this.rotY = y;
         this.rotZ = z;
-        flags |= 4;
+        flags |= FlagMask.IS_ROTATION_SET;
         return this;
     }
 
@@ -213,7 +226,7 @@ public class ParticleEmitterInfo implements Cloneable {
         this.scaleX = x;
         this.scaleY = y;
         this.scaleZ = z;
-        flags |= 8;
+        flags |= FlagMask.IS_SCALE_SET;
         return this;
     }
 
@@ -236,25 +249,25 @@ public class ParticleEmitterInfo implements Cloneable {
      */
     public ParticleEmitterInfo speed(float speed) {
         this.speed = speed;
-        flags |= 512;
+        flags |= FlagMask.IS_SPEED_SET;
         return this;
     }
 
     public ParticleEmitterInfo parameter(int index, float value) {
         parameters.add(new DynamicParameter(index, value));
-        flags |= 128;
+        flags |= FlagMask.HAS_PARAMETERS;
         return this;
     }
 
     public ParticleEmitterInfo trigger(int index) {
         triggers.add(index);
-        flags |= 256;
+        flags |= FlagMask.HAS_TRIGGERS;
         return this;
     }
 
     public ParticleEmitterInfo bindOnEntity(Entity entity) {
         this.boundEntity = entity.getId();
-        flags |= 16;
+        flags |= FlagMask.HAS_BOUND_ENTITY;
         return this;
     }
 
@@ -280,7 +293,7 @@ public class ParticleEmitterInfo implements Cloneable {
         this.esX = x;
         this.esY = y;
         this.esZ = z;
-        flags |= 32;
+        flags |= FlagMask.IS_ENTITY_SPACE_RELATIVE_POSITION_SET;
         return this;
     }
 
@@ -290,9 +303,9 @@ public class ParticleEmitterInfo implements Cloneable {
 
     public ParticleEmitterInfo useEntityHeadSpace(boolean value) {
         if (value) {
-            flags |= 64;
+            flags |= FlagMask.USE_ENTITY_HEAD_SPACE;
         } else {
-            flags &= ~64;
+            flags &= ~FlagMask.USE_ENTITY_HEAD_SPACE;
         }
         return this;
     }
