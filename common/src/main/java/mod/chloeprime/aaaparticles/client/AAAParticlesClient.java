@@ -10,6 +10,7 @@ import mod.chloeprime.aaaparticles.api.common.DynamicParameter;
 import mod.chloeprime.aaaparticles.api.common.ParticleEmitterInfo;
 import mod.chloeprime.aaaparticles.client.installer.JarExtractor;
 import mod.chloeprime.aaaparticles.client.installer.NativePlatform;
+import mod.chloeprime.aaaparticles.client.internal.EffekFinalizationHandler;
 import mod.chloeprime.aaaparticles.client.loader.EffekAssetLoader;
 import mod.chloeprime.aaaparticles.api.client.EffectRegistry;
 import net.minecraft.client.Minecraft;
@@ -34,6 +35,7 @@ public class AAAParticlesClient
 	}
 
 	public static void setup() {
+		EffekFinalizationHandler.setup();
 	}
 
 	private static void installNativeLibrary() {
