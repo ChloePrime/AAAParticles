@@ -69,6 +69,8 @@ public final class EffectHolder implements Closeable {
      * This operation WILL load the effek and its resources from memory.
      *
      * @return the loaded {@link EffectDefinition}, or {@link Optional#empty()} if this effect does not exist.
+     * @see EffectRegistry#load
+     * @see EffectRegistry#tryLoad
      */
     public CompletableFuture<Optional<EffectDefinition>> load() {
         if (disposed) {

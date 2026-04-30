@@ -98,11 +98,10 @@ public enum Debug {
             return;
         }
         var type = Math.random() <= 0.5 ? ParticleEmitter.Type.FIRST_PERSON_MAINHAND : ParticleEmitter.Type.FIRST_PERSON_OFFHAND;
-        Optional.ofNullable(EffectRegistry.get(DISTORTION_PARTICLE))
-                .ifPresent(lazy -> lazy.load().thenAccept(opt -> opt.ifPresent(effek -> {
-                    var emitter = effek.play(type);
-                    emitter.setPosition(0, 0.5F, 0);
-                    emitter.setScale(0.1F, 0.1F, 0.1F);
-                })));
+        EffectRegistry.load(DISTORTION_PARTICLE).thenAccept(effek -> {
+            var emitter = effek.play(type);
+            emitter.setPosition(0, 0.5F, 0);
+            emitter.setScale(0.1F, 0.1F, 0.1F);
+        });
     }
 }

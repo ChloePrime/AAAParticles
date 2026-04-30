@@ -1,5 +1,6 @@
 package mod.chloeprime.aaaparticles.api.client;
 
+import com.google.common.base.Suppliers;
 import com.sun.management.OperatingSystemMXBean;
 import dev.architectury.event.events.client.ClientTickEvent;
 import dev.architectury.platform.Platform;
@@ -8,10 +9,12 @@ import mod.chloeprime.aaaparticles.api.client.effekseer.EffekseerManager;
 import mod.chloeprime.aaaparticles.api.client.effekseer.ParticleEmitter;
 import mod.chloeprime.aaaparticles.client.loader.EffekAssetLoader;
 import net.minecraft.resources.Identifier;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.management.ManagementFactory;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.BiConsumer;
 
 /**
@@ -32,6 +35,42 @@ public class EffectRegistry {
         return Optional.ofNullable(EffekAssetLoader.get())
                 .map(loader -> loader.get(id))
                 .orElse(null);
+    }
+
+    /**
+     * Load the effek with the given id. The returned future
+     * only completes when the effek is loaded and not null,
+     * otherwise it will complete exceptionally with an exception.
+     *
+     * @param id the wanted id of the returned effek.
+     * @return The future of loading progress.
+     * @since 2.1.0
+     */
+    public static CompletableFuture<@NotNull EffectDefinition> load(Identifier id) {
+        var exception = Suppliers.memoize(() -> new RuntimeException("Effek loading failed."));
+        var ret = new CompletableFuture<EffectDefinition>();
+        var holder = get(id);
+        if (holder != null) {
+            holder.load().thenAccept(opt -> opt.ifPresentOrElse(ret::complete, () -> ret.completeExceptionally(exception.get())));
+        } else {
+            ret.completeExceptionally(exception.get());
+        }
+        return ret;
+    }
+
+    /**
+     * Try to load the effek with the given id. The returned future
+     * will always complete normally when the effek is loaded, even
+     * when the load result is non-exist(null).
+     *
+     * @param id the wanted id of the returned effek.
+     * @return The future of loading progress.
+     * @since 2.1.0
+     */
+    public static CompletableFuture<Optional<EffectDefinition>> tryLoad(Identifier id) {
+        return Optional.ofNullable(get(id))
+                .map(EffectHolder::load)
+                .orElseGet(() -> CompletableFuture.completedFuture(Optional.empty()));
     }
 
     /**

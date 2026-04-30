@@ -2,7 +2,6 @@ package mod.chloeprime.aaaparticles.api.client.util;
 
 import com.google.common.base.Suppliers;
 import mod.chloeprime.aaaparticles.api.client.EffectDefinition;
-import mod.chloeprime.aaaparticles.api.client.EffectHolder;
 import mod.chloeprime.aaaparticles.api.client.EffectRegistry;
 import mod.chloeprime.aaaparticles.api.client.effekseer.ParticleEmitter;
 import mod.chloeprime.aaaparticles.client.ClientPlatformMethods;
@@ -134,10 +133,6 @@ public class VanillaParticleProxy extends SingleQuadParticle {
     }
 
     private static CompletableFuture<Optional<ParticleEmitter>> spawn(Identifier effekId) {
-        var loaded = Optional.ofNullable(EffectRegistry.get(effekId)).map(EffectHolder::load).orElse(null);
-        if (loaded == null) {
-            return CompletableFuture.completedFuture(Optional.empty());
-        }
-        return loaded.thenApply(opt -> opt.map(EffectDefinition::play));
+        return EffectRegistry.tryLoad(effekId).thenApply(opt -> opt.map(EffectDefinition::play));
     }
 }
