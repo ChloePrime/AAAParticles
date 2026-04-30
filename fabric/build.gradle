@@ -9,13 +9,14 @@ dependencies {
         parchment("org.parchmentmc.data:parchment-${parchment_minecraft}:${parchment_version}@zip")
     }
     modImplementation "net.fabricmc:fabric-loader:${fabric_loader_version}"
-    modImplementation "net.fabricmc.fabric-api:fabric-api:${fabric_version}"\
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${fabric_version}"
 
-    include modApi("dev.architectury:architectury-fabric:${rootProject.architectury_version}")
+    include modApi("dev.architectury:architectury-fabric:$architectury_version")
+    include modApi("fuzs.forgeconfigapiport:forgeconfigapiport-fabric:$forge_config_api_version")
 
     // Oculus
-    modImplementation "maven.modrinth:sodium:mc1.21.1-0.6.13-fabric"
-    modImplementation "maven.modrinth:iris:1.8.8+1.21.1-fabric"
+    modCompileOnly "maven.modrinth:sodium:mc1.21.1-0.6.13-fabric"
+    modCompileOnly "maven.modrinth:iris:1.8.8+1.21.1-fabric"
 }
 
 loom {

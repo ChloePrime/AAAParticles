@@ -56,11 +56,22 @@ repositories {
     exclusiveContent {
         forRepository {
             maven {
-                name "Architectury Mavenn"
+                name "Architectury Maven"
                 url "https://maven.architectury.dev/"
             }
         }
         filter { includeGroupAndSubgroups('dev.architectury') }
+    }
+    exclusiveContent {
+        forRepository {
+            maven {
+                name = "Fuzs Mod Resources (Forge Config API Port)"
+                url = "https://raw.githubusercontent.com/Fuzss/modresources/main/maven/"
+            }
+        }
+        filter {
+            includeGroupAndSubgroups('fuzs')
+        }
     }
     exclusiveContent {
         forRepository {
