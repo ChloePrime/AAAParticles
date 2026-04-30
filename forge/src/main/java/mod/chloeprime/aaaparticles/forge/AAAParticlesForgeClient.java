@@ -1,6 +1,7 @@
 package mod.chloeprime.aaaparticles.forge;
 
 import mod.chloeprime.aaaparticles.AAAParticles;
+import mod.chloeprime.aaaparticles.client.AAAClientConfig;
 import mod.chloeprime.aaaparticles.client.AAAParticlesClient;
 import mod.chloeprime.aaaparticles.client.installer.NativePlatform;
 import mod.chloeprime.aaaparticles.client.internal.RenderStateCapture;
@@ -8,13 +9,16 @@ import mod.chloeprime.aaaparticles.client.loader.EffekAssetLoader;
 import mod.chloeprime.aaaparticles.client.render.RenderUtil;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.fml.config.ModConfig;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.neoforge.client.event.AddClientReloadListenersEvent;
 
 @EventBusSubscriber(Dist.CLIENT)
 public class AAAParticlesForgeClient extends AAAParticles {
-    public static void onClientInit() {
+    public static void onClientInit(ModContainer container) {
+        container.registerConfig(ModConfig.Type.CLIENT, AAAClientConfig.SPEC);
     }
 
     @SuppressWarnings("unused")
