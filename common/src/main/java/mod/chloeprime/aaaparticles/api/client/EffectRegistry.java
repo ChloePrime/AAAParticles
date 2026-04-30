@@ -7,6 +7,7 @@ import dev.architectury.platform.Platform;
 import dev.architectury.utils.Env;
 import mod.chloeprime.aaaparticles.api.client.effekseer.EffekseerManager;
 import mod.chloeprime.aaaparticles.api.client.effekseer.ParticleEmitter;
+import mod.chloeprime.aaaparticles.client.AAAClientConfig;
 import mod.chloeprime.aaaparticles.client.loader.EffekAssetLoader;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
@@ -133,6 +134,23 @@ public class EffectRegistry {
      * This mod is called automatically regularly.
      */
     public static void gc() {
+        boolean enabled = AAAClientConfig.GC_ENABLE.get();
+        if (!enabled) {
+            return;
+        }
+        if (!isSystemAtLowFreeMem()) {
+            return;
+        }
+        entries().stream()
+                .map(Map.Entry::getValue)
+                .filter(holder -> !holder.getMetadata().preload())
+                .filter(EffectHolder::isPresent)
+                .sorted(Comparator.comparing(EffectHolder::getLastUsed))
+                .limit(1)
+                .forEach(EffectHolder::unload);
+    }
+
+    private static boolean isSystemAtLowFreeMem() {
         boolean lowFreeMem;
         var runtime = Runtime.getRuntime();
         if (ManagementFactory.getOperatingSystemMXBean() instanceof OperatingSystemMXBean os) {
@@ -145,16 +163,7 @@ public class EffectRegistry {
             var offh = bean.getNonHeapMemoryUsage();
             lowFreeMem = (heap.getUsed() + offh.getUsed()) / (double) (heap.getMax() + offh.getMax()) <= 0.125;
         }
-        if (!lowFreeMem) {
-            return;
-        }
-        entries().stream()
-                .map(Map.Entry::getValue)
-                .filter(holder -> !holder.getMetadata().preload())
-                .filter(EffectHolder::isPresent)
-                .sorted(Comparator.comparing(EffectHolder::getLastUsed))
-                .limit(1)
-                .forEach(EffectHolder::unload);
+        return lowFreeMem;
     }
 
     static {
