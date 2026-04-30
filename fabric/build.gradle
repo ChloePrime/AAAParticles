@@ -12,10 +12,11 @@ dependencies {
 
     // Architectury
     include api("dev.architectury:architectury-fabric:${architectury_version}")
+    include api("fuzs.forgeconfigapiport:forgeconfigapiport-fabric:$forge_config_api_version")
 
     // Oculus
-    implementation "maven.modrinth:sodium:mc26.1-0.8.7-fabric"
-    implementation "maven.modrinth:iris:1.10.7+26.1-fabric"
+    compileOnly "maven.modrinth:sodium:mc26.1-0.8.7-fabric"
+    compileOnly "maven.modrinth:iris:1.10.7+26.1-fabric"
 }
 
 loom {

@@ -24,7 +24,8 @@ dependencies {
     // Oculus
     compileOnly "maven.modrinth:iris:1.10.9+26.1-neoforge"
     // Remove the next line if you don't want to depend on the API
-    api "dev.architectury:architectury-neoforge:${architectury_version}"
+    api "dev.architectury:architectury-neoforge:$architectury_version"
+    api "fuzs.forgeconfigapiport:forgeconfigapiport-common-neoforgeapi:$forge_config_api_version"
 }
 
 configurations {
