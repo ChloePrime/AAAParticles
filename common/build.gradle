@@ -31,10 +31,10 @@ dependencies {
     ;// JIJ Dependencies
     {
         // Architectury
-        compileOnlyApi "dev.architectury:architectury-neoforge:$architectury_version"
+        compileOnly "dev.architectury:architectury-neoforge:$architectury_version"
 
         // Forge Config API Port
-        compileOnlyApi "fuzs.forgeconfigapiport:forgeconfigapiport-common-neoforgeapi:$forge_config_api_version"
+        compileOnly "fuzs.forgeconfigapiport:forgeconfigapiport-common-neoforgeapi:$forge_config_api_version"
     }
 
     ;// Optional Dependencies

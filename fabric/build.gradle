@@ -19,11 +19,11 @@ dependencies {
     ;// JIJ Dependencies
     {
         // Architectury
-        modCompileOnlyApi include("dev.architectury:architectury-fabric:$architectury_version")
+        modCompileOnly include("dev.architectury:architectury-fabric:$architectury_version")
         modLocalRuntime "dev.architectury:architectury-fabric:$architectury_version"
 
         // Forge Config API Port
-        modCompileOnlyApi include("fuzs.forgeconfigapiport:forgeconfigapiport-fabric:$forge_config_api_version")
+        modCompileOnly include("fuzs.forgeconfigapiport:forgeconfigapiport-fabric:$forge_config_api_version")
         modLocalRuntime "fuzs.forgeconfigapiport:forgeconfigapiport-fabric:$forge_config_api_version"
     }
 
