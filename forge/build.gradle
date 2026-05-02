@@ -51,21 +51,44 @@ repositories {
     }
 }
 
+configurations {
+    runtimeClasspath.extendsFrom localRuntime
+}
+obfuscation {
+    createRemappingConfiguration(configurations.localRuntime)
+}
+
 dependencies {
     compileOnly project(":common")
     annotationProcessor("org.spongepowered:mixin:0.8.5-SNAPSHOT:processor")
 
     compileOnly "org.jetbrains:annotations:25.0.0"
 
-    // MixinExtras
-    compileOnly(annotationProcessor("io.github.llamalad7:mixinextras-common:0.4.1"))
-    jarJar implementation("io.github.llamalad7:mixinextras-forge:0.4.1")
+    ;// JIJ Dependencies
+    {
+        // MixinExtras
+        compileOnly annotationProcessor(jarJar("io.github.llamalad7:mixinextras-common:0.4.1"))
+        localRuntime "io.github.llamalad7:mixinextras-forge:0.4.1"
 
-    modApi jarJar("dev.architectury:architectury-forge:${rootProject.architectury_version}")
-    modImplementation "dev.latvian.mods:rhino-forge:$rhino_version"
-    modImplementation "dev.latvian.mods:kubejs-forge:$kubejs_version"
-    modImplementation "org.embeddedt:embeddium-1.20.1:0.3.9-git.f603a93+mc1.20.1"
-    modImplementation "maven.modrinth:oculus:1.20.1-1.8.0"
+        // Architectury
+        modCompileOnly jarJar("dev.architectury:architectury-forge:$architectury_version")
+        modLocalRuntime "dev.architectury:architectury-forge:$architectury_version"
+    }
+
+    ;// Optional Dependencies
+    {
+        // KubeJS
+        modCompileOnly "dev.latvian.mods:rhino-forge:$rhino_version"
+        modCompileOnly "dev.latvian.mods:kubejs-forge:$kubejs_version"
+        modLocalRuntime "dev.latvian.mods:rhino-forge:$rhino_version"
+        modLocalRuntime "dev.latvian.mods:kubejs-forge:$kubejs_version"
+
+        // Sodium / Iris
+        modCompileOnly "org.embeddedt:embeddium-$minecraft_version:$emb_version"
+        modCompileOnly "maven.modrinth:oculus:$minecraft_version-$ocu_version"
+        modLocalRuntime "org.embeddedt:embeddium-$minecraft_version:$emb_version"
+        modLocalRuntime "maven.modrinth:oculus:$minecraft_version-$ocu_version"
+    }
 }
 
 jar {

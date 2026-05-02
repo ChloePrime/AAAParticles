@@ -135,19 +135,10 @@ processResources {
     inputs.properties(expandProps)
 }
 
-tasks.withType(GenerateModuleMetadata).configureEach {
-    enabled = false // Can't figure out how to disable the dependencies block here, and it's wrong by default (it pulls deobf deps).
-}
-
 publishing {
     publications {
         register('mavenJava', MavenPublication) {
             artifactId base.archivesName.get()
-            pom.withXml {
-                def node = asNode()
-                if(node.dependencies.size() > 0)
-                    node.remove(node.dependencies) // Remove deps, as they are all mappings-dependent and/or forge
-            }
             from components.java
         }
     }

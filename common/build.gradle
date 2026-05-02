@@ -18,13 +18,29 @@ dependencies {
     compileOnly group: 'org.spongepowered', name: 'mixin', version: '0.8.5'
     implementation group: 'com.google.code.findbugs', name: 'jsr305', version: '3.0.1'
 
-    compileOnly "org.ow2.asm:asm:9.7"
-    compileOnly "io.github.llamalad7:mixinextras-common:0.4.1"
+    ;// Common Dependencies Missing in Vanilla
+    {
+        compileOnly "org.ow2.asm:asm:9.7"
+        compileOnly "io.github.llamalad7:mixinextras-common:0.4.1"
+    }
 
-    modApi "dev.architectury:architectury-forge:${rootProject.architectury_version}"
-    modApi "fuzs.forgeconfigapiport:forgeconfigapiport-common:$forge_config_api_version"
-    modCompileOnly "dev.latvian.mods:kubejs-forge:$kubejs_version"
-    modCompileOnly "maven.modrinth:iris:1.7.6+1.20.1"
+    ;// JIJ Dependencies
+    {
+        // Architectury
+        modCompileOnly "dev.architectury:architectury-forge:$architectury_version"
+
+        // Forge Config API Port
+        modCompileOnly "fuzs.forgeconfigapiport:forgeconfigapiport-common:$forge_config_api_version"
+    }
+
+    ;// Optional Dependencies
+    {
+        // KubeJS
+        modCompileOnly "dev.latvian.mods:kubejs-forge:$kubejs_version"
+
+        // Iris
+        modCompileOnly "maven.modrinth:iris:1.7.6+1.20.1"
+    }
 }
 
 configurations {

@@ -2,6 +2,11 @@ plugins {
     id 'multiloader-loader'
     id 'fabric-loom'
 }
+
+configurations {
+    runtimeClasspath.extendsFrom localRuntime
+}
+
 dependencies {
     minecraft "com.mojang:minecraft:${minecraft_version}"
     mappings loom.layered {
@@ -13,11 +18,28 @@ dependencies {
     implementation group: 'com.google.code.findbugs', name: 'jsr305', version: '3.0.1'
     implementation project(":common")
 
-    include modApi("dev.architectury:architectury-fabric:${rootProject.architectury_version}")
-    include modApi("fuzs.forgeconfigapiport:forgeconfigapiport-fabric:$forge_config_api_version")
-    modImplementation "dev.latvian.mods:rhino-fabric:$rhino_version"
-    modImplementation "dev.latvian.mods:kubejs-fabric:$kubejs_version"
-    modCompileOnly "maven.modrinth:iris:1.7.6+1.20.1"
+    ;// JIJ Dependencies
+    {
+        // Architectury
+        modCompileOnlyApi include("dev.architectury:architectury-fabric:$architectury_version")
+        modLocalRuntime "dev.architectury:architectury-fabric:$architectury_version"
+
+        // Forge Config API Port
+        modCompileOnlyApi include("fuzs.forgeconfigapiport:forgeconfigapiport-fabric:$forge_config_api_version")
+        modLocalRuntime "fuzs.forgeconfigapiport:forgeconfigapiport-fabric:$forge_config_api_version"
+    }
+
+    ;// Optional Dependencies
+    {
+        // KubeJS
+        modCompileOnly "dev.latvian.mods:rhino-fabric:$rhino_version"
+        modCompileOnly "dev.latvian.mods:kubejs-fabric:$kubejs_version"
+        modLocalRuntime "dev.latvian.mods:rhino-fabric:$rhino_version"
+        modLocalRuntime "dev.latvian.mods:kubejs-fabric:$kubejs_version"
+
+        // Iris
+        modCompileOnly "maven.modrinth:iris:1.7.6+1.20.1"
+    }
 }
 
 loom {
