@@ -22,14 +22,26 @@ dependencies {
     compileOnly group: 'io.github.llamalad7', name: 'mixinextras-common', version: '0.3.5'
     annotationProcessor group: 'io.github.llamalad7', name: 'mixinextras-common', version: '0.3.5'
 
-    compileOnly "org.ow2.asm:asm:9.7"
-    compileOnly "io.github.llamalad7:mixinextras-common:0.4.1"
+    ;// Common Dependencies Missing in Vanilla
+    {
+        compileOnly "org.ow2.asm:asm:9.7.1"
+        compileOnly "io.github.llamalad7:mixinextras-common:0.4.1"
+    }
 
-    // Oculus
-    compileOnly "maven.modrinth:iris:1.8.12+1.21.1-neoforge"
-    // Remove the next line if you don't want to depend on the API
-    api "dev.architectury:architectury-neoforge:$architectury_version"
-    api "fuzs.forgeconfigapiport:forgeconfigapiport-common-neoforgeapi:$forge_config_api_version"
+    ;// JIJ Dependencies
+    {
+        // Architectury
+        compileOnlyApi "dev.architectury:architectury-neoforge:$architectury_version"
+
+        // Forge Config API Port
+        compileOnlyApi "fuzs.forgeconfigapiport:forgeconfigapiport-common-neoforgeapi:$forge_config_api_version"
+    }
+
+    ;// Optional Dependencies
+    {
+        // Sodium Iris
+        compileOnly "maven.modrinth:iris:1.8.12+1.21.1-neoforge"
+    }
 }
 
 configurations {

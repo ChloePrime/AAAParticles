@@ -3,10 +3,6 @@ plugins {
     id 'net.neoforged.moddev'
 }
 
-base {
-    archivesName = archivesName.get().replace("forge", "neoforge")
-}
-
 repositories {
     exclusiveContent {
         // KubeJS Dep
@@ -33,17 +29,32 @@ repositories {
     }
 }
 
+configurations {
+    runtimeClasspath.extendsFrom localRuntime
+}
+
 dependencies {
-    // Architectury
-    implementation jarJar("dev.architectury:architectury-neoforge:${architectury_version}")
+    ;// JIJ Dependencies
+    {
+        // Architectury
+        compileOnly jarJar("dev.architectury:architectury-neoforge:${architectury_version}")
+        localRuntime "dev.architectury:architectury-neoforge:${architectury_version}"
+    }
 
-    // KubeJS
-    implementation "dev.latvian.mods:kubejs-neoforge:$kubejs_version"
-    implementation 'dev.latvian.apps:tiny-java-server:1.0.0-build.16'
+    ;// Optional Dependencies
+    {
+        // KubeJS
+        compileOnly "dev.latvian.mods:kubejs-neoforge:$kubejs_version"
+        compileOnly 'dev.latvian.apps:tiny-java-server:1.0.0-build.16'
+        localRuntime "dev.latvian.mods:kubejs-neoforge:$kubejs_version"
+        localRuntime 'dev.latvian.apps:tiny-java-server:1.0.0-build.16'
 
-    // Oculus
-    implementation "maven.modrinth:sodium:mc1.21.1-0.6.13-neoforge"
-    implementation "maven.modrinth:iris:1.8.1+1.21.1-neoforge"
+        // Oculus
+        compileOnly "maven.modrinth:sodium:mc$minecraft_version-$sodium_version-neoforge"
+        compileOnly "maven.modrinth:iris:$iris_version+$minecraft_version-neoforge"
+        localRuntime "maven.modrinth:sodium:mc$minecraft_version-$sodium_version-neoforge"
+        localRuntime "maven.modrinth:iris:$iris_version+$minecraft_version-neoforge"
+    }
 }
 
 neoForge {
