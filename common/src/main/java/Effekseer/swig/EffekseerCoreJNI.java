@@ -70,9 +70,9 @@ public class EffekseerCoreJNI {
   public final static native void EffekseerManagerCore_LaunchWorkerThreads(long jarg1, EffekseerManagerCore jarg1_, int jarg2);
   public final static native void EffekseerManagerCore_SetBackground(long jarg1, EffekseerManagerCore jarg1_, long jarg2, boolean jarg3);
   public final static native void EffekseerManagerCore_UnsetBackground(long jarg1, EffekseerManagerCore jarg1_);
-  public final static native void EffekseerManagerCore_SetDepth__SWIG_0(long jarg1, EffekseerManagerCore jarg1_, long jarg2, boolean jarg3, long jarg4);
-  public final static native void EffekseerManagerCore_SetDepth__SWIG_1(long jarg1, EffekseerManagerCore jarg1_, long jarg2, boolean jarg3);
+  public final static native void EffekseerManagerCore_SetDepth(long jarg1, EffekseerManagerCore jarg1_, long jarg2, boolean jarg3);
   public final static native void EffekseerManagerCore_UnsetDepth(long jarg1, EffekseerManagerCore jarg1_);
   public final static native int EffekseerManagerCore_GetInstanceCount(long jarg1, EffekseerManagerCore jarg1_, int jarg2);
   public final static native int EffekseerManagerCore_GetTotalInstanceCount(long jarg1, EffekseerManagerCore jarg1_);
+  public final static native void EffekseerManagerCore_SetCollisionCallback(long jarg1, EffekseerManagerCore jarg1_, long jarg2);
 }

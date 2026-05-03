@@ -6,6 +6,7 @@ import mod.chloeprime.aaaparticles.AAAParticles;
 import mod.chloeprime.aaaparticles.api.client.effekseer.EffekseerEffect;
 import mod.chloeprime.aaaparticles.api.client.effekseer.EffekseerManager;
 import mod.chloeprime.aaaparticles.api.client.effekseer.ParticleEmitter;
+import mod.chloeprime.aaaparticles.client.internal.CollisionCallbackSupport;
 import mod.chloeprime.aaaparticles.client.render.RenderUtil;
 import mod.chloeprime.aaaparticles.client.util.GlDebug;
 import mod.chloeprime.aaaparticles.client.util.GlDebugIds;
@@ -279,9 +280,9 @@ public class EffectDefinition implements Closeable {
             backgroundDepthId.setValue(background.getDepthTextureId());
             // Update actual values of background/depth
             manager.getImpl().SetBackground(backgroundColorId.intValue(), false);
-            manager.getImpl().SetDepth(backgroundDepthId.intValue(), false, RenderUtil.getDepthFormat(background));
+            manager.getImpl().SetDepth(backgroundDepthId.intValue(), false);
         } else {
-            manager.getImpl().SetDepth(backgroundDepthId.intValue(), false, RenderUtil.getDepthFormat(background));
+            manager.getImpl().SetDepth(backgroundDepthId.intValue(), false);
         }
 
         manager.getImpl().SetLayerParameter(1, pos.x, pos.y, pos.z, 0);
@@ -337,6 +338,7 @@ public class EffectDefinition implements Closeable {
         if (!fpvOhManager.init(500)) {
             throw new IllegalStateException("Failed to initialize (fpv offhand) EffekseerManager");
         }
+        worldManager.setCollisionCallback(CollisionCallbackSupport.Impl.DEFAULT_TRACER);
         worldManager.setupWorkerThreads(2);
         fpvMhManager.setupWorkerThreads(1);
         fpvOhManager.setupWorkerThreads(1);

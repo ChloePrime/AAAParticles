@@ -72,6 +72,7 @@ public enum Debug {
             return;
         }
 
+        var shift = Screen.hasShiftDown();
         var ctrl = Screen.hasControlDown();
         var efk = ctrl ? DISTORTION_PARTICLE : DEBUG_PARTICLE;
 
@@ -85,7 +86,7 @@ public enum Debug {
                     srv.execute(() -> {
                         var srvLevel = Objects.requireNonNull(srv.getLevel(dim));
                         var emitter = new ParticleEmitterInfo(efk).bindOnEntity(Objects.requireNonNull(srvLevel.getEntity(eid)));
-                        AAALevel.addParticle(srvLevel, ctrl ? emitter : emitter.speed((float) Math.pow(10, Math.random() - Math.random())));
+                        AAALevel.addParticle(srvLevel, shift ? emitter.speed((float) Math.pow(10, Math.random() - Math.random())) : emitter);
                         // .position(0, 1.8, 0)
                         // .entitySpaceRelativePosition(0.5, 0, -0.5)
                         // .rotation((float) (Math.PI / 2), 0, 0)

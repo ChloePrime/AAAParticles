@@ -184,12 +184,8 @@ public class EffekseerManagerCore {
     EffekseerCoreJNI.EffekseerManagerCore_UnsetBackground(swigCPtr, this);
   }
 
-  public void SetDepth(long glid, boolean hasMipmap, long aaapFormat) {
-    EffekseerCoreJNI.EffekseerManagerCore_SetDepth__SWIG_0(swigCPtr, this, glid, hasMipmap, aaapFormat);
-  }
-
   public void SetDepth(long glid, boolean hasMipmap) {
-    EffekseerCoreJNI.EffekseerManagerCore_SetDepth__SWIG_1(swigCPtr, this, glid, hasMipmap);
+    EffekseerCoreJNI.EffekseerManagerCore_SetDepth(swigCPtr, this, glid, hasMipmap);
   }
 
   public void UnsetDepth() {
@@ -202,6 +198,10 @@ public class EffekseerManagerCore {
 
   public int GetTotalInstanceCount() {
     return EffekseerCoreJNI.EffekseerManagerCore_GetTotalInstanceCount(swigCPtr, this);
+  }
+
+  public void SetCollisionCallback(long callback) {
+    EffekseerCoreJNI.EffekseerManagerCore_SetCollisionCallback(swigCPtr, this, callback);
   }
 
 }

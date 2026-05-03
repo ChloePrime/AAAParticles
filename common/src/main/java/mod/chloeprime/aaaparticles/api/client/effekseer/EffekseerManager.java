@@ -3,6 +3,7 @@ package mod.chloeprime.aaaparticles.api.client.effekseer;
 import Effekseer.swig.EffekseerManagerCore;
 import mod.chloeprime.aaaparticles.common.util.Helpers;
 import org.joml.Matrix4f;
+import org.lwjgl.system.MemoryUtil;
 
 import java.nio.FloatBuffer;
 
@@ -130,6 +131,10 @@ public class EffekseerManager extends SafeFinalized<EffekseerManagerCore> {
                 m[8],   m[9],   m[0xA], m[0xB],
                 m[0xC], m[0xD], m[0xE], m[0xF]
         );
+    }
+
+    public void setCollisionCallback(CollisionCallback callback) {
+        impl.SetCollisionCallback(MemoryUtil.memAddressSafe(callback));
     }
 
     public final EffekseerManagerCore getImpl() {
