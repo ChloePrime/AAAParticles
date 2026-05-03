@@ -117,12 +117,7 @@ public class EffectRegistry {
                 .flatMap(EffectDefinition::emitters)
                 .forEach(ParticleEmitter::stop);
 
-        entries().stream()
-                .map(Map.Entry::getValue)
-                .map(EffectHolder::lazyGet)
-                .flatMap(Optional::stream)
-                .flatMap(EffectDefinition::managers)
-                .forEach(EffekseerManager::stopAllEffects);
+        EffectDefinition.globalManagers().forEach(EffekseerManager::stopAllEffects);
     }
 
     public static void forEach(BiConsumer<ResourceLocation, EffectHolder> action) {

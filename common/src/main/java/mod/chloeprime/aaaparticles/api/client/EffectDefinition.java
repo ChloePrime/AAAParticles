@@ -2,10 +2,13 @@ package mod.chloeprime.aaaparticles.api.client;
 
 import com.google.common.base.Suppliers;
 import com.mojang.blaze3d.pipeline.RenderTarget;
+import com.mojang.blaze3d.systems.RenderSystem;
 import mod.chloeprime.aaaparticles.AAAParticles;
+import mod.chloeprime.aaaparticles.api.client.effekseer.Effekseer;
 import mod.chloeprime.aaaparticles.api.client.effekseer.EffekseerEffect;
 import mod.chloeprime.aaaparticles.api.client.effekseer.EffekseerManager;
 import mod.chloeprime.aaaparticles.api.client.effekseer.ParticleEmitter;
+import mod.chloeprime.aaaparticles.client.installer.NativePlatform;
 import mod.chloeprime.aaaparticles.client.internal.CollisionCallbackSupport;
 import mod.chloeprime.aaaparticles.client.render.RenderUtil;
 import mod.chloeprime.aaaparticles.client.util.GlDebug;
@@ -20,6 +23,7 @@ import org.joml.Vector3f;
 
 import java.io.Closeable;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 import java.util.random.RandomGenerator;
 import java.util.stream.Stream;
@@ -135,7 +139,10 @@ public class EffectDefinition implements Closeable {
      * @return the manager of this emitter type.
      */
     public EffekseerManager getManager(ParticleEmitter.Type type) {
-        return Objects.requireNonNull(managers.get(type));
+        if (SHUTDOWN.get()) {
+            throw new IllegalStateException("Accessing %s after it has been shutdown".formatted(EffectDefinition.class.getSimpleName()));
+        }
+        return Objects.requireNonNull(THE_ONE_MANAGERS.get().get(type));
     }
 
     /**
@@ -201,33 +208,53 @@ public class EffectDefinition implements Closeable {
         if (this.effect == effect) {
             return this;
         }
+        if (SHUTDOWN.get()) {
+            this.effect = effect;
+            return this;
+        }
+        THE_ONE_MANAGERS.get();
         // If this is not the first time of load.
         if (this.effect != null) {
             emitters().forEach(ParticleEmitter::stop);
-            managers().forEach(EffekseerManager::close);
             this.effect.close();
-            this.managers.clear();
         }
         this.effect = effect;
-        initManager();
         return this;
     }
 
     /**
      * Get all Effekseer managers of all emitter types.
+     *
      * @return all Effekseer managers of all emitter types.
+     * @deprecated since 2.2.0, managers are single instanced. Use {{@link #globalManagers()}} instead.
      */
+    @Deprecated(forRemoval = true, since = "2.2.0")
     public Stream<EffekseerManager> managers() {
-        return managers.values().stream();
+        return globalManagers().stream();
+    }
+
+    /**
+     * Get all Effekseer managers of all emitter types.
+     *
+     * @return all Effekseer managers of all emitter types.
+     * @since 2.2.0
+     */
+    public static Collection<EffekseerManager> globalManagers() {
+        if (SHUTDOWN.get() || NativePlatform.isRunningOnUnsupportedPlatform()) {
+            return Collections.emptyList();
+        }
+        return Collections.unmodifiableCollection(THE_ONE_MANAGERS.get().values());
     }
 
     private final Supplier<ResourceLocation> id = Suppliers.memoize(this::fetchId);
-    private final Supplier<String> glDebugLabel = Suppliers.memoize(() -> "%s Begin Rendering Effek %s".formatted(AAAParticles.LOG_PREFIX, id.get()));
-    private final Supplier<String> glUnloadManagerLabel = Suppliers.memoize(() -> "%s Unloading managers for effek %s".formatted(AAAParticles.LOG_PREFIX, id.get()));
+    private static final String GL_DEBUG_LABEL = "%s Begin Rendering Effeks".formatted(AAAParticles.LOG_PREFIX);
+    private static final String GL_UNLOAD_MANAGER_LABEL = "%s Unloading Effekseer managers".formatted(AAAParticles.LOG_PREFIX);
     private final Supplier<String> glUnloadLabel = Suppliers.memoize(() -> "%s Unloading effek %s".formatted(AAAParticles.LOG_PREFIX, id.get()));
 
+
     private EffekseerEffect effect;
-    private final EnumMap<ParticleEmitter.Type, EffekseerManager> managers = new EnumMap<>(ParticleEmitter.Type.class);
+    private static final Supplier<EnumMap<ParticleEmitter.Type, EffekseerManager>> THE_ONE_MANAGERS = Suppliers.memoize(EffectDefinition::initGlobalManagers);
+    private static final AtomicBoolean SHUTDOWN = new AtomicBoolean();
     private final EnumMap<ParticleEmitter.Type, Set<ParticleEmitter>> oneShotEmitters = new EnumMap<>(ParticleEmitter.Type.class);
     private final EnumMap<ParticleEmitter.Type, Map<ResourceLocation, ParticleEmitter>> namedEmitters = new EnumMap<>(ParticleEmitter.Type.class);
     private static final RandomGenerator RNG = new Random();
@@ -235,8 +262,10 @@ public class EffectDefinition implements Closeable {
     private final int magicLoadBalancer = Math.abs(RNG.nextInt() >>> 2) % GC_DELAY;
     private int gcTicks;
     private final EffectMetadata metadata;
-    private final EnumMap<ParticleEmitter.Type, MutableInt> backgroundColorIds = new EnumMap<>(ParticleEmitter.Type.class);
-    private final EnumMap<ParticleEmitter.Type, MutableInt> backgroundDepthIds = new EnumMap<>(ParticleEmitter.Type.class);
+    private static final EnumMap<ParticleEmitter.Type, MutableInt> BACKGROUND_COLOR_IDS = new EnumMap<>(ParticleEmitter.Type.class);
+    private static final EnumMap<ParticleEmitter.Type, MutableInt> BACKGROUND_DEPTH_IDS = new EnumMap<>(ParticleEmitter.Type.class);
+    private static final List<EffectDefinition> DEFINITION_BUFFER = new ArrayList<>(64);
+    private static final List<ParticleEmitter> EMITTERS_BUFFER = new ArrayList<>(64);
 
     private @Nullable ResourceLocation fetchId() {
         return EffectRegistry.entries().stream()
@@ -250,14 +279,17 @@ public class EffectDefinition implements Closeable {
     }
 
     @ApiStatus.Internal
-    public void draw(
+    public static void draw(
             ParticleEmitter.Type type,
             Vector3f front, Vector3f pos,
             int w, int h, float[] camera, float[] projection,
             float deltaFrames, float partialTicks,
             @Nullable RenderTarget background
     ) {
-        var manager = Objects.requireNonNull(managers.get(type));
+        if (SHUTDOWN.get() || NativePlatform.isRunningOnUnsupportedPlatform()) {
+            return;
+        }
+        var manager = Objects.requireNonNull(THE_ONE_MANAGERS.get().get(type));
         manager.startUpdate();
 
         manager.setViewport(w, h);
@@ -268,8 +300,8 @@ public class EffectDefinition implements Closeable {
                 pos.x, pos.y, pos.z
         );
 
-        var backgroundColorId = backgroundColorIds.get(type);
-        var backgroundDepthId = backgroundDepthIds.get(type);
+        var backgroundColorId = BACKGROUND_COLOR_IDS.get(type);
+        var backgroundDepthId = BACKGROUND_DEPTH_IDS.get(type);
 
         if (background == null) {
             unsetBackgrounds(manager, backgroundColorId, backgroundDepthId);
@@ -285,26 +317,45 @@ public class EffectDefinition implements Closeable {
             manager.getImpl().SetDepth(backgroundDepthId.intValue(), false);
         }
 
+        // Load all definitions & emitters
+        DEFINITION_BUFFER.clear();
+        EMITTERS_BUFFER.clear();
+        EffectRegistry.entries().stream()
+                .map(Map.Entry::getValue)
+                .map(EffectHolder::lazyGet)
+                .flatMap(Optional::stream)
+                .forEach(DEFINITION_BUFFER::add);
+        DEFINITION_BUFFER.stream()
+                .flatMap(buf -> buf.emitters(type))
+                .forEach(EMITTERS_BUFFER::add);
+
         manager.getImpl().SetLayerParameter(1, pos.x, pos.y, pos.z, 0);
-        emitters(type).forEach(emitter -> emitter.internalUpdateProgress(deltaFrames));
+        EMITTERS_BUFFER.forEach(emitter -> emitter.internalUpdateProgress(deltaFrames));
         manager.update(deltaFrames);
 
-        emitters(type).forEach(emitter -> emitter.runPreDrawCallbacks(partialTicks));
-        GlDebug.pushDebugGroup(GlDebugIds.EFFEK_DRAWING, glDebugLabel);
+        EMITTERS_BUFFER.forEach(emitter -> emitter.runPreDrawCallbacks(partialTicks));
+        GlDebug.pushDebugGroup(GlDebugIds.EFFEK_DRAWING, GL_DEBUG_LABEL::toString);
         manager.draw();
         GlDebug.popDebugGroup();
 
         if (type == ParticleEmitter.Type.WORLD) {
-            gcTicks = (gcTicks + 1) % GC_DELAY;
-            if (gcTicks == magicLoadBalancer) {
-                emitterContainers().forEach(container -> container.removeIf(emitter -> !emitter.exists()));
-            }
+            DEFINITION_BUFFER.forEach(EffectDefinition::tryCleanupEmitters);
         }
+
+        DEFINITION_BUFFER.clear();
+        EMITTERS_BUFFER.clear();
 
         manager.endUpdate();
     }
 
-    private void unsetBackgrounds(EffekseerManager manager, MutableInt backgroundColorId, MutableInt backgroundDepthId) {
+    private void tryCleanupEmitters() {
+        gcTicks = (gcTicks + 1) % GC_DELAY;
+        if (gcTicks == magicLoadBalancer) {
+            emitterContainers().forEach(container -> container.removeIf(emitter -> !emitter.exists()));
+        }
+    }
+
+    private static void unsetBackgrounds(EffekseerManager manager, MutableInt backgroundColorId, MutableInt backgroundDepthId) {
         if (backgroundColorId.intValue() != -1) {
             backgroundColorId.setValue(-1);
             manager.getImpl().UnsetBackground();
@@ -315,33 +366,43 @@ public class EffectDefinition implements Closeable {
         }
     }
 
-    private void unsetBackgrounds(ParticleEmitter.Type type) {
-        unsetBackgrounds(managers.get(type), backgroundColorIds.get(type), backgroundDepthIds.get(type));
-    }
-
-    private void initManager() {
-        for (ParticleEmitter.Type type : ParticleEmitter.Type.values()) {
-            backgroundColorIds.put(type, new MutableInt(-1));
-            backgroundDepthIds.put(type, new MutableInt(-1));
-            var old = this.managers.put(type, new EffekseerManager());
-            Optional.ofNullable(old).ifPresent(EffekseerManager::close);
+    private static EnumMap<ParticleEmitter.Type, EffekseerManager> initGlobalManagers() {
+        if (NativePlatform.isRunningOnUnsupportedPlatform()) {
+            return new EnumMap<>(ParticleEmitter.Type.class);
         }
-        var worldManager = Objects.requireNonNull(managers.get(ParticleEmitter.Type.WORLD));
-        var fpvMhManager = Objects.requireNonNull(managers.get(ParticleEmitter.Type.FIRST_PERSON_MAINHAND));
-        var fpvOhManager = Objects.requireNonNull(managers.get(ParticleEmitter.Type.FIRST_PERSON_OFFHAND));
-        if (!worldManager.init(9000)) {
+        AAAParticles.LOGGER.info("{} Initializing global Effekseer managers", AAAParticles.LOG_PREFIX);
+        RenderSystem.assertOnRenderThread();
+        var map = new EnumMap<ParticleEmitter.Type, EffekseerManager>(ParticleEmitter.Type.class);
+        for (var type : ParticleEmitter.Type.values()) {
+            BACKGROUND_COLOR_IDS.put(type, new MutableInt(-1));
+            BACKGROUND_DEPTH_IDS.put(type, new MutableInt(-1));
+            map.put(type, new EffekseerManager());
+        }
+        var world = Objects.requireNonNull(map.get(ParticleEmitter.Type.WORLD));
+        var fpvMh = Objects.requireNonNull(map.get(ParticleEmitter.Type.FIRST_PERSON_MAINHAND));
+        var fpvOh = Objects.requireNonNull(map.get(ParticleEmitter.Type.FIRST_PERSON_OFFHAND));
+        if (!world.init(100_0000)) {
             throw new IllegalStateException("Failed to initialize EffekseerManager");
         }
-        if (!fpvMhManager.init(500)) {
+        if (!fpvMh.init(500)) {
             throw new IllegalStateException("Failed to initialize (fpv mainhand) EffekseerManager");
         }
-        if (!fpvOhManager.init(500)) {
+        if (!fpvOh.init(500)) {
             throw new IllegalStateException("Failed to initialize (fpv offhand) EffekseerManager");
         }
-        worldManager.setCollisionCallback(CollisionCallbackSupport.Impl.DEFAULT_TRACER);
-        worldManager.setupWorkerThreads(2);
-        fpvMhManager.setupWorkerThreads(1);
-        fpvOhManager.setupWorkerThreads(1);
+        world.setCollisionCallback(CollisionCallbackSupport.Impl.DEFAULT_TRACER);
+        var cpus = Runtime.getRuntime().availableProcessors();
+        var isPoorCpu = cpus < 12;
+        if (isPoorCpu) {
+            if (cpus > 5) {
+                world.setupWorkerThreads(cpus - 4);
+            }
+        } else {
+            world.setupWorkerThreads(cpus - 8);
+            fpvMh.setupWorkerThreads(2);
+            fpvOh.setupWorkerThreads(2);
+        }
+        return map;
     }
 
     /**
@@ -349,12 +410,42 @@ public class EffectDefinition implements Closeable {
      */
     @Override
     public void close() {
-        Arrays.stream(ParticleEmitter.Type.values()).forEach(this::unsetBackgrounds);
-        GlDebug.pushDebugGroup(GlDebugIds.EFFEK_MANAGER_UNLOADING, glUnloadManagerLabel);
-        managers.values().forEach(EffekseerManager::close);
-        GlDebug.popDebugGroup();
+        emitters().forEach(ParticleEmitter::stop);
         GlDebug.pushDebugGroup(GlDebugIds.EFFEK_UNLOADING, glUnloadLabel);
         effect.close();
         GlDebug.popDebugGroup();
+    }
+
+    @ApiStatus.Internal
+    public static void shutdown() {
+        if (SHUTDOWN.getAndSet(true)) {
+            return;
+        }
+        if (NativePlatform.isRunningOnUnsupportedPlatform()) {
+            return;
+        }
+
+        // Shutdown Managers
+        AAAParticles.LOGGER.info("{} Shutting down global Effekseer managers", AAAParticles.LOG_PREFIX);
+        GlDebug.pushDebugGroup(GlDebugIds.EFFEK_MANAGER_UNLOADING, GL_UNLOAD_MANAGER_LABEL::toString);
+        THE_ONE_MANAGERS.get().values().forEach(manager -> {
+            manager.stopAllEffects();
+            manager.close();
+        });
+        GlDebug.popDebugGroup();
+
+        // Shutdown Effects
+        AAAParticles.LOGGER.info("{} Shutting down Effekseer effects", AAAParticles.LOG_PREFIX);
+        EffectRegistry.entries().stream()
+                .map(Map.Entry::getValue)
+                .map(EffectHolder::lazyGet)
+                .flatMap(Optional::stream)
+                .forEach(EffectDefinition::close);
+
+        // Shutdown Backend
+        AAAParticles.LOGGER.info("{} Shutting down Effekseer backend", AAAParticles.LOG_PREFIX);
+        Effekseer.terminate();
+
+        AAAParticles.LOGGER.info("{} Shutdown complete", AAAParticles.LOG_PREFIX);
     }
 }
