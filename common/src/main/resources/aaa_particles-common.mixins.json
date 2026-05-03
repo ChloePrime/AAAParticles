@@ -9,6 +9,7 @@
     "MixinResourceLocation"
   ],
   "client": [
+    "client.ClientShutdownHookMixin",
     "client.MixinGameRenderer",
     "client.MixinItemInHandRenderer",
     "client.MixinLevelRenderer",
