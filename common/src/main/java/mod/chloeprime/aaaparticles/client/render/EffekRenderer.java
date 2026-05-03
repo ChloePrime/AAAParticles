@@ -2,7 +2,7 @@ package mod.chloeprime.aaaparticles.client.render;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import mod.chloeprime.aaaparticles.AAAParticles;
-import mod.chloeprime.aaaparticles.api.client.EffectRegistry;
+import mod.chloeprime.aaaparticles.api.client.EffectDefinition;
 import mod.chloeprime.aaaparticles.api.client.effekseer.DeviceType;
 import mod.chloeprime.aaaparticles.api.client.effekseer.Effekseer;
 import mod.chloeprime.aaaparticles.api.client.effekseer.ParticleEmitter;
@@ -121,13 +121,13 @@ public class EffekRenderer {
         RenderUtil.runPixelStoreCodeSafely(() -> {
             GlDebug.pushDebugGroup(GlDebugIds.EFFEK_RENDER_DISPATCH, () -> "[AAAParticle] Rendering Effeks");
             var background = RenderUtil.prepareBackgroundBuffer().orElse(null);
-            EffectRegistry.forEach((id, lazy) -> lazy.lazyGet().ifPresent(def -> def.draw(
+            EffectDefinition.draw(
                     type,
                     camera.getLookVector(), camera.getPosition().toVector3f(),
                     w, h,
                     CAMERA_TRANSFORM_DATA, PROJECTION_MATRIX_DATA,
                     realDelta, partialTick, background
-            )));
+            );
             RenderUtil.clearSamplerBindings(5);
             GlDebug.popDebugGroup();
         });
