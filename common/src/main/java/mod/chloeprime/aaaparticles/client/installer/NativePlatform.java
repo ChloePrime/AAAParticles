@@ -1,12 +1,16 @@
 package mod.chloeprime.aaaparticles.client.installer;
 
 import com.google.common.base.Suppliers;
+import mod.chloeprime.aaaparticles.AAAParticles;
 import mod.chloeprime.aaaparticles.PlatformMethods;
 import net.minecraft.Util;
+import org.jetbrains.annotations.ApiStatus;
 
 import java.io.File;
 import java.util.Arrays;
+import java.util.Locale;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
@@ -20,7 +24,7 @@ public enum NativePlatform {
     UNKNOWN(".so", "lib", true);
 
     public static boolean isRunningOnUnsupportedPlatform() {
-        return current().unsupported || isDataGen();
+        return current().unsupported || LOAD_FAILED.get() || isDataGen();
     }
 
     public static boolean isDataGen() {
@@ -43,12 +47,14 @@ public enum NativePlatform {
         return prefix + dllName + libFormat;
     }
 
+    @Deprecated
     public String getLibraryFormat() {
         return libFormat;
     }
 
     private static final Supplier<NativePlatform> CURRENT = Suppliers.memoize(NativePlatform::findCurrent);
     private static final Supplier<File> INSTALL_FOLDER = Suppliers.memoize(NativePlatform::findNativeFolder);
+    private static final AtomicBoolean LOAD_FAILED = new AtomicBoolean();
     private final String prefix;
     private final String libFormat;
 
@@ -57,7 +63,6 @@ public enum NativePlatform {
     NativePlatform(String libFormat) {
         this(libFormat, "");
     }
-
 
     NativePlatform(String libFormat, String prefix) {
         this(libFormat, prefix, false);
@@ -99,5 +104,20 @@ public enum NativePlatform {
                 .map(Arrays::stream)
                 .flatMap(Stream::findAny)
                 .orElse(root);
+    }
+
+    @ApiStatus.Internal
+    public static void setCurrentPlatformUnsupported(Throwable cause) {
+        if (LOAD_FAILED.getAndSet(true)) {
+            return;
+        }
+        var linuxHint = current().name().toLowerCase(Locale.ROOT).contains("linux")
+                ? ". This may be caused by low glibc version in your system."
+                : "";
+        if (cause == null) {
+            AAAParticles.LOGGER.warn("{} Unable to support current platform{}", AAAParticles.LOG_PREFIX, linuxHint);
+        } else {
+            AAAParticles.LOGGER.warn("{} Unable to support current platform{}", AAAParticles.LOG_PREFIX, linuxHint, cause);
+        }
     }
 }
