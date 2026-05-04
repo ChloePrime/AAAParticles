@@ -2,21 +2,36 @@ plugins {
     id 'multiloader-loader'
     id 'net.fabricmc.fabric-loom'
 }
+
+configurations {
+    runtimeClasspath.extendsFrom localRuntime
+}
+
 dependencies {
     minecraft "com.mojang:minecraft:${minecraft_version}"
     implementation "net.fabricmc:fabric-loader:${fabric_loader_version}"
     implementation "net.fabricmc.fabric-api:fabric-api:${fabric_version}"
 
-    // javax.annotation
-    include implementation("com.google.code.findbugs:jsr305:3.0.2")
+    ;// JIJ Dependencies
+    {
+        // javax.annotation
+        include implementation("com.google.code.findbugs:jsr305:3.0.2")
 
-    // Architectury
-    include api("dev.architectury:architectury-fabric:${architectury_version}")
-    include api("fuzs.forgeconfigapiport:forgeconfigapiport-fabric:$forge_config_api_version")
+        // Architectury
+        compileOnly include("dev.architectury:architectury-fabric:$architectury_version")
+        localRuntime "dev.architectury:architectury-fabric:$architectury_version"
 
-    // Oculus
-    compileOnly "maven.modrinth:sodium:mc26.1-0.8.7-fabric"
-    compileOnly "maven.modrinth:iris:1.10.7+26.1-fabric"
+        // Forge Config API Port
+        compileOnly include("fuzs.forgeconfigapiport:forgeconfigapiport-fabric:$forge_config_api_version")
+        localRuntime "fuzs.forgeconfigapiport:forgeconfigapiport-fabric:$forge_config_api_version"
+    }
+
+    ;// Optional Dependencies
+    {
+        // Sodium and Iris
+        compileOnly "maven.modrinth:sodium:mc26.1-0.8.7-fabric"
+        compileOnly "maven.modrinth:iris:1.10.7+26.1-fabric"
+    }
 }
 
 loom {
