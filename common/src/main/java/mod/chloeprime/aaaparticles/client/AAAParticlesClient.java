@@ -54,8 +54,10 @@ public class AAAParticlesClient
 				}
 			}
 			System.load(dll.getCanonicalPath());
-		} catch (IOException | UnsatisfiedLinkError e) {
-			throw new ExceptionInInitializerError(e);
+		} catch (OutOfMemoryError oom) {
+			throw oom;
+		} catch (Throwable ex) {
+			NativePlatform.setCurrentPlatformUnsupported(ex);
 		}
 	}
 
