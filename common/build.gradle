@@ -36,7 +36,7 @@ dependencies {
     ;// Optional Dependencies
     {
         // Sodium Iris
-        compileOnly "maven.modrinth:iris:1.10.9+26.1-neoforge"
+        compileOnly "maven.modrinth:iris:$iris_version+26.1-neoforge"
     }
 }
 
