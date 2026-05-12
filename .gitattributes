@@ -6,11 +6,18 @@
 *.png binary
 *.gif binary
 *.exe binary
-*.dll binary
 *.jar binary
 *.lzma binary
 *.zip binary
 *.pyd binary
 *.cfg text eol=lf
 *.jks binary
+
+*.dll binary
+*.so binary
+*.dylib binary
+
 *.efkefc binary
+*.efkmat binary
+*.efkmatd binary
+*.efkmodel binary
