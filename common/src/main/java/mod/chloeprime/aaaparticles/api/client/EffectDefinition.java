@@ -280,6 +280,11 @@ public class EffectDefinition implements Closeable {
     }
 
     @ApiStatus.Internal
+    public static void tryInitGlobalManagers() {
+        THE_ONE_MANAGERS.get();
+    }
+
+    @ApiStatus.Internal
     public static void draw(
             ParticleEmitter.Type type,
             Vector3f front, Vector3f pos,
