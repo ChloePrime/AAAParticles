@@ -218,6 +218,7 @@ public class EffekAssetLoader extends SimplePreparableReloadListener<EffekAssetL
             unloadAll();
             RenderUtil.refreshBackgroundFrameBuffer();
             RenderUtil.runPixelStoreCodeHealthily(() -> {
+                EffectDefinition.tryInitGlobalManagers();
                 var prep = new Preparations();
                 manager.listResources("effeks", rl -> rl.getPath().endsWith(".efkefc")).forEach((location, resource) -> {
                     var metaPath = new LimitlessResourceLocation(location.getNamespace(), location.getPath() + ".mcmeta");
