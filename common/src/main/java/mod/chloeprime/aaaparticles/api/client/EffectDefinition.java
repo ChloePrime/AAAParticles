@@ -13,6 +13,7 @@ import mod.chloeprime.aaaparticles.client.internal.mc26_1.Framebuffer;
 import mod.chloeprime.aaaparticles.client.render.RenderUtil;
 import mod.chloeprime.aaaparticles.client.util.GlDebug;
 import mod.chloeprime.aaaparticles.client.util.GlDebugIds;
+import mod.chloeprime.aaaparticles.common.util.Helpers;
 import net.minecraft.resources.Identifier;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.apache.commons.lang3.tuple.Pair;
@@ -381,9 +382,18 @@ public class EffectDefinition implements Closeable {
         var world = Objects.requireNonNull(map.get(ParticleEmitter.Type.WORLD));
         var fpvMh = Objects.requireNonNull(map.get(ParticleEmitter.Type.FIRST_PERSON_MAINHAND));
         var fpvOh = Objects.requireNonNull(map.get(ParticleEmitter.Type.FIRST_PERSON_OFFHAND));
-        if (!world.init(100_0000)) {
+        int suggestedInstCount = Helpers.getSuggestedInstanceCount();
+        int worldInstCount;
+        if (suggestedInstCount < 0) {
+            AAAParticles.LOGGER.warn("Failed to get physical memory. Using fallback instance count.");
+            worldInstCount = 1_0000;
+        } else {
+            worldInstCount = suggestedInstCount;
+        }
+        if (!world.init(worldInstCount)) {
             throw new IllegalStateException("Failed to initialize EffekseerManager");
         }
+        AAAParticles.LOGGER.info("Initializing main Effekseer manager with {} instance counts", worldInstCount);
         if (!fpvMh.init(500)) {
             throw new IllegalStateException("Failed to initialize (fpv mainhand) EffekseerManager");
         }
