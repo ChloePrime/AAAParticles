@@ -3,6 +3,8 @@ plugins {
     id 'maven-publish'
 }
 
+def isRelease = !version.contains('alpha')
+
 base {
     archivesName = "${mod_id}-${project.name}-${minecraft_version}"
 }
@@ -146,7 +148,9 @@ publishing {
         if (project.hasProperty("CHLOE_MAVEN_USERNAME")) {
             maven {
                 name = "Chloe_Maven"
-                url = "https://maven.chloeprime.cn:4080/releases/"
+                url = isRelease
+                        ? "https://maven.chloeprime.cn:4080/releases/"
+                        : "https://maven.chloeprime.cn:4080/snapshots/"
                 credentials {
                     username "$CHLOE_MAVEN_USERNAME"
                     password "$CHLOE_MAVEN_PASSWORD"
