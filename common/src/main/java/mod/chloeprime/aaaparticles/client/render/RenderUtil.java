@@ -62,7 +62,7 @@ public class RenderUtil {
     }
 
     public static void clearSamplerBindings(int start) {
-        var max = glGetInteger(GL41C.GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS);
+        var max = Math.min(8, glGetInteger(GL41C.GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS));
         for (int i = start; i < max; i++) {
             glBindSampler(i, 0);
         }
