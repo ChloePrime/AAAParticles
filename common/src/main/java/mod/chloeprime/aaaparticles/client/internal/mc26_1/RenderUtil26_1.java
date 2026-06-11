@@ -9,7 +9,7 @@ public class RenderUtil26_1 {
         RenderSystem.assertOnRenderThread();
     }
 
-    private static final int MAX_TEX_UNITS = glGetInteger(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS);
+    private static final int MAX_TEX_UNITS = Math.min(8, glGetInteger(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS));
     private static final int[] SAMPLERS = new int[MAX_TEX_UNITS];
 
     public static void recordSamplers() {
@@ -24,7 +24,10 @@ public class RenderUtil26_1 {
     public static void recoverSamplers() {
         int currentActiveTexture = glGetInteger(GL_ACTIVE_TEXTURE);
         for (int i = 0; i < MAX_TEX_UNITS; i++) {
-            glBindSampler(i, SAMPLERS[i]);
+            glActiveTexture(GL_TEXTURE0 + i);
+            if (SAMPLERS[i] != glGetInteger(GL_SAMPLER_BINDING)) {
+                glBindSampler(i, SAMPLERS[i]);
+            }
         }
         glActiveTexture(currentActiveTexture);
     }
