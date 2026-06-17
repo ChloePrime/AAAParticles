@@ -44,16 +44,12 @@ repositories {
         filter { includeGroupAndSubgroups('org.spongepowered') }
     }
     exclusiveContent {
-        forRepositories(
+        forRepository {
             maven {
-                name "Architectury Mavenn"
+                name "Architectury Maven"
                 url "https://maven.architectury.dev/"
-            },
-            // Architectury for 26.1 exists but is not released officially.
-            flatDir {
-                dir '../libs'
             }
-        )
+        }
         filter { includeGroupAndSubgroups('dev.architectury') }
     }
     exclusiveContent {
