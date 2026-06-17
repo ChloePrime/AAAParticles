@@ -15,6 +15,7 @@ public class AAAParticleKubeJSPlugin implements KubeJSPlugin {
     @Override
     public void registerBindings(BindingRegistry event) {
         event.add("AAAParticles", AAALevel.class);
+        event.add(AAALevel.class.getSimpleName(), AAALevel.class);
         event.add(ParticleEmitterInfo.class.getSimpleName(), ParticleEmitterInfo.class);
     }
 }

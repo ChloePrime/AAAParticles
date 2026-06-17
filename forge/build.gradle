@@ -44,10 +44,10 @@ dependencies {
     ;// Optional Dependencies
     {
         // KubeJS
-        // compileOnly "dev.latvian.mods:kubejs-neoforge:$kubejs_version"
-        // compileOnly 'dev.latvian.apps:tiny-java-server:1.0.0-build.16'
-        // localRuntime "dev.latvian.mods:kubejs-neoforge:$kubejs_version"
-        // localRuntime 'dev.latvian.apps:tiny-java-server:1.0.0-build.16'
+        compileOnly "maven.modrinth:rhino:$rhino_version"
+        compileOnly "maven.modrinth:kubejs:$kubejs_version"
+        localRuntime "maven.modrinth:rhino:$rhino_version"
+        localRuntime "maven.modrinth:kubejs:$kubejs_version"
 
         // Oculus
         compileOnly "maven.modrinth:sodium:mc26.1.1-$sodium_version-neoforge"
