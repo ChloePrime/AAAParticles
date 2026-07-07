@@ -127,6 +127,7 @@ public class EffekRenderer {
             GlDebug.pushDebugGroup(GlDebugIds.EFFEK_RENDER_DISPATCH, () -> "[AAAParticle] Rendering Effeks");
             var background = RenderUtil.prepareBackgroundBuffer().orElse(null);
             try (var fbc = new FramebufferContainer(MC.getMainRenderTarget())) {
+                var activeTex = GL30C.glGetInteger(GL30C.GL_ACTIVE_TEXTURE);
                 RenderUtil26_1.recordSamplers();
                 GL30C.glBindFramebuffer(GL30C.GL_READ_FRAMEBUFFER, fbc.framebuffer().frameBufferId);
                 GL30C.glBindFramebuffer(GL30C.GL_DRAW_FRAMEBUFFER, fbc.framebuffer().frameBufferId);
@@ -140,6 +141,7 @@ public class EffekRenderer {
                 GL30C.glBindFramebuffer(GL30C.GL_READ_FRAMEBUFFER, 0);
                 GL30C.glBindFramebuffer(GL30C.GL_DRAW_FRAMEBUFFER, 0);
                 RenderUtil26_1.recoverSamplers();
+                GL30C.glActiveTexture(activeTex);
             }
             GlDebug.popDebugGroup();
         });
