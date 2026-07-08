@@ -25,7 +25,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import static mod.chloeprime.aaaparticles.client.render.EffekRenderer.MinecraftHolder.MINECRAFT;
 import static mod.chloeprime.aaaparticles.client.render.RenderUtil.pasteToCurrentDepthFrom;
-import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL30C.*;
 
 /**
  * @author ChloePrime
@@ -118,6 +118,7 @@ public class EffekRenderer {
 
         RenderUtil.runPixelStoreCodeSafely(() -> {
             GlDebug.pushDebugGroup(GlDebugIds.EFFEK_RENDER_DISPATCH, () -> "[AAAParticle] Rendering Effeks");
+            var activeTex = glGetInteger(GL_ACTIVE_TEXTURE);
             var background = RenderUtil.prepareBackgroundBuffer().orElse(null);
             EffectDefinition.draw(
                     type,
@@ -127,6 +128,7 @@ public class EffekRenderer {
                     realDelta, partialTick, background
             );
             RenderUtil.clearSamplerBindings(5);
+            glActiveTexture(activeTex);
             GlDebug.popDebugGroup();
         });
 
