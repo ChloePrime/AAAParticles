@@ -1,10 +1,10 @@
-package mod.chloeprime.aaaparticles.client.internal.mc26_1;
+package mod.chloeprime.aaaparticles.client.render;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 
 import static org.lwjgl.opengl.GL41C.*;
 
-public class RenderUtil26_1 {
+public final class SamplerRestorer {
     static {
         RenderSystem.assertOnRenderThread();
     }
@@ -30,5 +30,8 @@ public class RenderUtil26_1 {
             }
         }
         glActiveTexture(currentActiveTexture);
+    }
+
+    private SamplerRestorer() {
     }
 }

@@ -11,7 +11,6 @@ import mod.chloeprime.aaaparticles.client.internal.EffekFpvRenderer;
 import mod.chloeprime.aaaparticles.client.internal.RenderContext;
 import mod.chloeprime.aaaparticles.client.internal.RenderStateCapture;
 import mod.chloeprime.aaaparticles.client.internal.mc26_1.FramebufferContainer;
-import mod.chloeprime.aaaparticles.client.internal.mc26_1.RenderUtil26_1;
 import mod.chloeprime.aaaparticles.client.util.GlDebug;
 import mod.chloeprime.aaaparticles.client.util.GlDebugIds;
 import net.minecraft.client.Camera;
@@ -22,7 +21,6 @@ import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.world.InteractionHand;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
-import org.lwjgl.opengl.GL30C;
 
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -30,7 +28,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import static mod.chloeprime.aaaparticles.client.render.EffekRenderer.MinecraftHolder.MINECRAFT;
 import static mod.chloeprime.aaaparticles.client.render.RenderUtil.MC;
 import static mod.chloeprime.aaaparticles.client.render.RenderUtil.pasteToCurrentDepthFrom;
-import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL30C.*;
 
 /**
  * @author ChloePrime
@@ -127,10 +125,10 @@ public class EffekRenderer {
             GlDebug.pushDebugGroup(GlDebugIds.EFFEK_RENDER_DISPATCH, () -> "[AAAParticle] Rendering Effeks");
             var background = RenderUtil.prepareBackgroundBuffer().orElse(null);
             try (var fbc = new FramebufferContainer(MC.getMainRenderTarget())) {
-                var activeTex = GL30C.glGetInteger(GL30C.GL_ACTIVE_TEXTURE);
-                RenderUtil26_1.recordSamplers();
-                GL30C.glBindFramebuffer(GL30C.GL_READ_FRAMEBUFFER, fbc.framebuffer().frameBufferId);
-                GL30C.glBindFramebuffer(GL30C.GL_DRAW_FRAMEBUFFER, fbc.framebuffer().frameBufferId);
+                var activeTex = glGetInteger(GL_ACTIVE_TEXTURE);
+                SamplerRestorer.recordSamplers();
+                glBindFramebuffer(GL_READ_FRAMEBUFFER, fbc.framebuffer().frameBufferId);
+                glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbc.framebuffer().frameBufferId);
                 EffectDefinition.draw(
                         type,
                         new Vector3f(camera.forwardVector()), cameraState.pos.toVector3f(),
@@ -138,10 +136,10 @@ public class EffekRenderer {
                         CAMERA_TRANSFORM_DATA, PROJECTION_MATRIX_DATA,
                         realDelta, partialTick, background
                 );
-                GL30C.glBindFramebuffer(GL30C.GL_READ_FRAMEBUFFER, 0);
-                GL30C.glBindFramebuffer(GL30C.GL_DRAW_FRAMEBUFFER, 0);
-                RenderUtil26_1.recoverSamplers();
-                GL30C.glActiveTexture(activeTex);
+                glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+                glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+                SamplerRestorer.recoverSamplers();
+                glActiveTexture(activeTex);
             }
             GlDebug.popDebugGroup();
         });
