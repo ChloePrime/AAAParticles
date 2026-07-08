@@ -121,6 +121,7 @@ public class EffekRenderer {
         RenderUtil.runPixelStoreCodeSafely(() -> {
             GlDebug.pushDebugGroup(GlDebugIds.EFFEK_RENDER_DISPATCH, () -> "[AAAParticle] Rendering Effeks");
             var activeTex = glGetInteger(GL_ACTIVE_TEXTURE);
+            SamplerRestorer.recordSamplers();
             var background = RenderUtil.prepareBackgroundBuffer().orElse(null);
             EffectDefinition.draw(
                     type,
@@ -129,7 +130,7 @@ public class EffekRenderer {
                     CAMERA_TRANSFORM_DATA, PROJECTION_MATRIX_DATA,
                     realDelta, partialTick, background
             );
-            RenderUtil.clearSamplerBindings(5);
+            SamplerRestorer.recoverSamplers();
             glActiveTexture(activeTex);
             GlDebug.popDebugGroup();
         });
