@@ -149,16 +149,38 @@ public class RenderUtil {
 
     @ApiStatus.Internal
     public static void runPixelStoreCodeSafely(Runnable code) {
+        var packSwapBytes = glGetInteger(GL_PACK_SWAP_BYTES);
+        var packLsbFirst = glGetInteger(GL_PACK_LSB_FIRST);
+        var packRowLength = glGetInteger(GL_PACK_ROW_LENGTH);
+        var packImageHeight = glGetInteger(GL_PACK_IMAGE_HEIGHT);
+        var packSkipPixels = glGetInteger(GL_PACK_SKIP_PIXELS);
+        var packSkipRows = glGetInteger(GL_PACK_SKIP_ROWS);
+        var packSkipImages = glGetInteger(GL_PACK_SKIP_IMAGES);
         var packAlignment = glGetInteger(GL_PACK_ALIGNMENT);
+        var unpackSwapBytes = glGetInteger(GL_UNPACK_SWAP_BYTES);
+        var unpackLsbFirst = glGetInteger(GL_UNPACK_LSB_FIRST);
         var unpackRowLength = glGetInteger(GL_UNPACK_ROW_LENGTH);
-        var unpackSkipRows = glGetInteger(GL_UNPACK_SKIP_ROWS);
+        var unpackImageHeight = glGetInteger(GL_UNPACK_IMAGE_HEIGHT);
         var unpackSkipPixels = glGetInteger(GL_UNPACK_SKIP_PIXELS);
+        var unpackSkipRows = glGetInteger(GL_UNPACK_SKIP_ROWS);
+        var unpackSkipImages = glGetInteger(GL_UNPACK_SKIP_IMAGES);
         var unpackAlignment = glGetInteger(GL_UNPACK_ALIGNMENT);
         code.run();
+        glPixelStorei(GL_PACK_SWAP_BYTES, packSwapBytes);
+        glPixelStorei(GL_PACK_LSB_FIRST, packLsbFirst);
+        glPixelStorei(GL_PACK_ROW_LENGTH, packRowLength);
+        glPixelStorei(GL_PACK_IMAGE_HEIGHT, packImageHeight);
+        glPixelStorei(GL_PACK_SKIP_PIXELS, packSkipPixels);
+        glPixelStorei(GL_PACK_SKIP_ROWS, packSkipRows);
+        glPixelStorei(GL_PACK_SKIP_IMAGES, packSkipImages);
         glPixelStorei(GL_PACK_ALIGNMENT, packAlignment);
+        glPixelStorei(GL_UNPACK_SWAP_BYTES, unpackSwapBytes);
+        glPixelStorei(GL_UNPACK_LSB_FIRST, unpackLsbFirst);
         glPixelStorei(GL_UNPACK_ROW_LENGTH, unpackRowLength);
-        glPixelStorei(GL_UNPACK_SKIP_ROWS, unpackSkipRows);
+        glPixelStorei(GL_UNPACK_IMAGE_HEIGHT, unpackImageHeight);
         glPixelStorei(GL_UNPACK_SKIP_PIXELS, unpackSkipPixels);
+        glPixelStorei(GL_UNPACK_SKIP_ROWS, unpackSkipRows);
+        glPixelStorei(GL_UNPACK_SKIP_IMAGES, unpackSkipImages);
         glPixelStorei(GL_UNPACK_ALIGNMENT, unpackAlignment);
     }
 
