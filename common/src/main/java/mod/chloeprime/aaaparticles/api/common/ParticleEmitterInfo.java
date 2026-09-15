@@ -2,7 +2,9 @@ package mod.chloeprime.aaaparticles.api.common;
 
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
+import mod.chloeprime.aaaparticles.AAAParticles;
 import mod.chloeprime.aaaparticles.api.client.effekseer.ParticleEmitter;
+import mod.chloeprime.aaaparticles.api.client.metadata.EffectRouting;
 import mod.chloeprime.aaaparticles.client.installer.NativePlatform;
 import mod.chloeprime.aaaparticles.api.client.EffectRegistry;
 import mod.chloeprime.aaaparticles.client.internal.EffekFinalizationHandler;
@@ -480,109 +482,122 @@ public class ParticleEmitterInfo implements Cloneable {
 
     @ApiStatus.Internal
     public void spawnInWorld(Level level, Player player) {
+        if (!level.isClientSide()) {
+            return;
+        }
         if (NativePlatform.isRunningOnUnsupportedPlatform()) {
             return;
         }
-        EffectRegistry.load(effek).thenAccept(effek -> {
-            var emitter = hasEmitter() ? effek.play(this.emitter) : effek.play();
-            var hasBoundEntity = hasBoundEntity();
-            var isPositionSet = isPositionSet();
-            var isRotationSet = isRotationSet();
-            var isScaleSet = isScaleSet();
-            var isSpeedSet = isSpeedSet();
-            var hasParams = hasParameters();
-            var hasTriggs = hasTriggers();
-            float x, y, z;
-            if (isPositionSet) {
-                x = (float) this.x;
-                y = (float) this.y;
-                z = (float) this.z;
-            } else if (!hasBoundEntity && player != null) {
-                x = (float) player.getX();
-                y = (float) player.getY();
-                z = (float) player.getZ();
-            } else {
-                x = y = z = 0;
-            }
-            if (!hasBoundEntity) {
-                emitter.setPosition(x, y, z);
-            }
-
-            if (isRotationSet) {
-                emitter.setRotation(rotX, rotY, rotZ);
-            }
-            if (isScaleSet) {
-                emitter.setScale(scaleX, scaleY, scaleZ);
-            }
-            if (isSpeedSet) {
-                emitter.setSpeed(speed);
-            }
-
-            if (hasParams) {
-                for (var parameter : parameters) {
-                    emitter.setDynamicInput(parameter.index(), parameter.value());
+        EffectRegistry.tryLoad(effek).thenAccept(optEffek -> {
+            var effek = optEffek.orElse(null);
+            if (effek == null) {
+                if (!"dev/null".equals(this.effek.getPath())) {
+                    AAAParticles.LOGGER.debug("Unknown effek {} in {}", this.effek, ParticleEmitterInfo.class.getSimpleName());
                 }
+                return;
             }
-            if (hasTriggs) {
-                triggers.forEach(emitter::sendTrigger);
-            }
+            var quality = EffectRouting.QualityOptions.current();
+            var futureE = hasEmitter() ? optEffek.get().playRouted(quality, this.emitter) : optEffek.get().playRouted(quality);
+            futureE.thenAccept(emitter -> {
+                var hasBoundEntity = hasBoundEntity();
+                var isPositionSet = isPositionSet();
+                var isRotationSet = isRotationSet();
+                var isScaleSet = isScaleSet();
+                var isSpeedSet = isSpeedSet();
+                var hasParams = hasParameters();
+                var hasTriggs = hasTriggers();
+                float x, y, z;
+                if (isPositionSet) {
+                    x = (float) this.x;
+                    y = (float) this.y;
+                    z = (float) this.z;
+                } else if (!hasBoundEntity && player != null) {
+                    x = (float) player.getX();
+                    y = (float) player.getY();
+                    z = (float) player.getZ();
+                } else {
+                    x = y = z = 0;
+                }
+                if (!hasBoundEntity) {
+                    emitter.setPosition(x, y, z);
+                }
 
-            if (hasBoundEntity) {
-                var entity = new WeakReference<>(level.getEntity(boundEntity));
-                var headSpace = usingEntityHeadSpace();
-                var entitySpace = headSpace || isEntitySpaceRelativePosSet();
-                var velocitySpace = usingEntityVelocityAsRotation();
-                var rotZ = this.rotZ;
-                var finalized = new boolean[]{false};
-                ParticleEmitter.PreDrawCallback updater = (em, partial) -> {
-                    if (finalized[0]) {
-                        return;
+                if (isRotationSet) {
+                    emitter.setRotation(rotX, rotY, rotZ);
+                }
+                if (isScaleSet) {
+                    emitter.setScale(scaleX, scaleY, scaleZ);
+                }
+                if (isSpeedSet) {
+                    emitter.setSpeed(speed);
+                }
+
+                if (hasParams) {
+                    for (var parameter : parameters) {
+                        emitter.setDynamicInput(parameter.index(), parameter.value());
                     }
-                    Optional.ofNullable(entity.get()).filter(Entity::isAlive).ifPresentOrElse(et -> {
-                        float relX, relY, relZ;
-                        if (entitySpace) {
-                            Basis basis;
-                            float rotY;
-                            float rotX;
-                            if (headSpace) {
-                                rotY = (float) Math.toRadians(et.getViewYRot(partial));
-                                rotX = (float) Math.toRadians(et.getViewXRot(partial));
-                                basis = Basis.fromEuler(new Vec3(-rotX, Mth.PI - rotY, rotZ));
+                }
+                if (hasTriggs) {
+                    triggers.forEach(emitter::sendTrigger);
+                }
+
+                if (hasBoundEntity) {
+                    var entity = new WeakReference<>(level.getEntity(boundEntity));
+                    var headSpace = usingEntityHeadSpace();
+                    var entitySpace = headSpace || isEntitySpaceRelativePosSet();
+                    var velocitySpace = usingEntityVelocityAsRotation();
+                    var rotZ = this.rotZ;
+                    var finalized = new boolean[]{false};
+                    ParticleEmitter.PreDrawCallback updater = (em, partial) -> {
+                        if (finalized[0]) {
+                            return;
+                        }
+                        Optional.ofNullable(entity.get()).filter(Entity::isAlive).ifPresentOrElse(et -> {
+                            float relX, relY, relZ;
+                            if (entitySpace) {
+                                Basis basis;
+                                float rotY;
+                                float rotX;
+                                if (headSpace) {
+                                    rotY = (float) Math.toRadians(et.getViewYRot(partial));
+                                    rotX = (float) Math.toRadians(et.getViewXRot(partial));
+                                    basis = Basis.fromEuler(new Vec3(-rotX, Mth.PI - rotY, rotZ));
+                                } else {
+                                    rotY = (float) Math.toRadians(Mth.lerp(partial, et.yRotO, et.getYRot()));
+                                    rotX = 0;
+                                    basis = Basis.fromEntityBody(et);
+                                }
+                                if (velocitySpace) {
+                                    var rot = forward2rot(et.getDeltaMovement());
+                                    rotY = -rot.y;
+                                    rotX = rot.x - (float) (Math.PI / 2);
+                                }
+                                var esRelPos = basis.toGlobal(new Vec3(esX, esY, esZ));
+                                relX = (float) (x + esRelPos.x);
+                                relY = (float) (y + esRelPos.y);
+                                relZ = (float) (z + esRelPos.z);
+                                em.setRotation(this.rotX + rotX, this.rotY - rotY, rotZ);
                             } else {
-                                rotY = (float) Math.toRadians(Mth.lerp(partial, et.yRotO, et.getYRot()));
-                                rotX = 0;
-                                basis = Basis.fromEntityBody(et);
+                                relX = x;
+                                relY = y;
+                                relZ = z;
                             }
-                            if (velocitySpace) {
-                                var rot = forward2rot(et.getDeltaMovement());
-                                rotY = -rot.y;
-                                rotX = rot.x - (float) (Math.PI / 2);
+                            em.setPosition(
+                                    (float) Mth.lerp(partial, et.xOld, et.getX()) + relX,
+                                    (float) Mth.lerp(partial, et.yOld, et.getY()) + relY + (headSpace ? et.getEyeHeight() : 0),
+                                    (float) Mth.lerp(partial, et.zOld, et.getZ()) + relZ
+                            );
+                        }, () -> {
+                            if (!finalized[0]) {
+                                finalized[0] = true;
+                                EffekFinalizationHandler.finalize(effek, em);
                             }
-                            var esRelPos = basis.toGlobal(new Vec3(esX, esY, esZ));
-                            relX = (float) (x + esRelPos.x);
-                            relY = (float) (y + esRelPos.y);
-                            relZ = (float) (z + esRelPos.z);
-                            em.setRotation(this.rotX + rotX, this.rotY - rotY, rotZ);
-                        } else {
-                            relX = x;
-                            relY = y;
-                            relZ = z;
-                        }
-                        em.setPosition(
-                                (float) Mth.lerp(partial, et.xOld, et.getX()) + relX,
-                                (float) Mth.lerp(partial, et.yOld, et.getY()) + relY + (headSpace ? et.getEyeHeight() : 0),
-                                (float) Mth.lerp(partial, et.zOld, et.getZ()) + relZ
-                        );
-                    }, () -> {
-                        if (!finalized[0]) {
-                            finalized[0] = true;
-                            EffekFinalizationHandler.finalize(effek, em);
-                        }
-                    });
-                };
-                updater.accept(emitter, 0);
-                emitter.addPreDrawCallback(updater);
-            }
+                        });
+                    };
+                    updater.accept(emitter, 0);
+                    emitter.addPreDrawCallback(updater);
+                }
+            });
         });
     }
 

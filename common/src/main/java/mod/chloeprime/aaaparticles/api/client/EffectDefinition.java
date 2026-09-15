@@ -8,9 +8,12 @@ import mod.chloeprime.aaaparticles.api.client.effekseer.Effekseer;
 import mod.chloeprime.aaaparticles.api.client.effekseer.EffekseerEffect;
 import mod.chloeprime.aaaparticles.api.client.effekseer.EffekseerManager;
 import mod.chloeprime.aaaparticles.api.client.effekseer.ParticleEmitter;
+import mod.chloeprime.aaaparticles.api.client.metadata.EffectRouting;
 import mod.chloeprime.aaaparticles.client.installer.NativePlatform;
 import mod.chloeprime.aaaparticles.client.internal.CollisionCallbackSupport;
 import mod.chloeprime.aaaparticles.client.render.RenderUtil;
+import mod.chloeprime.aaaparticles.client.systems.EffectRouteResult;
+import mod.chloeprime.aaaparticles.client.systems.EffectRoutingSystem;
 import mod.chloeprime.aaaparticles.client.util.GlDebug;
 import mod.chloeprime.aaaparticles.client.util.GlDebugIds;
 import mod.chloeprime.aaaparticles.common.util.Helpers;
@@ -22,8 +25,10 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 
+import javax.annotation.Nonnull;
 import java.io.Closeable;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 import java.util.random.RandomGenerator;
@@ -62,7 +67,7 @@ public class EffectDefinition implements Closeable {
      */
     @SuppressWarnings("unused")
     public EffectMetadata getMetadata() {
-            return metadata;
+        return metadata;
     }
 
     /**
@@ -86,7 +91,7 @@ public class EffectDefinition implements Closeable {
     }
 
     /**
-     * Get the registry id of this effek.
+     * Create an anonymous emitter with the given emitter type and play it.
      *
      * @param type Type of this emitter.
      * @return the id representing this loaded effek in {@link EffectRegistry}
@@ -118,6 +123,139 @@ public class EffectDefinition implements Closeable {
         var old = collection.put(emitterName, emitter);
         if (old != null) {
             old.stop();
+        }
+        return emitter;
+    }
+
+    /**
+     * Route to another effect definition based on this definition's route metadata,
+     * with optionally configured triggers.
+     * <p>
+     * If no routed targets are configured, use this instead.
+     *
+     * @return The routed definition and optional triggers.
+     * @since 2.3
+     */
+    public CompletableFuture<EffectDefinitionRouteResult> route(EffectRouting.QualityOptions quality, boolean lazy) {
+        var idRouteResult = Optional.ofNullable(idRouteCache.computeIfAbsent(quality, q -> getMetadata()
+                .getRoutingSettings()
+                .map(table -> EffectRoutingSystem.route(table, q))
+                .orElse(null)));
+        return idRouteResult.map(result -> {
+                    if (result.id() == null) {
+                        return CompletableFuture.completedFuture(new EffectDefinitionRouteResult(this, result.params(), result.triggers()));
+                    }
+                    var future = lazy
+                            ? CompletableFuture.completedFuture(Optional.ofNullable(EffectRegistry.get(result.id())).flatMap(EffectHolder::lazyGet))
+                            : EffectRegistry.tryLoad(result.id());
+                    return future.thenApply(def -> new EffectDefinitionRouteResult(def.orElse(this), result.params(), result.triggers()));
+                })
+                .orElse(CompletableFuture.completedFuture(new EffectDefinitionRouteResult(this, null, null)));
+    }
+
+
+    /**
+     * Route to another effect definition based on this definition's route metadata,
+     * then create an anonymous emitter and play it.
+     * <p>
+     * If no routed targets are configured, use this instead.
+     *
+     * @return the particle emitter, a wrapper of an int handle from the Effekseer native api.
+     * @since 2.3
+     */
+    public CompletableFuture<ParticleEmitter> playRouted(
+            @Nonnull EffectRouting.QualityOptions quality
+    ) {
+        Objects.requireNonNull(quality);
+
+        return playRouted(quality, ParticleEmitter.Type.WORLD);
+    }
+
+    /**
+     * Route to another effect definition based on this definition's route metadata,
+     * then create a named emitter and play it.
+     * <p>
+     * Created emitter can be retrieved by emitter name through {@link #getNamedEmitter(ParticleEmitter.Type, ResourceLocation)}.
+     * <p>
+     * If no routed targets are configured, use this instead.
+     *
+     * @param emitterName the name of the emitter.
+     * @return the particle emitter, a wrapper of an int handle from the Effekseer native api.
+     * @since 2.3
+     */
+    public CompletableFuture<ParticleEmitter> playRouted(
+            @Nonnull EffectRouting.QualityOptions quality,
+            @Nonnull ResourceLocation emitterName
+    ) {
+        Objects.requireNonNull(quality);
+        Objects.requireNonNull(emitterName);
+
+        return playRouted(quality, ParticleEmitter.Type.WORLD, emitterName);
+    }
+
+    /**
+     * Route to another effect definition based on this definition's route metadata,
+     * then create an anonymous emitter with the given emitter type and play it.
+     * <p>
+     * If no routed targets are configured, use this instead.
+     *
+     * @param type Type of this emitter.
+     * @return the id representing this loaded effek in {@link EffectRegistry}
+     * @since 2.3
+     */
+    public CompletableFuture<ParticleEmitter> playRouted(
+            @Nonnull EffectRouting.QualityOptions quality,
+            @Nonnull ParticleEmitter.Type type
+    ) {
+        Objects.requireNonNull(quality);
+        Objects.requireNonNull(type);
+
+        if (RenderUtil.isReloadingResourcePacks()) {
+            return CompletableFuture.completedFuture(ParticleEmitter.dummy(type));
+        }
+        return route(quality, false).thenApply(result -> result.definition().uniHandlePlayRouted(type, null, result));
+    }
+
+    /**
+     * Route to another effect definition based on this definition's route metadata,
+     * then create a named emitter and play it.
+     * <p>
+     * Created emitter can be retrieved by emitter name through {@link #getNamedEmitter(ParticleEmitter.Type, ResourceLocation)}.
+     * <p>
+     * If no routed targets are configured, use this instead.
+     *
+     * @param type Type of this emitter.
+     * @param emitterName the name of the emitter.
+     * @return the particle emitter, a wrapper of an int handle from the Effekseer native api.
+     * @since 2.3
+     */
+    public CompletableFuture<ParticleEmitter> playRouted(
+            @Nonnull EffectRouting.QualityOptions quality,
+            @Nonnull ParticleEmitter.Type type, @Nonnull ResourceLocation emitterName
+    ) {
+        Objects.requireNonNull(quality);
+        Objects.requireNonNull(type);
+        Objects.requireNonNull(emitterName);
+
+        if (RenderUtil.isReloadingResourcePacks()) {
+            return CompletableFuture.completedFuture(ParticleEmitter.dummy(type));
+        }
+        return route(quality, false).thenApply(result -> result.definition().uniHandlePlayRouted(type, emitterName, result));
+    }
+
+    /**
+     * @since 2.3
+     */
+    @ApiStatus.Internal
+    private ParticleEmitter uniHandlePlayRouted(ParticleEmitter.Type type, @Nullable ResourceLocation emitterName, EffectDefinitionRouteResult result) {
+        var emitter = emitterName == null ? play(type) : play(type, emitterName);
+        if (result.params() != null && !result.params().isEmpty()) {
+            result.params().forEach((index, value) -> emitter.setDynamicInput(index, (float) (double) value));
+        }
+        if (result.triggers() != null) {
+            for (int trigger : result.triggers()) {
+                emitter.sendTrigger(trigger);
+            }
         }
         return emitter;
     }
@@ -267,6 +405,7 @@ public class EffectDefinition implements Closeable {
     private static final EnumMap<ParticleEmitter.Type, MutableInt> BACKGROUND_DEPTH_IDS = new EnumMap<>(ParticleEmitter.Type.class);
     private static final List<EffectDefinition> DEFINITION_BUFFER = new ArrayList<>(64);
     private static final List<ParticleEmitter> EMITTERS_BUFFER = new ArrayList<>(64);
+    private final Map<EffectRouting.QualityOptions, EffectRouteResult> idRouteCache = new EnumMap<>(EffectRouting.QualityOptions.class);
 
     private @Nullable ResourceLocation fetchId() {
         return EffectRegistry.entries().stream()
