@@ -5,8 +5,7 @@ import mod.chloeprime.aaaparticles.common.network.ModNetwork;
 import net.minecraft.resources.Identifier;
 import org.slf4j.Logger;
 
-public class AAAParticles
-{
+public class AAAParticles {
 	public static final String MOD_ID = "aaa_particles";
 	public static final String MOD_NAME = "AAA Particles";
 	public static final String LOG_PREFIX = "[AAAParticles]";
@@ -16,7 +15,14 @@ public class AAAParticles
 		ModNetwork.init();
 	}
 
-    public static Identifier loc(String path) {
-		return Identifier.fromNamespaceAndPath(MOD_ID, path);
-    }
+	/**
+	 * @since 2.3.0
+	 */
+	public static Identifier loc(String namespace, String path) {
+		return Identifier.fromNamespaceAndPath(namespace, path);
+	}
+
+	public static ResourceLocation loc(String path) {
+		return loc(MOD_ID, path);
+	}
 }

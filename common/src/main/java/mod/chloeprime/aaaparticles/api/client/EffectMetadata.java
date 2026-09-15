@@ -3,9 +3,11 @@ package mod.chloeprime.aaaparticles.api.client;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import mod.chloeprime.aaaparticles.api.client.metadata.EffectFinalization;
+import mod.chloeprime.aaaparticles.api.client.metadata.EffectRouting;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.jetbrains.annotations.ApiStatus;
 
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -19,22 +21,25 @@ import java.util.Optional;
  *
  * @param size Intrinsic size of this effek. Used for referencing. Not used by AAAP itself.
  * @param finalization Finalization settings
+ * @param routing Effek routing options. Can be used to achieve playing alternatives on low graphics settings. Available since version 2.3
  */
 public record EffectMetadata(
         boolean preload,
         float size,
-        EffectFinalization finalization
+        EffectFinalization finalization,
+        Map<EffectRouting.QualityOptions, EffectRouting> routing
 ) {
     /**
      * Default metadata of effeks.
      * Used for effeks that has no corresponding metadata file.
      */
-    public static final EffectMetadata DEFAULT = create(false, 1, EffectFinalization.DEFAULT);
+    public static final EffectMetadata DEFAULT = create(false, 1, EffectFinalization.DEFAULT, EffectRouting.EMPTY_TABLE);
 
     public static final Codec<EffectMetadata> CODEC = RecordCodecBuilder.create(builder -> builder.group(
             Codec.BOOL.optionalFieldOf("preload", DEFAULT.preload()).forGetter(EffectMetadata::preload),
             Codec.FLOAT.optionalFieldOf("size", DEFAULT.size()).forGetter(EffectMetadata::size),
-            EffectFinalization.CODEC.optionalFieldOf("finalization", EffectFinalization.DEFAULT).forGetter(EffectMetadata::finalization)
+            EffectFinalization.CODEC.optionalFieldOf("finalization", EffectFinalization.DEFAULT).forGetter(EffectMetadata::finalization),
+            EffectRouting.TABLE_CODEC.optionalFieldOf("routing", EffectRouting.EMPTY_TABLE).forGetter(EffectMetadata::routing)
     ).apply(builder, EffectMetadata::create));
 
     /**
@@ -46,11 +51,25 @@ public record EffectMetadata(
         return Optional.ofNullable(finalization()).filter(EffectFinalization::isValid);
     }
 
-    private static EffectMetadata create(boolean preload, float size, EffectFinalization finalization) {
+    /**
+     * Get a valid finalization settings.
+     *
+     * @return finalization settings, empty if finalization settings are not set.
+     * @since 2.3
+     */
+    public Optional<Map<EffectRouting.QualityOptions, EffectRouting>> getRoutingSettings() {
+        return Optional.ofNullable(routing()).filter(map -> !map.isEmpty());
+    }
+
+    private static EffectMetadata create(
+            boolean preload, float size,
+            EffectFinalization finalization,
+            Map<EffectRouting.QualityOptions, EffectRouting> routing
+    ) {
         var lock = LockHolder.CONSTRUCTOR_LOCK.get();
         try {
             lock.increment();
-            return new EffectMetadata(preload, size, finalization);
+            return new EffectMetadata(preload, size, finalization, routing);
         } finally {
             lock.decrement();
         }
