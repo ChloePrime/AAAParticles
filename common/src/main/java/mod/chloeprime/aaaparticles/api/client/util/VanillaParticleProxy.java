@@ -2,9 +2,9 @@ package mod.chloeprime.aaaparticles.api.client.util;
 
 import com.google.common.base.Suppliers;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import mod.chloeprime.aaaparticles.api.client.EffectDefinition;
 import mod.chloeprime.aaaparticles.api.client.EffectRegistry;
 import mod.chloeprime.aaaparticles.api.client.effekseer.ParticleEmitter;
+import mod.chloeprime.aaaparticles.api.client.metadata.EffectRouting;
 import net.minecraft.client.Camera;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.Particle;
@@ -127,6 +127,9 @@ public class VanillaParticleProxy extends Particle {
     }
 
     private static CompletableFuture<Optional<ParticleEmitter>> spawn(ResourceLocation effekId) {
-        return EffectRegistry.tryLoad(effekId).thenApply(opt -> opt.map(EffectDefinition::play));
+        return EffectRegistry.tryLoad(effekId).thenCompose(opt -> opt.map(def -> def
+                        .playRouted(EffectRouting.QualityOptions.current())
+                        .thenApply(Optional::<ParticleEmitter>of))
+                .orElse(CompletableFuture.completedFuture(Optional.empty())));
     }
 }

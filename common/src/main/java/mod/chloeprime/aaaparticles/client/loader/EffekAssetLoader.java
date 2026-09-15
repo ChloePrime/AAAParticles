@@ -12,6 +12,7 @@ import mod.chloeprime.aaaparticles.api.client.EffectHolder;
 import mod.chloeprime.aaaparticles.api.client.EffectMetadata;
 import mod.chloeprime.aaaparticles.api.client.effekseer.EffekseerEffect;
 import mod.chloeprime.aaaparticles.api.client.effekseer.TextureType;
+import mod.chloeprime.aaaparticles.api.client.util.NullEffectDefinition;
 import mod.chloeprime.aaaparticles.client.installer.NativePlatform;
 import mod.chloeprime.aaaparticles.api.client.EffectDefinition;
 import mod.chloeprime.aaaparticles.client.render.EffekRenderer;
@@ -226,7 +227,14 @@ public class EffekAssetLoader extends SimplePreparableReloadListener<EffekAssetL
                     var name = createEffekName(location);
                     var loader = loadEffect(manager, name, resource);
                     var def = new EffectHolder(metadata, () -> loader.get()
-                            .map(effect -> new EffectDefinition(metadata).setEffect(effect))
+                            .map(effect -> {
+                                // "c:dev/null" 为特殊粒子 ID，
+                                // 该 ID 的粒子永远不会被播放，播放调用不会进 native
+                                var definition = NullEffectDefinition.ID.equals(name)
+                                        ? new NullEffectDefinition()
+                                        : new EffectDefinition(metadata);
+                                return definition.setEffect(effect);
+                            })
                             .orElse(null));
                     prep.loadedEffects.put(name, def);
                 });
