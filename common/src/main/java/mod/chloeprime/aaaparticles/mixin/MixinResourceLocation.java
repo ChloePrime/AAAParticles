@@ -6,20 +6,27 @@ import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import mod.chloeprime.aaaparticles.common.util.LimitlessResourceLocation;
 import net.minecraft.resources.ResourceLocation;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 
 @Mixin(value = ResourceLocation.class, priority = Integer.MAX_VALUE)
 public class MixinResourceLocation {
+    private static final @Unique StackWalker aaa_particles$STACK_WALKER = StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE);
+
     @WrapMethod(method = "isValidPath")
     private static boolean effeksPathIsAlwaysValid(String path, Operation<Boolean> original) {
         if (path.startsWith("effeks/")) {
             return true;
         }
-        return LimitlessResourceLocation.withPathCharValidationEnabled(() -> original.call(path));
+        return original.call(path);
     }
 
     @ModifyReturnValue(method = "validPathChar", at = @At("RETURN"))
-    private static boolean validatePathCharOnlyIfNecessaryToBeCompatibleWithModernFix(boolean original) {
-        return original || LimitlessResourceLocation.VALID_CHAR_STACK.get().getValue() == 0;
+    private static boolean modernfixCompat(boolean original) {
+        return original || (LimitlessResourceLocation.MODERN_FIX_INSTALLED && LimitlessResourceLocation.isModernFixClass(aaa_particles$STACK_WALKER.walk(frames -> frames
+                .dropWhile(cl -> cl.getDeclaringClass() == ResourceLocation.class)
+                .findFirst()
+                .map(StackWalker.StackFrame::getDeclaringClass)
+                .orElse(null))));
     }
 }

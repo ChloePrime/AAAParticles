@@ -19,7 +19,6 @@ import mod.chloeprime.aaaparticles.client.render.EffekRenderer;
 import mod.chloeprime.aaaparticles.client.render.RenderUtil;
 import mod.chloeprime.aaaparticles.client.util.GlDebug;
 import mod.chloeprime.aaaparticles.client.util.GlDebugIds;
-import mod.chloeprime.aaaparticles.common.util.LimitlessResourceLocation;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;

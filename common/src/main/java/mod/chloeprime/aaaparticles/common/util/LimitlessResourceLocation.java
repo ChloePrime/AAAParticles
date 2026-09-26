@@ -1,25 +1,28 @@
 package mod.chloeprime.aaaparticles.common.util;
 
-import org.apache.commons.lang3.mutable.MutableInt;
+import mod.chloeprime.aaaparticles.PlatformMethods;
 
-import java.util.concurrent.Callable;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * @see mod.chloeprime.aaaparticles.mixin.MixinResourceLocation
  */
 public final class LimitlessResourceLocation  {
-    public static final ThreadLocal<MutableInt> VALID_CHAR_STACK = ThreadLocal.withInitial(MutableInt::new);
+    public static boolean MODERN_FIX_INSTALLED = PlatformMethods.get().isModLoaded("modernfix");
 
-    public static <R> R withPathCharValidationEnabled(Callable<R> code) {
-        var stack = VALID_CHAR_STACK.get();
-        try {
-            stack.increment();
-            return code.call();
-        } catch (Exception ex) {
-            throw ex instanceof RuntimeException re ? re : new RuntimeException(ex);
-        } finally {
-            stack.decrement();
+    private static final ClassValue<Boolean> IS_CLASS_FROM_MODERN_FIX = new ClassValue<>() {
+        @Override
+        protected Boolean computeValue(@Nonnull Class<?> type) {
+            return type.getName().startsWith("org.embeddedt.modernfix");
         }
+    };
+
+    public static boolean isModernFixClass(@Nullable Class<?> clazz) {
+        if (clazz == null) {
+            return false;
+        }
+        return IS_CLASS_FROM_MODERN_FIX.get(clazz);
     }
 
     private LimitlessResourceLocation() {
