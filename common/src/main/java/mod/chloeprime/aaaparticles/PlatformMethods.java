@@ -10,4 +10,5 @@ public interface PlatformMethods {
         return !isClientDist();
     }
     boolean isDatagen();
+    boolean isModLoaded(String modid);
 }

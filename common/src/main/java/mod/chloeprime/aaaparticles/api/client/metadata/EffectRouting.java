@@ -39,7 +39,7 @@ public record EffectRouting(
      * An internal mark to replace {@code null}
      */
     @ApiStatus.Internal
-    private static final ResourceLocation NULL_MARK = AAAParticles.loc("$$NULL_MARK$$");
+    private static final ResourceLocation NULL_MARK = AAAParticles.loc("__null_mark__");
 
     /**
      * Empty param list

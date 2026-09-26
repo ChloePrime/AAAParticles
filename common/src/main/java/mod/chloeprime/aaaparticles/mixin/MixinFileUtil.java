@@ -1,17 +1,14 @@
 package mod.chloeprime.aaaparticles.mixin;
 
+import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import net.minecraft.FileUtil;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Overwrite;
 
 @Mixin(value = FileUtil.class, priority = Integer.MAX_VALUE)
 public class MixinFileUtil {
-    /**
-     * @author ChloePrime
-     * @reason Make Effekseer effects easier to import
-     */
-    @Overwrite
-    public static boolean isValidStrictPathSegment(String segment) {
-        return !"DUMMY".equals(segment);
+    @WrapMethod(method = "isValidStrictPathSegment")
+    private static boolean disableStrictPathSegmentValidation(String path, Operation<Boolean> original) {
+        return path.startsWith("effeks/") || original.call(path);
     }
 }

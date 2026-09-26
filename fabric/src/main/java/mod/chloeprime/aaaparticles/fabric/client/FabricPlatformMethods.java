@@ -21,4 +21,9 @@ public class FabricPlatformMethods implements PlatformMethods {
     public boolean isDatagen() {
         return IS_DATAGEN.get();
     }
+
+    @Override
+    public boolean isModLoaded(String modid) {
+        return FabricLoader.getInstance().isModLoaded(modid);
+    }
 }

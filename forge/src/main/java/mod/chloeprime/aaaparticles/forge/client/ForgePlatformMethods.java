@@ -4,6 +4,7 @@ import com.google.auto.service.AutoService;
 import com.google.common.base.Suppliers;
 import mod.chloeprime.aaaparticles.PlatformMethods;
 import net.neoforged.api.distmarker.Dist;
+import net.neoforged.fml.ModList;
 import net.neoforged.fml.loading.FMLLoader;
 
 import java.util.function.Supplier;
@@ -28,5 +29,10 @@ public class ForgePlatformMethods implements PlatformMethods {
     @Override
     public boolean isDatagen() {
         return IS_DATA.get();
+    }
+
+    @Override
+    public boolean isModLoaded(String modid) {
+        return ModList.get().isLoaded(modid);
     }
 }
