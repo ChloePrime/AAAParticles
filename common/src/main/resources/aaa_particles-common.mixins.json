@@ -6,6 +6,7 @@
   "refmap": "aaa_particles.refmap.json",
   "mixins": [
     "MixinFileUtil",
+    "MixinMojangUtil",
     "MixinResourceLocation"
   ],
   "client": [

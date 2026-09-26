@@ -1,12 +1,27 @@
 package mod.chloeprime.aaaparticles.common.util;
 
-import net.minecraft.resources.ResourceLocation;
+import org.apache.commons.lang3.mutable.MutableInt;
+
+import java.util.concurrent.Callable;
 
 /**
- * 仍然需要 {@link mod.chloeprime.aaaparticles.mixin.MixinResourceLocation} 才能完全去除 Path 的有效性验证
+ * @see mod.chloeprime.aaaparticles.mixin.MixinResourceLocation
  */
-public class LimitlessResourceLocation extends ResourceLocation {
-    public LimitlessResourceLocation(String namespace, String path) {
-        super(namespace, path, null);
+public final class LimitlessResourceLocation  {
+    public static final ThreadLocal<MutableInt> VALID_CHAR_STACK = ThreadLocal.withInitial(MutableInt::new);
+
+    public static <R> R withPathCharValidationEnabled(Callable<R> code) {
+        var stack = VALID_CHAR_STACK.get();
+        try {
+            stack.increment();
+            return code.call();
+        } catch (Exception ex) {
+            throw ex instanceof RuntimeException re ? re : new RuntimeException(ex);
+        } finally {
+            stack.decrement();
+        }
+    }
+
+    private LimitlessResourceLocation() {
     }
 }

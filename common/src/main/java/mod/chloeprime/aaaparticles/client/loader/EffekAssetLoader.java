@@ -147,8 +147,8 @@ public class EffekAssetLoader extends SimplePreparableReloadListener<EffekAssetL
                     .replace("//", "/");
             // example: "examplemod:effeks/Texture/a.png"
 
-            var main = new LimitlessResourceLocation(modid, mcAssetPath);
-            var fallback = new LimitlessResourceLocation(modid, fallbackMcAssetPath);
+            var main = AAAParticles.loc(modid, mcAssetPath);
+            var fallback = AAAParticles.loc(modid, fallbackMcAssetPath);
             // Load from disk.
             var resource = getResourceOrUseFallbackPath(manager, main, fallback)
                     .orElseThrow(() -> new FileNotFoundException("Failed to load %s or %s".formatted(main, fallback)));
@@ -222,7 +222,7 @@ public class EffekAssetLoader extends SimplePreparableReloadListener<EffekAssetL
                 EffectDefinition.tryInitGlobalManagers();
                 var prep = new Preparations();
                 manager.listResources("effeks", rl -> rl.getPath().endsWith(".efkefc")).forEach((location, resource) -> {
-                    var metaPath = new LimitlessResourceLocation(location.getNamespace(), location.getPath() + ".mcmeta");
+                    var metaPath = AAAParticles.loc(location.getNamespace(), location.getPath() + ".mcmeta");
                     var metadata = loadMetadata(manager, metaPath);
                     var name = createEffekName(location);
                     var loader = loadEffect(manager, name, resource);
