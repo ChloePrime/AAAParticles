@@ -15,7 +15,6 @@ import mod.chloeprime.aaaparticles.api.client.effekseer.EffekseerEffect;
 import mod.chloeprime.aaaparticles.api.client.effekseer.TextureType;
 import mod.chloeprime.aaaparticles.api.client.util.NullEffectDefinition;
 import mod.chloeprime.aaaparticles.client.installer.NativePlatform;
-import mod.chloeprime.aaaparticles.client.internal.LimitlessResourceLocationFactory;
 import mod.chloeprime.aaaparticles.client.render.EffekRenderer;
 import mod.chloeprime.aaaparticles.client.render.RenderUtil;
 import mod.chloeprime.aaaparticles.client.util.GlDebug;
@@ -35,7 +34,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.function.BiConsumer;
-import java.util.function.BiFunction;
 import java.util.function.IntFunction;
 import java.util.function.Supplier;
 
@@ -128,9 +126,6 @@ public class EffekAssetLoader extends SimplePreparableReloadListener<EffekAssetL
         };
     }
 
-    private static final BiFunction<String, String, Identifier> UNVALIDATED_RES_LOC_FACTORY =
-            ((LimitlessResourceLocationFactory) (Object) Identifier.withDefaultNamespace("mole"))::aaa$createUninitialized;
-
     private void load(
             ResourceManager manager,
             Identifier name, int count,
@@ -149,8 +144,8 @@ public class EffekAssetLoader extends SimplePreparableReloadListener<EffekAssetL
                     .replace("//", "/");
             // example: "examplemod:effeks/Texture/a.png"
 
-            var main = UNVALIDATED_RES_LOC_FACTORY.apply(modid, mcAssetPath);
-            var fallback = UNVALIDATED_RES_LOC_FACTORY.apply(modid, fallbackMcAssetPath);
+            var main = AAAParticles.loc(modid, mcAssetPath);
+            var fallback = AAAParticles.loc(modid, fallbackMcAssetPath);
             // Load from disk.
             var resource = getResourceOrUseFallbackPath(manager, main, fallback)
                     .orElseThrow(() -> new FileNotFoundException("Failed to load %s or %s".formatted(main, fallback)));
@@ -211,7 +206,7 @@ public class EffekAssetLoader extends SimplePreparableReloadListener<EffekAssetL
         if (filePath.endsWith(".efkefc") || filePath.endsWith(".efkpkg")) {
             filePath = filePath.substring(0, filePath.length() - ".efkefc".length());
         }
-        return UNVALIDATED_RES_LOC_FACTORY.apply(location.getNamespace(), filePath);
+        return AAAParticles.loc(location.getNamespace(), filePath);
     }
 
     @Override
@@ -226,7 +221,7 @@ public class EffekAssetLoader extends SimplePreparableReloadListener<EffekAssetL
                 EffectDefinition.tryInitGlobalManagers();
                 var prep = new Preparations();
                 manager.listResources("effeks", rl -> rl.getPath().endsWith(".efkefc")).forEach((location, resource) -> {
-                    var metaPath = UNVALIDATED_RES_LOC_FACTORY.apply(location.getNamespace(), location.getPath() + ".mcmeta");
+                    var metaPath = AAAParticles.loc(location.getNamespace(), location.getPath() + ".mcmeta");
                     var metadata = loadMetadata(manager, metaPath);
                     var name = createEffekName(location);
                     var loader = loadEffect(manager, name, resource);

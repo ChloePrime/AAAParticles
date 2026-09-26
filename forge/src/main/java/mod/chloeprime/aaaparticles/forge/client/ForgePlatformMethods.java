@@ -39,4 +39,9 @@ public class ForgePlatformMethods implements PlatformMethods {
     public boolean isDatagen() {
         return IS_DATA.get();
     }
+
+    @Override
+    public boolean isModLoaded(String modid) {
+        return ModList.get().isLoaded(modid);
+    }
 }
