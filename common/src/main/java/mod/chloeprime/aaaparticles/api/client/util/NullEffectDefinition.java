@@ -6,7 +6,7 @@ import mod.chloeprime.aaaparticles.api.client.EffectDefinitionRouteResult;
 import mod.chloeprime.aaaparticles.api.client.EffectMetadata;
 import mod.chloeprime.aaaparticles.api.client.effekseer.ParticleEmitter;
 import mod.chloeprime.aaaparticles.api.client.metadata.EffectRouting;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -21,7 +21,7 @@ public class NullEffectDefinition extends EffectDefinition {
      * This ID points to a special definition that does nothing on play call.
      * Can be routed to to disable certain particles on certain route settings.
      */
-    public static final ResourceLocation ID = AAAParticles.loc("c", "dev/null");
+    public static final Identifier ID = AAAParticles.loc("c", "dev/null");
 
     public NullEffectDefinition() {
         super(EffectMetadata.DEFAULT);
@@ -38,12 +38,12 @@ public class NullEffectDefinition extends EffectDefinition {
     }
 
     @Override
-    public ParticleEmitter play(ResourceLocation emitterName) {
+    public ParticleEmitter play(Identifier emitterName) {
         return ParticleEmitter.dummy(ParticleEmitter.Type.WORLD);
     }
 
     @Override
-    public ParticleEmitter play(ParticleEmitter.Type type, ResourceLocation emitterName) {
+    public ParticleEmitter play(ParticleEmitter.Type type, Identifier emitterName) {
         return ParticleEmitter.dummy(type);
     }
 

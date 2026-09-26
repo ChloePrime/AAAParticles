@@ -2,7 +2,7 @@ package mod.chloeprime.aaaparticles.client.systems;
 
 import it.unimi.dsi.fastutil.ints.Int2DoubleMap;
 import mod.chloeprime.aaaparticles.api.client.metadata.EffectRouting;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 import java.util.Map;
 import java.util.Objects;
@@ -33,7 +33,7 @@ public final class EffectRoutingSystem {
             Map<EffectRouting.QualityOptions, EffectRouting> config,
             EffectRouting.QualityOptions current
     ) {
-        var id = (ResourceLocation) null;
+        var id = (Identifier) null;
         var params = (Int2DoubleMap) null;
         var triggers = (int[]) null;
         var opt = current;

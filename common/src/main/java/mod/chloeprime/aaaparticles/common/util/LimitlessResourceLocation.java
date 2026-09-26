@@ -9,7 +9,9 @@ import javax.annotation.Nullable;
  * @see mod.chloeprime.aaaparticles.mixin.MixinResourceLocation
  */
 public final class LimitlessResourceLocation  {
-    public static boolean MODERN_FIX_INSTALLED = PlatformMethods.get().isModLoaded("modernfix");
+    public static final class IsModLoadedHolder {
+        public static boolean MODERN_FIX_INSTALLED = PlatformMethods.get().isModLoaded("modernfix");
+    }
 
     private static final ClassValue<Boolean> IS_CLASS_FROM_MODERN_FIX = new ClassValue<>() {
         @Override

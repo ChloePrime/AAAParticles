@@ -7,12 +7,11 @@ public interface PlatformMethods {
 
     boolean isForge();
     boolean isFabric();
+    boolean isDatagen();
     boolean isModLoaded(String modid);
 
     boolean isClientDist();
     default boolean isDedicatedServerDist() {
         return !isClientDist();
     }
-    boolean isDatagen();
-    boolean isModLoaded(String modid);
 }

@@ -23,11 +23,6 @@ public class FabricPlatformMethods implements PlatformMethods {
     }
 
     @Override
-    public boolean isModLoaded(String modid) {
-        return FabricLoader.getInstance().isModLoaded(modid);
-    }
-
-    @Override
     public boolean isClientDist() {
         return FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT;
     }

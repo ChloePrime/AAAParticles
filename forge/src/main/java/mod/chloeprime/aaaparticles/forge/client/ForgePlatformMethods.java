@@ -6,6 +6,7 @@ import mod.chloeprime.aaaparticles.PlatformMethods;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.fml.ModList;
 import net.neoforged.fml.loading.FMLLoader;
+import net.neoforged.fml.loading.LoadingModList;
 import net.neoforged.neoforge.data.loading.DatagenModLoader;
 
 import java.util.function.Supplier;
@@ -26,11 +27,6 @@ public class ForgePlatformMethods implements PlatformMethods {
     }
 
     @Override
-    public boolean isModLoaded(String modid) {
-        return ModList.get().isLoaded(modid);
-    }
-
-    @Override
     public boolean isClientDist() {
         return DIST.isClient();
     }
@@ -42,6 +38,12 @@ public class ForgePlatformMethods implements PlatformMethods {
 
     @Override
     public boolean isModLoaded(String modid) {
-        return ModList.get().isLoaded(modid);
+        var loaded = ModList.get();
+        if (loaded != null) {
+            return loaded.isLoaded(modid);
+        }
+        return FMLLoader.getCurrent().getLoadingModList().getAllModFiles()
+                .stream()
+                .anyMatch(mod -> modid.equals(mod.getId()));
     }
 }

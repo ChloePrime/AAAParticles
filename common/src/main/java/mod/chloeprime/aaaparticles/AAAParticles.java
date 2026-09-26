@@ -22,7 +22,7 @@ public class AAAParticles {
 		return Identifier.fromNamespaceAndPath(namespace, path);
 	}
 
-	public static ResourceLocation loc(String path) {
+	public static Identifier loc(String path) {
 		return loc(MOD_ID, path);
 	}
 }

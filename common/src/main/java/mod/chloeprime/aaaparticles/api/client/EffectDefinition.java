@@ -175,7 +175,7 @@ public class EffectDefinition implements Closeable {
      * Route to another effect definition based on this definition's route metadata,
      * then create a named emitter and play it.
      * <p>
-     * Created emitter can be retrieved by emitter name through {@link #getNamedEmitter(ParticleEmitter.Type, ResourceLocation)}.
+     * Created emitter can be retrieved by emitter name through {@link #getNamedEmitter(ParticleEmitter.Type, Identifier)}.
      * <p>
      * If no routed targets are configured, use this instead.
      *
@@ -185,7 +185,7 @@ public class EffectDefinition implements Closeable {
      */
     public CompletableFuture<ParticleEmitter> playRouted(
             @Nonnull EffectRouting.QualityOptions quality,
-            @Nonnull ResourceLocation emitterName
+            @Nonnull Identifier emitterName
     ) {
         Objects.requireNonNull(quality);
         Objects.requireNonNull(emitterName);
@@ -220,7 +220,7 @@ public class EffectDefinition implements Closeable {
      * Route to another effect definition based on this definition's route metadata,
      * then create a named emitter and play it.
      * <p>
-     * Created emitter can be retrieved by emitter name through {@link #getNamedEmitter(ParticleEmitter.Type, ResourceLocation)}.
+     * Created emitter can be retrieved by emitter name through {@link #getNamedEmitter(ParticleEmitter.Type, Identifier)}.
      * <p>
      * If no routed targets are configured, use this instead.
      *
@@ -231,7 +231,7 @@ public class EffectDefinition implements Closeable {
      */
     public CompletableFuture<ParticleEmitter> playRouted(
             @Nonnull EffectRouting.QualityOptions quality,
-            @Nonnull ParticleEmitter.Type type, @Nonnull ResourceLocation emitterName
+            @Nonnull ParticleEmitter.Type type, @Nonnull Identifier emitterName
     ) {
         Objects.requireNonNull(quality);
         Objects.requireNonNull(type);
@@ -247,7 +247,7 @@ public class EffectDefinition implements Closeable {
      * @since 2.3
      */
     @ApiStatus.Internal
-    private ParticleEmitter uniHandlePlayRouted(ParticleEmitter.Type type, @Nullable ResourceLocation emitterName, EffectDefinitionRouteResult result) {
+    private ParticleEmitter uniHandlePlayRouted(ParticleEmitter.Type type, @Nullable Identifier emitterName, EffectDefinitionRouteResult result) {
         var emitter = emitterName == null ? play(type) : play(type, emitterName);
         if (result.params() != null && !result.params().isEmpty()) {
             result.params().forEach((index, value) -> emitter.setDynamicInput(index, (float) (double) value));

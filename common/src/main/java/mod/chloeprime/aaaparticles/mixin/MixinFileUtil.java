@@ -7,7 +7,7 @@ import org.spongepowered.asm.mixin.Mixin;
 
 @Mixin(value = FileUtil.class, priority = Integer.MAX_VALUE)
 public class MixinFileUtil {
-    @WrapMethod(method = "isValidStrictPathSegment")
+    @WrapMethod(method = "containsAllowedCharactersOnly")
     private static boolean disableStrictPathSegmentValidation(String path, Operation<Boolean> original) {
         return path.startsWith("effeks/") || original.call(path);
     }

@@ -7,9 +7,9 @@ import it.unimi.dsi.fastutil.ints.Int2DoubleMap;
 import it.unimi.dsi.fastutil.ints.Int2DoubleMaps;
 import it.unimi.dsi.fastutil.ints.Int2DoubleOpenHashMap;
 import mod.chloeprime.aaaparticles.AAAParticles;
-import net.minecraft.client.GraphicsStatus;
+import net.minecraft.client.GraphicsPreset;
 import net.minecraft.client.Minecraft;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.util.StringRepresentable;
 import org.jetbrains.annotations.ApiStatus;
@@ -31,7 +31,7 @@ import java.util.stream.IntStream;
  * @since 2.3
  */
 public record EffectRouting(
-        ResourceLocation configuredTargetId,
+        Identifier configuredTargetId,
         Int2DoubleMap params,
         int[] triggers
 ) {
@@ -39,7 +39,7 @@ public record EffectRouting(
      * An internal mark to replace {@code null}
      */
     @ApiStatus.Internal
-    private static final ResourceLocation NULL_MARK = AAAParticles.loc("__null_mark__");
+    private static final Identifier NULL_MARK = AAAParticles.loc("__null_mark__");
 
     /**
      * Empty param list
@@ -52,7 +52,7 @@ public record EffectRouting(
     public static final int[] EMPTY_TRIGGERS = new int[0];
 
     public static final Codec<EffectRouting> DIRECT_ENTRY_CODEC = RecordCodecBuilder.create(instance -> instance.group(
-            ResourceLocation.CODEC
+            Identifier.CODEC
                     .optionalFieldOf("target", NULL_MARK)
                     .forGetter(EffectRouting::configuredTargetId),
             Codec.unboundedMap(Codec.INT, Codec.DOUBLE)
@@ -66,7 +66,7 @@ public record EffectRouting(
     ).apply(instance, EffectRouting::new));
 
     public static final Codec<EffectRouting> ENTRY_CODEC = Codec
-            .either(ResourceLocation.CODEC, DIRECT_ENTRY_CODEC)
+            .either(Identifier.CODEC, DIRECT_ENTRY_CODEC)
             .xmap(either -> either.map(id -> new EffectRouting(id, EMPTY_PARAMS, EMPTY_TRIGGERS), Function.identity()), Either::right);
 
     public static final Codec<Map<QualityOptions, EffectRouting>> TABLE_CODEC = Codec.unboundedMap(QualityOptions.CODEC, ENTRY_CODEC);
@@ -78,7 +78,7 @@ public record EffectRouting(
      *
      * @return 路由目标的 id
      */
-    public Optional<ResourceLocation> targetId() {
+    public Optional<Identifier> targetId() {
         return NULL_MARK.equals(configuredTargetId) ? Optional.empty() : Optional.ofNullable(configuredTargetId);
     }
 
@@ -118,7 +118,7 @@ public record EffectRouting(
                 case MINIMAL -> 0;
                 default -> 2;
             };
-            int qualityScore = options.graphicsMode().get() == GraphicsStatus.FAST ? 0 : 1;
+            int qualityScore = options.graphicsPreset().get() == GraphicsPreset.FAST ? 0 : 1;
             int index = Mth.clamp(particleScore + qualityScore, 0, VALUES.length - 1);
             return VALUES[index];
         }
