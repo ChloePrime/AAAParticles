@@ -23,7 +23,7 @@ public class MixinResourceLocation {
 
     @ModifyReturnValue(method = "validPathChar", at = @At("RETURN"))
     private static boolean modernfixCompat(boolean original) {
-        return original || (LimitlessResourceLocation.MODERN_FIX_INSTALLED && LimitlessResourceLocation.isModernFixClass(aaa_particles$STACK_WALKER.walk(frames -> frames
+        return original || (LimitlessResourceLocation.isModernFixInstalled() && LimitlessResourceLocation.isModernFixClass(aaa_particles$STACK_WALKER.walk(frames -> frames
                 .dropWhile(cl -> cl.getDeclaringClass() == ResourceLocation.class)
                 .findFirst()
                 .map(StackWalker.StackFrame::getDeclaringClass)
