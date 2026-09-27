@@ -32,7 +32,11 @@ public class ForgePlatformMethods implements PlatformMethods {
     }
 
     @Override
-    public boolean isModLoaded(String modid) {
-        return ModList.get().isLoaded(modid);
+    public int isModLoaded(String modid) {
+        var modlist = ModList.get();
+        if (modlist == null) {
+            return -1;
+        }
+        return modlist.isLoaded(modid) ? 1 : 0;
     }
 }
