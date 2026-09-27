@@ -33,7 +33,11 @@ public class FabricPlatformMethods implements PlatformMethods {
     }
 
     @Override
-    public boolean isModLoaded(String modid) {
-        return FabricLoader.getInstance().isModLoaded(modid);
+    public int isModLoaded(String modid) {
+        try {
+            return FabricLoader.getInstance().isModLoaded(modid) ? 1 : 0;
+        } catch (RuntimeException ex) {
+            return -1;
+        }
     }
 }

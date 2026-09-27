@@ -4,8 +4,8 @@ import mod.chloeprime.aaaparticles.PlatformMethods;
 
 public class RenderContext {
     private static final PlatformMethods P = PlatformMethods.get();
-    public static final boolean HAS_IRIS = P.isModLoaded("iris") || P.isModLoaded("oculus");
-    public static final boolean HAS_SODIUM = P.isModLoaded("sodium");
+    public static final boolean HAS_IRIS = P.isModLoadedFailFast("iris") || P.isModLoadedFailFast("oculus");
+    public static final boolean HAS_SODIUM = P.isModLoadedFailFast("sodium");
     public static final boolean ON_FABRIC = P.isFabric();
 
     public static boolean renderLevelDeferred() {

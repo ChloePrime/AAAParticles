@@ -7,11 +7,23 @@ public interface PlatformMethods {
 
     boolean isForge();
     boolean isFabric();
-    boolean isDatagen();
-    boolean isModLoaded(String modid);
 
     boolean isClientDist();
     default boolean isDedicatedServerDist() {
         return !isClientDist();
+    }
+    boolean isDatagen();
+
+    /**
+     * @return 1=loaded, 0=not loaded, -1=unavailable
+     */
+    int isModLoaded(String modid);
+
+    default boolean isModLoadedFailFast(String modid) {
+        var ret = isModLoaded(modid);
+        if (ret < 0) {
+            throw new IllegalStateException("Accessing isModLoaded too early");
+        }
+        return ret > 0;
     }
 }
