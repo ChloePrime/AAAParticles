@@ -25,7 +25,8 @@ tasks.withType(Javadoc).configureEach {
     options.tags = [
             "apiNote:a:API Note:",
             "implSpec:a:Implementation Requirements:",
-            "implNote:a:Implementation Note:"
+            "implNote:a:Implementation Note:",
+            "reason:a:Overwrite Reason:"
     ]
 }
 
