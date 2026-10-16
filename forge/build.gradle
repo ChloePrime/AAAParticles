@@ -88,6 +88,9 @@ dependencies {
         modCompileOnly "maven.modrinth:oculus:$minecraft_version-$ocu_version"
         modLocalRuntime "org.embeddedt:embeddium-$minecraft_version:$emb_version"
         modLocalRuntime "maven.modrinth:oculus:$minecraft_version-$ocu_version"
+
+        // Super Resolution
+        modCompileOnly "maven.modrinth:superresolution:1.20.1-0.9.2-alpha.2+gl-forge"
     }
 }
 
