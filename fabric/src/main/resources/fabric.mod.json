@@ -12,7 +12,7 @@
         "sources": "https://github.com/ChloePrime/AAAParticles"
     },
     "license": "${license}",
-    "icon": "icon.png",
+    "icon": "aaa_particles.png",
     "environment": "*",
     "entrypoints": {
         "main": [
