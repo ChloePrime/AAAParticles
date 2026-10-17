@@ -78,49 +78,53 @@ public class RenderUtil {
 
     public static void copyCurrentDepthTo(RenderTarget target) {
         var frameBuffer = GL11.glGetInteger(GL_DRAW_FRAMEBUFFER_BINDING);
-        var window = MC.getWindow();
-        copyDepthSafely(frameBuffer, window.getWidth(), window.getHeight(), target);
+        var mainFB = MC.getMainRenderTarget();
+        copyDepthSafely(frameBuffer, mainFB.width, mainFB.height, target);
     }
 
     public static void copyCurrentTo(RenderTarget target) {
         var frameBuffer = GL11.glGetInteger(GL_DRAW_FRAMEBUFFER_BINDING);
-        var window = MC.getWindow();
-        copyDepthSafely(frameBuffer, window.getWidth(), window.getHeight(), target);
+        var mainFB = MC.getMainRenderTarget();
+        copyDepthSafely(frameBuffer, mainFB.width, mainFB.height, target);
     }
 
     public static void pasteToCurrentDepthFrom(RenderTarget source) {
         var frameBuffer = GL11.glGetInteger(GL_DRAW_FRAMEBUFFER_BINDING);
-        var window = MC.getWindow();
-        copyDepthSafely(source, frameBuffer, window.getWidth(), window.getHeight());
+        var mainFB = MC.getMainRenderTarget();
+        copyDepthSafely(source, frameBuffer, mainFB.width, mainFB.height);
     }
 
 
     public static void copyDepthSafely(int src, int srcWidth, int srcHeight, RenderTarget target) {
-        var readBackup = GL11.glGetInteger(GL_READ_FRAMEBUFFER_BINDING);
-        var drawBackup = GL11.glGetInteger(GL_DRAW_FRAMEBUFFER_BINDING);
-        glBindFramebuffer(GL_READ_FRAMEBUFFER, src);
-        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, target.frameBufferId);
-        glBlitFramebuffer(0, 0, srcWidth, srcHeight, 0, 0, target.width, target.height, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
-        glBindFramebuffer(GL_READ_FRAMEBUFFER, readBackup);
-        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, drawBackup);
+        copyDepthSafely(src, target.frameBufferId, srcWidth, srcHeight, target.width, target.height);
     }
 
     public static void copyDepthSafely(RenderTarget src, int target, int targetWidth, int targetHeight) {
+        copyDepthSafely(src.frameBufferId, target, src.width, src.height, targetWidth, targetHeight);
+    }
+
+    public static void copyDepthSafely(int src, int target, int srcWidth, int srcHeight, int targetWidth, int targetHeight) {
         var readBackup = GL11.glGetInteger(GL_READ_FRAMEBUFFER_BINDING);
         var drawBackup = GL11.glGetInteger(GL_DRAW_FRAMEBUFFER_BINDING);
-        glBindFramebuffer(GL_READ_FRAMEBUFFER, src.frameBufferId);
+        glBindFramebuffer(GL_READ_FRAMEBUFFER, src);
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, target);
-        glBlitFramebuffer(0, 0, src.width, src.height, 0, 0, targetWidth, targetHeight, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+        glBlitFramebuffer(0, 0, srcWidth, srcHeight, 0, 0, targetWidth, targetHeight, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
         glBindFramebuffer(GL_READ_FRAMEBUFFER, readBackup);
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, drawBackup);
     }
 
     public static void copySafely(RenderTarget src, RenderTarget target) {
+        copySafely(src.frameBufferId, target.frameBufferId, src.width, src.height, target.width, target.height);
+    }
+
+    public static void copySafely(int srcFramebuffer, int targetFramebuffer, int srcW, int srcH, int targetW, int targetH) {
         var readBackup = GL11.glGetInteger(GL_READ_FRAMEBUFFER_BINDING);
         var drawBackup = GL11.glGetInteger(GL_DRAW_FRAMEBUFFER_BINDING);
-        glBindFramebuffer(GL_READ_FRAMEBUFFER, src.frameBufferId);
-        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, target.frameBufferId);
-        glBlitFramebuffer(0, 0, src.width, src.height, 0, 0, target.width, target.height, GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+        glBindFramebuffer(GL_READ_FRAMEBUFFER, srcFramebuffer);
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, targetFramebuffer);
+        var mode = (srcW == targetW && srcH == targetH) ? GL_NEAREST : GL_LINEAR;
+        var mask = GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT;
+        glBlitFramebuffer(0, 0, srcW, srcH, 0, 0, targetW, targetH, mask, mode);
         glBindFramebuffer(GL_READ_FRAMEBUFFER, readBackup);
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, drawBackup);
     }

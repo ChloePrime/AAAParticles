@@ -6,6 +6,7 @@ import mod.chloeprime.aaaparticles.api.client.EffectDefinition;
 import mod.chloeprime.aaaparticles.api.client.effekseer.DeviceType;
 import mod.chloeprime.aaaparticles.api.client.effekseer.Effekseer;
 import mod.chloeprime.aaaparticles.api.client.effekseer.ParticleEmitter;
+import mod.chloeprime.aaaparticles.client.compat.super_resolution.SuperResolutionCompat;
 import mod.chloeprime.aaaparticles.client.installer.NativePlatform;
 import mod.chloeprime.aaaparticles.client.internal.EffekFpvRenderer;
 import mod.chloeprime.aaaparticles.client.internal.RenderContext;
@@ -123,6 +124,7 @@ public class EffekRenderer {
             var activeTex = glGetInteger(GL_ACTIVE_TEXTURE);
             SamplerRestorer.recordSamplers();
             var background = RenderUtil.prepareBackgroundBuffer().orElse(null);
+            SuperResolutionCompat.preDrawEffeks();
             EffectDefinition.draw(
                     type,
                     camera.getLookVector(), camera.getPosition().toVector3f(),
@@ -130,6 +132,7 @@ public class EffekRenderer {
                     CAMERA_TRANSFORM_DATA, PROJECTION_MATRIX_DATA,
                     realDelta, partialTick, background
             );
+            SuperResolutionCompat.postDrawEffeks();
             SamplerRestorer.recoverSamplers();
             glActiveTexture(activeTex);
             GlDebug.popDebugGroup();
