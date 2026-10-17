@@ -20,6 +20,7 @@ public class RenderStateCapture {
     public static final RenderTarget CAPTURED_WORLD_DEPTH_BUFFER = create();
     public static final RenderTarget CAPTURED_HAND_DEPTH_BUFFER = create();
     public static final RenderTarget DISTORTION_BACKGROUND = create();
+    public static final RenderTarget SR_FOREGROUND = create();
 
     public static RenderTarget create() {
         var main = RenderUtil.MC.getMainRenderTarget();
