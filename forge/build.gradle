@@ -54,6 +54,9 @@ dependencies {
         compileOnly "maven.modrinth:iris:$iris_version+$minecraft_version-neoforge"
         localRuntime "maven.modrinth:sodium:mc$minecraft_version-$sodium_version-neoforge"
         localRuntime "maven.modrinth:iris:$iris_version+$minecraft_version-neoforge"
+
+        // Super Resolution
+        compileOnly "maven.modrinth:superresolution:1.21-0.9.2-alpha.2+gl-neo"
     }
 }
 
