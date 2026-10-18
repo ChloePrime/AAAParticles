@@ -1,5 +1,6 @@
 package mod.chloeprime.aaaparticles.client.compat.super_resolution;
 
+import mod.chloeprime.aaaparticles.client.ClientPlatformMethods;
 import mod.chloeprime.aaaparticles.client.internal.RenderStateCapture;
 import mod.chloeprime.aaaparticles.client.render.RenderUtil;
 import net.minecraft.client.Minecraft;
@@ -27,6 +28,7 @@ public class SuperResolutionCompatImpl {
         // Copy main -> SR foreground buffer
         var main = Minecraft.getInstance().getMainRenderTarget();
         var srFG = RenderStateCapture.SR_FOREGROUND;
+        ClientPlatformMethods.get().syncStencilState(main, srFG);
         RenderUtil.copySafely(w, srFG.frameBufferId, main.width, main.height, main.width, main.height);
         RenderUtil.copyDepthSafely(w, srFG.frameBufferId, getRenderWidth(), getRenderHeight(), srFG.width, srFG.height);
         // Bind SR foreground buffer
