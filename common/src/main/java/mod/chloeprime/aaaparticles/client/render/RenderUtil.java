@@ -122,8 +122,10 @@ public class RenderUtil {
         var drawBackup = GL11.glGetInteger(GL_DRAW_FRAMEBUFFER_BINDING);
         glBindFramebuffer(GL_READ_FRAMEBUFFER, srcFramebuffer);
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, targetFramebuffer);
+        var srcHasStencil = GL_NONE != glGetFramebufferAttachmentParameteri(GL_READ_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_FRAMEBUFFER_ATTACHMENT_COMPONENT_TYPE);
+        var dstHasStencil = GL_NONE != glGetFramebufferAttachmentParameteri(GL_DRAW_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_FRAMEBUFFER_ATTACHMENT_COMPONENT_TYPE);
         var mode = (srcW == targetW && srcH == targetH) ? GL_NEAREST : GL_LINEAR;
-        var mask = GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT;
+        var mask = GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | (srcHasStencil && dstHasStencil ? GL_STENCIL_BUFFER_BIT : 0);
         glBlitFramebuffer(0, 0, srcW, srcH, 0, 0, targetW, targetH, mask, mode);
         glBindFramebuffer(GL_READ_FRAMEBUFFER, readBackup);
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, drawBackup);
